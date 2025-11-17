@@ -1,0 +1,19 @@
+# Web Framework
+Flask==3.0.3
+Werkzeug==3.0.3
+
+# HTTP Client
+requests==2.32.3
+
+# YAML Configuration
+PyYAML==6.0.2
+
+# Timezone Support
+pytz==2024.1
+
+# Data Validation (Optional but recommended)
+pydantic==2.9.2
+
+# Development Dependencies
+pytest==8.3.3
+pytest-cov==5.0.0

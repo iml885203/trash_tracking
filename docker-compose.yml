@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  trash_tracking:
+    build: .
+    container_name: trash_tracking
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      # 設定檔（唯讀）
+      - ./config.yaml:/app/config.yaml:ro
+      # 日誌目錄
+      - ./logs:/app/logs
+    environment:
+      - TZ=Asia/Taipei
+      - PYTHONUNBUFFERED=1
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:5000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - trash_tracking_network
+
+networks:
+  trash_tracking_network:
+    driver: bridge

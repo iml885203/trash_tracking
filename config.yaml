@@ -1,0 +1,57 @@
+# 垃圾車動態偵測系統 - 設定檔
+
+# 系統設定
+system:
+  log_level: INFO           # 日誌等級：DEBUG, INFO, WARNING, ERROR
+  cache_enabled: false      # 是否啟用快取（未來功能）
+  cache_ttl: 60            # 快取存活時間（秒）
+
+# 查詢位置（你家的座標）
+# 請修改為你家的實際座標
+location:
+  lat: 25.0138
+  lng: 121.4627
+
+# 垃圾車追蹤設定
+tracking:
+  # 指定追蹤的路線（留空陣列則追蹤所有路線）
+  # 範例：["一區晚1", "二區晚2"]
+  target_lines: []
+
+  # 進入清運點（垃圾車到達此點時，燈泡亮起）
+  # 請填寫清運點的完整名稱，必須與 API 回傳的 PointName 完全一致
+  enter_point: "文化路一段188巷口"
+
+  # 離開清運點（垃圾車經過此點時，燈泡關閉）
+  # 請填寫清運點的完整名稱，必須與 API 回傳的 PointName 完全一致
+  # 注意：離開點必須在路線順序上位於進入點之後
+  exit_point: "府中路29巷口"
+
+  # 觸發模式
+  # arriving: 垃圾車即將到達進入點時觸發（提前通知）
+  # arrived: 垃圾車已經到達進入點時觸發（實際到達）
+  trigger_mode: "arriving"
+
+  # 提前通知停靠點數（僅當 trigger_mode=arriving 時有效）
+  # 例如：2 表示垃圾車距離進入點前 2 個停靠點時就觸發
+  approaching_threshold: 2
+
+# API 設定
+api:
+  # 新北市 API 設定
+  ntpc:
+    base_url: "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI"
+    timeout: 10             # 請求逾時（秒）
+    retry_count: 3          # 重試次數
+    retry_delay: 2          # 重試延遲（秒）
+
+  # Flask 服務設定
+  server:
+    host: "0.0.0.0"
+    port: 5000
+    debug: false
+
+# Home Assistant 整合設定（僅供參考，不影響程式運行）
+home_assistant:
+  scan_interval: 90         # HA 輪詢間隔（秒）
+  light_entity_id: "light.notification_bulb"  # 控制的燈泡 entity ID
