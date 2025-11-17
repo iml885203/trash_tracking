@@ -77,6 +77,21 @@ class TruckLine:
                 return point
         return None
 
+    def get_upcoming_points(self) -> List[Point]:
+        """
+        取得尚未經過的清運點（依序排列）
+
+        Returns:
+            List[Point]: 未經過的清運點列表
+        """
+        # 篩選出尚未經過的清運點
+        upcoming = [p for p in self.points if not p.has_passed()]
+
+        # 依照 point_rank 排序
+        upcoming.sort(key=lambda p: p.point_rank)
+
+        return upcoming
+
     def to_dict(self, enter_point: Optional[Point] = None,
                 exit_point: Optional[Point] = None) -> dict:
         """
