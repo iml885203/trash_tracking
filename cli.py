@@ -10,24 +10,45 @@ from src.models.point import Point
 from src.utils.logger import setup_logger, logger
 
 
-def format_point_info(point: Point, index: int) -> str:
+def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
     """
     格式化清運點資訊
 
     Args:
         point: 清運點資料
         index: 索引編號
+        truck_diff: 垃圾車目前的延遲時間（分鐘）
 
     Returns:
         str: 格式化的字串
     """
     # 狀態標示
     if point.has_passed():
-        status = "✅ 已過"
+        status = f"✅ {point.arrival}"
     elif point.arrival:
         status = f"⏰ {point.arrival}"
     else:
-        status = "⏳ 未到"
+        # 計算預計到達時間
+        if point.point_time and truck_diff != 0:
+            from datetime import datetime, timedelta
+            try:
+                scheduled_time = datetime.strptime(point.point_time, "%H:%M")
+                estimated_time = scheduled_time + timedelta(minutes=truck_diff)
+                estimated_str = estimated_time.strftime("%H:%M")
+
+                # 顯示預定時間和預計時間
+                if truck_diff > 0:
+                    status = f"⏳ 預定 {point.point_time} (預計 {estimated_str}, 晚{truck_diff}分)"
+                elif truck_diff < 0:
+                    status = f"⏳ 預定 {point.point_time} (預計 {estimated_str}, 早{abs(truck_diff)}分)"
+                else:
+                    status = f"⏳ 預定 {point.point_time}"
+            except ValueError:
+                status = f"⏳ 預定 {point.point_time}"
+        elif point.point_time:
+            status = f"⏳ 預定 {point.point_time}"
+        else:
+            status = "⏳ 未到"
 
     return f"  {index:2d}. [{status}] {point.point_name}"
 
@@ -45,6 +66,15 @@ def display_truck_info(truck: TruckLine, next_points: int = 10) -> None:
     print(f"   車號: {truck.car_no}")
     print(f"   目前位置: {truck.location or '未知'}")
     print(f"   目前停靠點序號: {truck.arrival_rank}/{len(truck.points)}")
+
+    # 顯示延遲狀態
+    if truck.diff > 0:
+        print(f"   ⚠️  延遲狀態: 晚 {truck.diff} 分鐘")
+    elif truck.diff < 0:
+        print(f"   ✅ 提早狀態: 早 {abs(truck.diff)} 分鐘")
+    else:
+        print(f"   ✅ 準時運行")
+
     print(f"{'='*80}")
 
     # 取得未經過的清運點
@@ -59,7 +89,7 @@ def display_truck_info(truck: TruckLine, next_points: int = 10) -> None:
 
     print(f"\n📍 接下來 {len(points_to_show)} 個清運點:")
     for i, point in enumerate(points_to_show, 1):
-        print(format_point_info(point, i))
+        print(format_point_info(point, i, truck.diff))
 
     # 如果還有更多點
     remaining = len(upcoming_points) - len(points_to_show)

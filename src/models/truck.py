@@ -84,8 +84,8 @@ class TruckLine:
         Returns:
             List[Point]: 未經過的清運點列表
         """
-        # 篩選出尚未經過的清運點
-        upcoming = [p for p in self.points if not p.has_passed()]
+        # 篩選出尚未經過的清運點（point_rank 大於目前 arrival_rank）
+        upcoming = [p for p in self.points if p.point_rank > self.arrival_rank]
 
         # 依照 point_rank 排序
         upcoming.sort(key=lambda p: p.point_rank)
