@@ -64,38 +64,6 @@ jobs:
       run: |
         pytest tests/ -v --cov=src --cov=cli --cov=app --cov-report=xml --cov-report=term-missing --cov-report=html
 
-    - name: Upload coverage to Codecov
-      if: ${{ secrets.CODECOV_TOKEN != '' }}
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-
-    - name: SonarQube Scan
-      if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
-      uses: SonarSource/sonarqube-scan-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      with:
-        args: >
-          -Dsonar.projectKey=trash_tracking
-          -Dsonar.python.coverage.reportPaths=coverage.xml
-      continue-on-error: true
-
-    - name: SonarQube Quality Gate check
-      if: ${{ secrets.SONAR_TOKEN != '' && secrets.SONAR_HOST_URL != '' }}
-      uses: SonarSource/sonarqube-quality-gate-action@master
-      timeout-minutes: 5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      continue-on-error: true
-
     - name: Upload test results
       if: always()
       uses: actions/upload-artifact@v4
@@ -113,53 +81,10 @@ jobs:
         name: coverage-report-${{ matrix.python-version }}
         path: htmlcov/
 
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install safety bandit pip-audit
-
-    - name: Security check with bandit
-      run: |
-        bandit -r src/ -f json -o bandit-report.json
-      continue-on-error: true
-
-    - name: Check for known vulnerabilities with safety
-      run: |
-        safety check --output json > safety-report.json || true
-      continue-on-error: true
-
-    - name: Audit dependencies with pip-audit
-      run: |
-        pip-audit --desc --format json --output pip-audit-report.json
-      continue-on-error: true
-
-    - name: Upload security reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: security-reports
-        path: |
-          bandit-report.json
-          safety-report.json
-          pip-audit-report.json
-
   build-addon:
     name: Build and Push Add-on Images
     runs-on: ubuntu-latest
-    needs: [test, security]
+    needs: [test]
     # Only build on master branch or tags
     if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
     permissions:
