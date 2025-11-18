@@ -94,8 +94,8 @@ git push origin v1.0.0
 Add this repository in Home Assistant:
 
 1. **Supervisor** → **Add-on Store** → ⋮ → **Repositories**
-2. Add: `https://github.com/iml885203/trash_tracking`
-3. Find "Garbage Truck Tracking System" → Click **Install**
+2. Add: `https://github.com/iml885203/homeassistant-addons`
+3. Find "Trash Tracking" → Click **Install**
 
 ### 📖 Documentation
 - [Installation Guide](docs/ADD_ON_INSTALLATION.md)

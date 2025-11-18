@@ -40,7 +40,7 @@ Truck passing exit point → API status: idle → HA automation → 🌑 Light O
 1. **Add Add-on Repository**
    - In Home Assistant: **Supervisor** → **Add-on Store**
    - Click top-right ⋮ → **Repositories**
-   - Add: `https://github.com/iml885203/trash_tracking`
+   - Add: `https://github.com/iml885203/homeassistant-addons`
    - Click **Add**
 
 2. **Install Add-on**
