@@ -10,6 +10,3 @@ PyYAML==6.0.2
 
 # Timezone Support
 pytz==2024.1
-
-# Data Validation
-pydantic==2.9.2
