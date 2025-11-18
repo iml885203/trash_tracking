@@ -294,12 +294,13 @@ A: 查看 Add-on 的 Log 標籤，或設定 `log_level: "DEBUG"`
 
 | 文件 | 說明 |
 |------|------|
-| `PACKAGE_SUMMARY.md` | **📦 完整總結（推薦閱讀）** |
+| `trash_tracking_addon/PACKAGE_SUMMARY.md` | **📦 完整總結（推薦閱讀）** |
 | `docs/ADD_ON_INSTALLATION.md` | **🔧 安裝與發布指南** |
 | `trash_tracking_addon/DOCS.md` | **📖 用戶使用文檔** |
 | `trash_tracking_addon/README.md` | 主要說明 |
 | `trash_tracking_addon/CHANGELOG.md` | 版本記錄 |
 | `trash_tracking_addon/ICON_README.md` | 圖示指南 |
+| `docs/CI_CD_SETUP.md` | CI/CD 設定指南 |
 
 ---
 
