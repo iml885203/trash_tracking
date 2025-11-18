@@ -118,7 +118,7 @@ class TestNTPCApiIntegration:
         with pytest.raises(NTPCApiError) as exc_info:
             client.get_around_points(25.0199, 121.4705)
 
-        assert "重試" in str(exc_info.value)
+        assert "retries" in str(exc_info.value)
         print(f"\nRetry mechanism working: {exc_info.value}")
 
     def test_concurrent_requests(self, client):
