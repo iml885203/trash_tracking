@@ -23,8 +23,8 @@ types-requests==2.31.0.20240125
 
 # 安全性檢查
 bandit==1.7.6
-safety==3.0.1
-pip-audit==2.7.0
+safety==3.2.8
+pip-audit==2.7.3
 
 # 文件生成
 mkdocs==1.5.3
