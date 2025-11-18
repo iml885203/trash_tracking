@@ -3,6 +3,8 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ master, develop ]
+    tags:
+      - 'v*'
   pull_request:
     branches: [ master, develop ]
 
@@ -19,7 +21,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # 完整歷史記錄供 SonarQube 分析
+        fetch-depth: 0
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
@@ -42,9 +44,7 @@ jobs:
 
     - name: Lint with flake8
       run: |
-        # 停止建構如果有 Python 語法錯誤或未定義的名稱
         flake8 src tests cli.py app.py --count --select=E9,F63,F7,F82 --show-source --statistics
-        # 警告但不停止建構的其他問題
         flake8 src tests cli.py app.py --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
     - name: Check code formatting with black
@@ -58,7 +58,7 @@ jobs:
     - name: Type check with mypy
       run: |
         mypy src --ignore-missing-imports --no-strict-optional
-      continue-on-error: true  # 目前不強制要求通過
+      continue-on-error: true
 
     - name: Run tests with pytest
       run: |
@@ -90,11 +90,11 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      continue-on-error: true  # 初期不強制要求通過
+      continue-on-error: true
 
     - name: Upload test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-${{ matrix.python-version }}
         path: |
@@ -104,7 +104,7 @@ jobs:
 
     - name: Upload coverage reports
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report-${{ matrix.python-version }}
         path: htmlcov/
@@ -144,7 +144,7 @@ jobs:
 
     - name: Upload security reports
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: security-reports
         path: |
@@ -152,28 +152,90 @@ jobs:
           safety-report.json
           pip-audit-report.json
 
-  docker:
-    name: Docker Build Test
+  build-addon:
+    name: Build and Push Add-on Images
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, security]
+    # Only build on master branch or tags
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Get version from tag or commit
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building version: ${VERSION}"
 
-    - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        tags: trash_tracking:test
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Test Docker image
-      run: |
-        docker run --rm trash_tracking:test python --version
-        docker run --rm trash_tracking:test pytest --version
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push multi-arch images
+        run: |
+          ARCHS=("amd64" "aarch64" "armv7" "armhf" "i386")
+          BASE_IMAGES=(
+            "amd64=ghcr.io/home-assistant/amd64-base-python:3.11-alpine3.19"
+            "aarch64=ghcr.io/home-assistant/aarch64-base-python:3.11-alpine3.19"
+            "armv7=ghcr.io/home-assistant/armv7-base-python:3.11-alpine3.19"
+            "armhf=ghcr.io/home-assistant/armhf-base-python:3.11-alpine3.19"
+            "i386=ghcr.io/home-assistant/i386-base-python:3.11-alpine3.19"
+          )
+          PLATFORMS=(
+            "amd64=linux/amd64"
+            "aarch64=linux/arm64"
+            "armv7=linux/arm/v7"
+            "armhf=linux/arm/v6"
+            "i386=linux/386"
+          )
+
+          for arch in "${ARCHS[@]}"; do
+            echo "Building for ${arch}..."
+            BASE_IMAGE=$(echo "${BASE_IMAGES[@]}" | grep -o "${arch}=[^ ]*" | cut -d= -f2)
+            PLATFORM=$(echo "${PLATFORMS[@]}" | grep -o "${arch}=[^ ]*" | cut -d= -f2)
+
+            REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            docker buildx build \
+              --platform ${PLATFORM} \
+              --build-arg BUILD_FROM=${BASE_IMAGE} \
+              --tag ghcr.io/${REPO_OWNER}/${arch}-trash-tracking:${{ steps.version.outputs.version }} \
+              --tag ghcr.io/${REPO_OWNER}/${arch}-trash-tracking:latest \
+              --file Dockerfile \
+              --push \
+              .
+
+            echo "✓ Built and pushed ${arch}"
+          done
+
+      - name: Build summary
+        run: |
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Images built:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/amd64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/aarch64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/armv7-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/armhf-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/i386-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
