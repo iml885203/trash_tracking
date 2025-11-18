@@ -1,0 +1,49 @@
+configuration:
+  location:
+    name: Location
+    description: Your home location coordinates
+  lat:
+    name: Latitude
+    description: Home latitude coordinate
+  lng:
+    name: Longitude
+    description: Home longitude coordinate
+  tracking:
+    name: Tracking Settings
+    description: Configure garbage truck tracking behavior
+  target_lines:
+    name: Target Routes
+    description: List of route names to track (leave empty to track all routes)
+  enter_point:
+    name: Entry Point
+    description: The cleanup point name where tracking starts (must match API data exactly)
+  exit_point:
+    name: Exit Point
+    description: The cleanup point name where tracking ends (must be after entry point in route)
+  trigger_mode:
+    name: Trigger Mode
+    description: When to trigger the notification
+  approaching_threshold:
+    name: Approaching Threshold
+    description: Number of stops ahead to trigger notification (only for 'arriving' mode, 0-10)
+  system:
+    name: System Settings
+    description: System configuration options
+  log_level:
+    name: Log Level
+    description: Logging verbosity level
+  api:
+    name: API Settings
+    description: API client configuration
+  ntpc:
+    name: NTPC API
+    description: New Taipei City API settings
+  timeout:
+    name: Timeout
+    description: API request timeout in seconds (5-30)
+  retry_count:
+    name: Retry Count
+    description: Number of retry attempts (1-10)
+  retry_delay:
+    name: Retry Delay
+    description: Delay between retries in seconds (1-10)
