@@ -185,7 +185,7 @@ class TestPointMatcher:
 
         assert result.should_trigger is True
         assert result.new_state == "nearby"
-        assert "即將到達" in result.reason
+        assert "approaching" in result.reason
         assert result.truck_line == truck
         assert result.enter_point.point_name == "Minsheng Rd. Sec. 2, No. 80"
         assert result.exit_point.point_name == "Chenggong Rd. No. 23"
@@ -271,7 +271,7 @@ class TestPointMatcher:
 
         assert result.should_trigger is True
         assert result.new_state == "idle"
-        assert "已經過離開清運點" in result.reason
+        assert "passed exit point" in result.reason
         assert result.exit_point.has_passed() is True
 
     def test_not_trigger_exit_before_passed(self, matcher_arriving, create_truck):

@@ -61,7 +61,7 @@ class TestFormatPointInfo:
         assert "⏳" in result
         assert "14:00" in result
         assert "14:05" in result
-        assert "晚5分" in result
+        assert "5min late" in result
         assert "Wenhua Rd. Sec. 1, No. 100" in result
 
     def test_format_upcoming_point_early(self):
@@ -87,7 +87,7 @@ class TestFormatPointInfo:
         assert "⏳" in result
         assert "14:00" in result
         assert "13:57" in result
-        assert "早3分" in result
+        assert "3min early" in result
 
     def test_format_upcoming_point_no_delay(self):
         point = Point(
@@ -134,7 +134,7 @@ class TestFormatPointInfo:
         result = format_point_info(point, 1, 0)
 
         assert "⏳" in result
-        assert "未到" in result
+        assert "Not arrived" in result
         assert "Wenhua Rd. Sec. 1, No. 100" in result
 
 
@@ -187,10 +187,10 @@ class TestDisplayTruckInfo:
         assert "KES-6950" in output
         assert "New Taipei City Banqiao District Wenhua Rd. Sec. 1, No. 100" in output
         assert "5/15" in output
-        assert "提早狀態" in output
-        assert "早 2 分鐘" in output
-        assert "接下來" in output
-        assert "5 個清運點" in output
+        assert "Early Status" in output
+        assert "2 minutes early" in output
+        assert "Next" in output
+        assert "5 collection points" in output
 
     def test_display_truck_info_all_completed(self, capsys):
         points = [
@@ -232,7 +232,7 @@ class TestDisplayTruckInfo:
         captured = capsys.readouterr()
         output = captured.out
 
-        assert "所有清運點都已完成" in output
+        assert "All collection points completed" in output
 
 
 class TestMainCLI:

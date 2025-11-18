@@ -102,7 +102,7 @@ class TestPoint:
 
         assert "Wenhua Rd. Sec. 1, No. 100" in point_str
         assert "5" in point_str
-        assert "未到達" in point_str
+        assert "Not arrived" in point_str
 
 
 class TestTruckLine:

@@ -139,7 +139,7 @@ class TestGetStatus(TestFlaskRoutes):
         assert response.status_code == 500
         data = response.get_json()
         assert "error" in data
-        assert data["error"] == "系統尚未初始化"
+        assert data["error"] == "System not initialized"
 
     def test_get_status_exception(self, client, mock_tracker):
         mock_tracker.get_current_status.side_effect = Exception("Unexpected error")
@@ -148,7 +148,7 @@ class TestGetStatus(TestFlaskRoutes):
 
         assert response.status_code == 500
         data = response.get_json()
-        assert data["error"] == "內部伺服器錯誤"
+        assert data["error"] == "Internal server error"
         assert "detail" in data
 
 
@@ -162,7 +162,7 @@ class TestResetTracker(TestFlaskRoutes):
 
         assert response.status_code == 200
         data = response.get_json()
-        assert data["message"] == "追蹤器已重置"
+        assert data["message"] == "Tracker reset"
         assert "timestamp" in data
         mock_tracker.reset.assert_called_once()
 
@@ -175,7 +175,7 @@ class TestResetTracker(TestFlaskRoutes):
 
         assert response.status_code == 500
         data = response.get_json()
-        assert data["error"] == "追蹤器尚未初始化"
+        assert data["error"] == "Tracker not initialized"
 
     def test_reset_exception(self, client, mock_tracker):
         mock_tracker.reset.side_effect = Exception("Reset failed")
@@ -184,7 +184,7 @@ class TestResetTracker(TestFlaskRoutes):
 
         assert response.status_code == 500
         data = response.get_json()
-        assert data["error"] == "重置失敗"
+        assert data["error"] == "Reset failed"
         assert "detail" in data
 
 
@@ -196,7 +196,7 @@ class TestErrorHandlers(TestFlaskRoutes):
 
         assert response.status_code == 404
         data = response.get_json()
-        assert data["error"] == "找不到請求的資源"
+        assert data["error"] == "Resource not found"
         assert data["path"] == "/api/nonexistent"
 
     def test_method_not_allowed(self, client):

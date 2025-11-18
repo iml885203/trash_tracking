@@ -58,7 +58,7 @@ class TestStateManager:
         assert state_manager.current_truck is None
         assert state_manager.enter_point is None
         assert state_manager.exit_point is None
-        assert state_manager.reason == "系統初始化"
+        assert state_manager.reason == "System initialized"
 
     def test_is_idle(self, state_manager):
         assert state_manager.is_idle() is True
@@ -163,7 +163,7 @@ class TestStateManager:
         assert state_manager.current_truck is None
         assert state_manager.enter_point is None
         assert state_manager.exit_point is None
-        assert state_manager.reason == "手動重置"
+        assert state_manager.reason == "Manual reset"
         assert state_manager.last_update is not None
 
     def test_str_representation(self, state_manager, sample_truck):
