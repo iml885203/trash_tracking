@@ -183,10 +183,9 @@ jobs:
           echo "Version: ${VERSION}"
 
       - name: Trigger addon repository update
-        continue-on-error: true
         uses: peter-evans/repository-dispatch@v3
         with:
-          token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
           repository: ${{ github.repository_owner }}/homeassistant-addons
           event-type: version-update
           client-payload: '{"version": "${{ steps.version.outputs.version }}", "addon": "trash-tracking"}'
