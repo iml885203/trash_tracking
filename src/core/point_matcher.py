@@ -1,4 +1,4 @@
-"""清運點匹配器"""
+"""Collection Point Matcher"""
 
 from typing import Optional, Dict, Any
 from src.models.truck import TruckLine
@@ -7,7 +7,7 @@ from src.utils.logger import logger
 
 
 class MatchResult:
-    """匹配結果"""
+    """Match result"""
 
     def __init__(
         self,
@@ -27,7 +27,7 @@ class MatchResult:
 
 
 class PointMatcher:
-    """清運點匹配器"""
+    """Collection point matcher"""
 
     def __init__(
         self,
@@ -37,13 +37,13 @@ class PointMatcher:
         approaching_threshold: int = 2
     ):
         """
-        初始化清運點匹配器
+        Initialize collection point matcher
 
         Args:
-            enter_point_name: 進入清運點名稱
-            exit_point_name: 離開清運點名稱
-            trigger_mode: 觸發模式 ('arriving' 或 'arrived')
-            approaching_threshold: 提前通知停靠點數
+            enter_point_name: Enter point name
+            exit_point_name: Exit point name
+            trigger_mode: Trigger mode ('arriving' or 'arrived')
+            approaching_threshold: Number of stops ahead for early notification
         """
         self.enter_point_name = enter_point_name
         self.exit_point_name = exit_point_name
@@ -51,58 +51,54 @@ class PointMatcher:
         self.approaching_threshold = approaching_threshold
 
         logger.info(
-            f"PointMatcher 初始化: "
-            f"進入點={enter_point_name}, "
-            f"離開點={exit_point_name}, "
-            f"模式={trigger_mode}, "
-            f"提前={approaching_threshold}個停靠點"
+            f"PointMatcher initialized: "
+            f"enter_point={enter_point_name}, "
+            f"exit_point={exit_point_name}, "
+            f"mode={trigger_mode}, "
+            f"threshold={approaching_threshold} stops ahead"
         )
 
     def check_line(self, truck_line: TruckLine) -> MatchResult:
         """
-        檢查路線是否觸發狀態變更
+        Check if route triggers state change
 
         Args:
-            truck_line: 垃圾車路線資料
+            truck_line: Truck route data
 
         Returns:
-            MatchResult: 匹配結果
+            MatchResult: Match result
         """
-        # 找到進入點和離開點
         enter_point = truck_line.find_point(self.enter_point_name)
         exit_point = truck_line.find_point(self.exit_point_name)
 
-        # 如果找不到清運點，記錄警告並返回
         if not enter_point:
             logger.debug(
-                f"路線 {truck_line.line_name} 中找不到進入清運點: "
+                f"Enter point not found in route {truck_line.line_name}: "
                 f"{self.enter_point_name}"
             )
             return MatchResult(should_trigger=False)
 
         if not exit_point:
             logger.debug(
-                f"路線 {truck_line.line_name} 中找不到離開清運點: "
+                f"Exit point not found in route {truck_line.line_name}: "
                 f"{self.exit_point_name}"
             )
             return MatchResult(should_trigger=False)
 
-        # 驗證順序（離開點必須在進入點之後）
         if exit_point.point_rank <= enter_point.point_rank:
             logger.warning(
-                f"路線 {truck_line.line_name} 的清運點順序錯誤: "
-                f"離開點 ({exit_point.point_name}, rank={exit_point.point_rank}) "
-                f"必須在進入點 ({enter_point.point_name}, rank={enter_point.point_rank}) 之後"
+                f"Invalid point order in route {truck_line.line_name}: "
+                f"exit point ({exit_point.point_name}, rank={exit_point.point_rank}) "
+                f"must come after enter point ({enter_point.point_name}, rank={enter_point.point_rank})"
             )
             return MatchResult(should_trigger=False)
 
-        # 檢查是否應該觸發「進入」狀態
         if self._should_trigger_enter(truck_line, enter_point):
-            reason = f"垃圾車即將到達進入清運點: {self.enter_point_name}"
+            reason = f"Truck approaching enter point: {self.enter_point_name}"
             logger.info(
-                f"✅ 觸發進入狀態: {truck_line.line_name} - "
-                f"目前位置 rank={truck_line.arrival_rank}, "
-                f"進入點 rank={enter_point.point_rank}"
+                f"✅ Trigger enter state: {truck_line.line_name} - "
+                f"current rank={truck_line.arrival_rank}, "
+                f"enter point rank={enter_point.point_rank}"
             )
             return MatchResult(
                 should_trigger=True,
@@ -113,12 +109,11 @@ class PointMatcher:
                 exit_point=exit_point
             )
 
-        # 檢查是否應該觸發「離開」狀態
         if self._should_trigger_exit(truck_line, exit_point):
-            reason = f"垃圾車已經過離開清運點: {self.exit_point_name}"
+            reason = f"Truck has passed exit point: {self.exit_point_name}"
             logger.info(
-                f"✅ 觸發離開狀態: {truck_line.line_name} - "
-                f"離開點 arrival={exit_point.arrival}"
+                f"✅ Trigger exit state: {truck_line.line_name} - "
+                f"exit point arrival={exit_point.arrival}"
             )
             return MatchResult(
                 should_trigger=True,
@@ -129,7 +124,6 @@ class PointMatcher:
                 exit_point=exit_point
             )
 
-        # 沒有觸發任何狀態變更
         return MatchResult(should_trigger=False)
 
     def _should_trigger_enter(
@@ -138,30 +132,26 @@ class PointMatcher:
         enter_point: Point
     ) -> bool:
         """
-        判斷是否應該觸發進入狀態
+        Determine if enter state should be triggered
 
         Args:
-            truck_line: 垃圾車路線
-            enter_point: 進入清運點
+            truck_line: Truck route
+            enter_point: Enter point
 
         Returns:
-            bool: True 表示應該觸發
+            bool: True if should trigger
         """
         current_rank = truck_line.arrival_rank
         enter_rank = enter_point.point_rank
 
         if self.trigger_mode == 'arriving':
-            # 模式：即將到達
-            # 計算距離進入點的停靠點數
             distance = enter_rank - current_rank
 
-            # 距離在 0 到 threshold 之間，且尚未到達
             if 0 <= distance <= self.approaching_threshold:
                 if not enter_point.has_passed():
                     return True
 
         else:  # arrived
-            # 模式：已經到達
             if enter_point.has_passed():
                 return True
 
@@ -173,23 +163,22 @@ class PointMatcher:
         exit_point: Point
     ) -> bool:
         """
-        判斷是否應該觸發離開狀態
+        Determine if exit state should be triggered
 
         Args:
-            truck_line: 垃圾車路線
-            exit_point: 離開清運點
+            truck_line: Truck route
+            exit_point: Exit point
 
         Returns:
-            bool: True 表示應該觸發
+            bool: True if should trigger
         """
-        # 垃圾車已經經過離開點
         return exit_point.has_passed()
 
     def __str__(self) -> str:
-        """返回匹配器的字串表示"""
+        """Return string representation of matcher"""
         return (
             f"PointMatcher("
-            f"進入={self.enter_point_name}, "
-            f"離開={self.exit_point_name}, "
-            f"模式={self.trigger_mode})"
+            f"enter={self.enter_point_name}, "
+            f"exit={self.exit_point_name}, "
+            f"mode={self.trigger_mode})"
         )

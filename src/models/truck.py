@@ -1,4 +1,4 @@
-"""垃圾車資料模型"""
+"""Garbage Truck Data Model"""
 
 from dataclasses import dataclass
 from typing import List, Optional
@@ -7,7 +7,7 @@ from src.models.point import Point
 
 @dataclass
 class TruckLine:
-    """垃圾車路線資料模型"""
+    """Garbage truck route data model"""
 
     line_id: str
     line_name: str
@@ -24,15 +24,14 @@ class TruckLine:
     @classmethod
     def from_dict(cls, data: dict) -> 'TruckLine':
         """
-        從 API 回傳的字典建立 TruckLine 物件
+        Create TruckLine object from API response dictionary
 
         Args:
-            data: API 回傳的路線資料
+            data: Route data from API
 
         Returns:
-            TruckLine: 垃圾車路線物件
+            TruckLine: Truck route object
         """
-        # 解析所有清運點
         points_data = data.get('Point', [])
         points = [Point.from_dict(p) for p in points_data]
 
@@ -52,13 +51,13 @@ class TruckLine:
 
     def find_point(self, point_name: str) -> Optional[Point]:
         """
-        根據名稱尋找清運點
+        Find collection point by name
 
         Args:
-            point_name: 清運點名稱
+            point_name: Collection point name
 
         Returns:
-            Point: 找到的清運點，若不存在則返回 None
+            Point: Found collection point, None if not exists
         """
         for point in self.points:
             if point.point_name == point_name:
@@ -67,10 +66,10 @@ class TruckLine:
 
     def get_current_point(self) -> Optional[Point]:
         """
-        取得目前垃圾車所在的清運點
+        Get current collection point where truck is located
 
         Returns:
-            Point: 目前清運點，若找不到則返回 None
+            Point: Current collection point, None if not found
         """
         for point in self.points:
             if point.point_rank == self.arrival_rank:
@@ -79,30 +78,26 @@ class TruckLine:
 
     def get_upcoming_points(self) -> List[Point]:
         """
-        取得尚未經過的清運點（依序排列）
+        Get collection points not yet passed (in order)
 
         Returns:
-            List[Point]: 未經過的清運點列表
+            List[Point]: List of upcoming collection points
         """
-        # 篩選出尚未經過的清運點（point_rank 大於目前 arrival_rank）
         upcoming = [p for p in self.points if p.point_rank > self.arrival_rank]
-
-        # 依照 point_rank 排序
         upcoming.sort(key=lambda p: p.point_rank)
-
         return upcoming
 
     def to_dict(self, enter_point: Optional[Point] = None,
                 exit_point: Optional[Point] = None) -> dict:
         """
-        轉換為字典格式（供 API 回傳）
+        Convert to dictionary format (for API response)
 
         Args:
-            enter_point: 進入清運點資料
-            exit_point: 離開清運點資料
+            enter_point: Enter point data
+            exit_point: Exit point data
 
         Returns:
-            dict: 垃圾車資料字典
+            dict: Truck data dictionary
         """
         current_point = self.get_current_point()
 
@@ -119,14 +114,12 @@ class TruckLine:
             'arrival_diff': self.diff
         }
 
-        # 加入進入清運點資訊
         if enter_point:
             result['enter_point'] = enter_point.to_dict()
             result['enter_point']['distance_to_current'] = (
                 enter_point.point_rank - self.arrival_rank
             )
 
-        # 加入離開清運點資訊
         if exit_point:
             result['exit_point'] = exit_point.to_dict()
             result['exit_point']['distance_to_current'] = (
@@ -136,10 +129,10 @@ class TruckLine:
         return result
 
     def __str__(self) -> str:
-        """返回垃圾車的字串表示"""
+        """Return string representation of truck"""
         current = self.get_current_point()
-        current_name = current.point_name if current else "未知"
+        current_name = current.point_name if current else "Unknown"
         return (
             f"{self.line_name} ({self.car_no}) - "
-            f"目前位置: {current_name} ({self.arrival_rank}/{len(self.points)})"
+            f"Current location: {current_name} ({self.arrival_rank}/{len(self.points)})"
         )

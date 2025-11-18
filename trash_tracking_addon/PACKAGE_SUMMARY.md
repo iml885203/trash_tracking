@@ -1,76 +1,76 @@
-# Home Assistant Add-on 打包完成總結
+# Home Assistant Add-on Package Summary
 
-## ✅ 完成項目
+## Completed Items
 
-### 1. Add-on 核心檔案
+### 1. Add-on Core Files
 
-| 檔案 | 說明 | 狀態 |
-|------|------|------|
-| `config.yaml` | Add-on 配置與 schema 定義 | ✅ |
-| `Dockerfile` | Multi-arch 容器建置 | ✅ |
-| `build.yaml` | 多架構建置配置 | ✅ |
-| `run.sh` | Bashio 啟動腳本 | ✅ |
-| `icon.png` | 256x256 圖示（暫時版本） | ✅ |
-| `logo.png` | 256x256 Logo（暫時版本） | ✅ |
+| File | Description | Status |
+|------|-------------|--------|
+| `config.yaml` | Add-on configuration and schema definition | ✅ |
+| `Dockerfile` | Multi-arch container build | ✅ |
+| `build.yaml` | Multi-architecture build configuration | ✅ |
+| `run.sh` | Bashio startup script | ✅ |
+| `icon.png` | 256x256 icon (temporary version) | ✅ |
+| `logo.png` | 256x256 logo (temporary version) | ✅ |
 
-### 2. 文檔檔案
+### 2. Documentation Files
 
-| 檔案 | 說明 | 狀態 |
-|------|------|------|
-| `README.md` | Add-on 主要說明文件 | ✅ |
-| `DOCS.md` | 詳細使用指南 | ✅ |
-| `CHANGELOG.md` | 版本更新記錄 | ✅ |
-| `ICON_README.md` | 圖示製作指南 | ✅ |
-| `PACKAGE_SUMMARY.md` | 此總結文件 | ✅ |
+| File | Description | Status |
+|------|-------------|--------|
+| `README.md` | Add-on main documentation | ✅ |
+| `DOCS.md` | Detailed user guide | ✅ |
+| `CHANGELOG.md` | Version changelog | ✅ |
+| `ICON_README.md` | Icon creation guide | ✅ |
+| `PACKAGE_SUMMARY.md` | This summary document | ✅ |
 
-### 3. 多語言支援
+### 3. Multi-language Support
 
-| 檔案 | 說明 | 狀態 |
-|------|------|------|
-| `translations/en.yaml` | 英文翻譯 | ✅ |
-| `translations/zh-Hant.yaml` | 繁體中文翻譯 | ✅ |
+| File | Description | Status |
+|------|-------------|--------|
+| `translations/en.yaml` | English translation | ✅ |
+| `translations/zh-Hant.yaml` | Traditional Chinese translation | ✅ |
 
-### 4. Repository 檔案
+### 4. Repository Files
 
-| 檔案 | 說明 | 狀態 |
-|------|------|------|
-| `repository.json` | Repository 元資料 | ✅ |
-| `.dockerignore` | Docker 建置忽略檔案 | ✅ |
-| `generate_icon.py` | 圖示產生腳本 | ✅ |
+| File | Description | Status |
+|------|-------------|--------|
+| `repository.json` | Repository metadata | ✅ |
+| `.dockerignore` | Docker build ignore file | ✅ |
+| `generate_icon.py` | Icon generation script | ✅ |
 
-### 5. 專案文檔（docs/）
+### 5. Project Documentation (docs/)
 
-| 檔案 | 說明 | 狀態 |
-|------|------|------|
-| `docs/ADD_ON_INSTALLATION.md` | 完整安裝與發布指南 | ✅ |
-| `docs/HOME_ASSISTANT_DEPLOYMENT.md` | HA 部署指南 | ✅ |
-| `docs/HA_OS_DEPLOYMENT.md` | HA OS 特定部署 | ✅ |
+| File | Description | Status |
+|------|-------------|--------|
+| `docs/ADD_ON_INSTALLATION.md` | Complete installation and publishing guide | ✅ |
+| `docs/HOME_ASSISTANT_DEPLOYMENT.md` | HA deployment guide | ✅ |
+| `docs/HA_OS_DEPLOYMENT.md` | HA OS specific deployment | ✅ |
 
 ---
 
-## 📁 完整檔案結構
+## Complete File Structure
 
 ```
 trash_tracking/
-├── trash_tracking_addon/           # Add-on 主要目錄
-│   ├── config.yaml                 # Add-on 配置
-│   ├── Dockerfile                  # 容器建置檔
-│   ├── build.yaml                  # 多架構建置配置
-│   ├── run.sh                      # 啟動腳本
-│   ├── icon.png                    # Add-on 圖示
-│   ├── logo.png                    # Add-on Logo
-│   ├── README.md                   # 主要說明
-│   ├── DOCS.md                     # 詳細文檔
-│   ├── CHANGELOG.md                # 更新記錄
-│   ├── ICON_README.md              # 圖示指南
-│   ├── PACKAGE_SUMMARY.md          # 此檔案
-│   ├── repository.json             # Repository 元資料
-│   ├── .dockerignore               # Docker 忽略檔案
-│   ├── generate_icon.py            # 圖示生成腳本
-│   └── translations/               # 多語言翻譯
-│       ├── en.yaml                 # 英文
-│       └── zh-Hant.yaml            # 繁體中文
-├── src/                            # 應用程式原始碼
+├── trash_tracking_addon/           # Add-on main directory
+│   ├── config.yaml                 # Add-on configuration
+│   ├── Dockerfile                  # Container build file
+│   ├── build.yaml                  # Multi-architecture build config
+│   ├── run.sh                      # Startup script
+│   ├── icon.png                    # Add-on icon
+│   ├── logo.png                    # Add-on logo
+│   ├── README.md                   # Main documentation
+│   ├── DOCS.md                     # Detailed documentation
+│   ├── CHANGELOG.md                # Changelog
+│   ├── ICON_README.md              # Icon guide
+│   ├── PACKAGE_SUMMARY.md          # This file
+│   ├── repository.json             # Repository metadata
+│   ├── .dockerignore               # Docker ignore file
+│   ├── generate_icon.py            # Icon generation script
+│   └── translations/               # Multi-language translations
+│       ├── en.yaml                 # English
+│       └── zh-Hant.yaml            # Traditional Chinese
+├── src/                            # Application source code
 │   ├── api/
 │   │   ├── __init__.py
 │   │   ├── client.py
@@ -85,41 +85,40 @@ trash_tracking/
 │       ├── __init__.py
 │       ├── point.py
 │       └── truck.py
-├── app.py                          # Flask 應用程式
-├── cli.py                          # CLI 工具
-├── requirements.txt                # Python 依賴
-├── requirements-dev.txt            # 開發依賴
-├── config.example.yaml             # 配置範例
-├── docs/                           # 文檔目錄
+├── app.py                          # Flask application
+├── cli.py                          # CLI tool
+├── requirements.txt                # Python dependencies
+├── requirements-dev.txt            # Development dependencies
+├── config.example.yaml             # Configuration example
+├── docs/                           # Documentation directory
 │   ├── ADD_ON_INSTALLATION.md
 │   ├── HOME_ASSISTANT_DEPLOYMENT.md
 │   └── HA_OS_DEPLOYMENT.md
-└── README.md                       # 專案 README
-
+└── README.md                       # Project README
 ```
 
 ---
 
-## 🎯 Add-on 功能特色
+## Add-on Features
 
-### 配置選項
+### Configuration Options
 
-#### 必填項目
-- `location.lat`: 家中緯度
-- `location.lng`: 家中經度
-- `tracking.enter_point`: 進入清運點名稱
-- `tracking.exit_point`: 離開清運點名稱
+#### Required Settings
+- `location.lat`: Home latitude
+- `location.lng`: Home longitude
+- `tracking.enter_point`: Entry collection point name
+- `tracking.exit_point`: Exit collection point name
 
-#### 可選項目
-- `tracking.target_lines`: 指定追蹤路線（空 = 全部）
-- `tracking.trigger_mode`: `arriving`（提前通知）或 `arrived`（實際到達）
-- `tracking.approaching_threshold`: 提前通知停靠點數（0-10）
+#### Optional Settings
+- `tracking.target_lines`: Specify tracking routes (empty = all)
+- `tracking.trigger_mode`: `arriving` (advance notification) or `arrived` (actual arrival)
+- `tracking.approaching_threshold`: Number of stops ahead to notify (0-10)
 - `system.log_level`: DEBUG/INFO/WARNING/ERROR
-- `api.ntpc.timeout`: API 逾時時間
-- `api.ntpc.retry_count`: 重試次數
-- `api.ntpc.retry_delay`: 重試延遲
+- `api.ntpc.timeout`: API timeout duration
+- `api.ntpc.retry_count`: Number of retries
+- `api.ntpc.retry_delay`: Retry delay
 
-### 支援架構
+### Supported Architectures
 
 ✅ aarch64 (ARM 64-bit)
 ✅ amd64 (x86 64-bit)
@@ -127,28 +126,28 @@ trash_tracking/
 ✅ armv7 (ARM v7)
 ✅ i386 (x86 32-bit)
 
-### API 端點
+### API Endpoints
 
-| 端點 | 方法 | 說明 |
-|------|------|------|
-| `/health` | GET | 健康檢查 |
-| `/api/trash/status` | GET | 取得垃圾車狀態 |
-| `/api/reset` | POST | 重置追蹤器（測試用） |
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/api/trash/status` | GET | Get garbage truck status |
+| `/api/reset` | POST | Reset tracker (testing) |
 
 ---
 
-## 📋 下一步：發布到 GitHub
+## Next Steps: Publishing to GitHub
 
-### 1. 提交 Add-on 到 Git
+### 1. Commit Add-on to Git
 
 ```bash
 cd /Users/logan/dev/logan/trash_tracking
 
-# 加入所有 Add-on 檔案
+# Add all Add-on files
 git add trash_tracking_addon/
 git add docs/ADD_ON_INSTALLATION.md
 
-# 提交
+# Commit
 git commit -m "feat: add Home Assistant Add-on package
 
 - Complete add-on structure with config.yaml, Dockerfile, build.yaml
@@ -161,34 +160,34 @@ git commit -m "feat: add Home Assistant Add-on package
 - Installation and publishing guide
 "
 
-# 推送到 GitHub
+# Push to GitHub
 git push origin master
 ```
 
-### 2. 建立版本標籤
+### 2. Create Version Tag
 
 ```bash
-# 建立 v1.0.0 標籤
+# Create v1.0.0 tag
 git tag -a v1.0.0 -m "Release version 1.0.0 - Initial Home Assistant Add-on"
 
-# 推送標籤
+# Push tag
 git push origin v1.0.0
 ```
 
-### 3. 在 GitHub 建立 Release
+### 3. Create GitHub Release
 
-1. 前往：`https://github.com/iml885203/trash_tracking/releases`
-2. 點擊 **"Create a new release"**
-3. 選擇 tag: `v1.0.0`
+1. Go to: `https://github.com/iml885203/trash_tracking/releases`
+2. Click **"Create a new release"**
+3. Select tag: `v1.0.0`
 4. Release title: `v1.0.0 - Initial Release`
-5. Description（從 CHANGELOG.md 複製）：
+5. Description (copy from CHANGELOG.md):
 
 ```markdown
-## 🎉 Trash Tracking Home Assistant Add-on - Initial Release
+## Trash Tracking Home Assistant Add-on - Initial Release
 
 ### Features
 - ✅ Real-time New Taipei City garbage truck tracking
-- ✅ Custom entry/exit cleanup point configuration
+- ✅ Custom entry/exit collection point configuration
 - ✅ Multi-route tracking support
 - ✅ RESTful API for Home Assistant integration
 - ✅ Automatic Home Assistant integration
@@ -201,7 +200,7 @@ Add this repository to your Home Assistant:
 
 1. Go to **Supervisor** → **Add-on Store** → ⋮ → **Repositories**
 2. Add: `https://github.com/iml885203/trash_tracking`
-3. Find "垃圾車追蹤系統" (Trash Tracking) in the store
+3. Find "Trash Tracking" in the store
 4. Click **Install**
 
 ### Documentation
@@ -213,26 +212,26 @@ Add this repository to your Home Assistant:
 Full changelog: [CHANGELOG.md](trash_tracking_addon/CHANGELOG.md)
 ```
 
-6. 點擊 **"Publish release"**
+6. Click **"Publish release"**
 
-### 4. 用戶安裝方式
+### 4. User Installation Method
 
-用戶可以透過以下方式安裝：
+Users can install via:
 
 ```
-1. 在 Home Assistant 中前往 Supervisor → Add-on Store
-2. 右上角 ⋮ → Repositories
-3. 新增：https://github.com/iml885203/trash_tracking
-4. 安裝 "垃圾車追蹤系統"
+1. In Home Assistant, go to Supervisor → Add-on Store
+2. Top right ⋮ → Repositories
+3. Add: https://github.com/iml885203/trash_tracking
+4. Install "Trash Tracking"
 ```
 
 ---
 
-## 🧪 測試清單
+## Testing Checklist
 
-### 發布前測試
+### Pre-release Testing
 
-- [ ] **本地測試**
+- [ ] **Local Testing**
   ```bash
   cd trash_tracking
   docker build -f trash_tracking_addon/Dockerfile -t trash_tracking:test .
@@ -240,92 +239,92 @@ Full changelog: [CHANGELOG.md](trash_tracking_addon/CHANGELOG.md)
   curl http://localhost:5000/health
   ```
 
-- [ ] **配置驗證**
-  - [ ] 檢查 config.yaml schema 正確
-  - [ ] 驗證所有必填欄位
-  - [ ] 測試預設值
+- [ ] **Configuration Validation**
+  - [ ] Check config.yaml schema is correct
+  - [ ] Verify all required fields
+  - [ ] Test default values
 
-- [ ] **文檔檢查**
-  - [ ] README.md 清晰易懂
-  - [ ] DOCS.md 範例完整
-  - [ ] 安裝步驟正確
+- [ ] **Documentation Review**
+  - [ ] README.md is clear and easy to understand
+  - [ ] DOCS.md examples are complete
+  - [ ] Installation steps are correct
 
-- [ ] **圖示檢查**
-  - [ ] icon.png 存在且為 256x256
-  - [ ] logo.png 存在且為 256x256
-  - [ ] 檔案大小合理（< 1MB）
+- [ ] **Icon Verification**
+  - [ ] icon.png exists and is 256x256
+  - [ ] logo.png exists and is 256x256
+  - [ ] File sizes are reasonable (< 1MB)
 
-### Home Assistant 整合測試
+### Home Assistant Integration Testing
 
-- [ ] **Add-on 安裝**
-  - [ ] Add-on 可在 Store 中找到
-  - [ ] 安裝過程順利
-  - [ ] 配置 UI 正常顯示
+- [ ] **Add-on Installation**
+  - [ ] Add-on is findable in Store
+  - [ ] Installation process is smooth
+  - [ ] Configuration UI displays properly
 
-- [ ] **運行測試**
-  - [ ] Add-on 啟動成功
-  - [ ] Log 無錯誤訊息
-  - [ ] Health check 回應正常
+- [ ] **Runtime Testing**
+  - [ ] Add-on starts successfully
+  - [ ] Logs show no errors
+  - [ ] Health check responds normally
 
-- [ ] **API 測試**
-  - [ ] `/health` 端點正常
-  - [ ] `/api/trash/status` 回應正確
-  - [ ] Home Assistant sensor 可讀取資料
+- [ ] **API Testing**
+  - [ ] `/health` endpoint works
+  - [ ] `/api/trash/status` responds correctly
+  - [ ] Home Assistant sensor reads data
 
-- [ ] **自動化測試**
-  - [ ] Binary sensor 狀態變更正常
-  - [ ] Automation 觸發正確
-  - [ ] 通知功能運作
+- [ ] **Automation Testing**
+  - [ ] Binary sensor state changes properly
+  - [ ] Automation triggers correctly
+  - [ ] Notification functions work
 
 ---
 
-## 🔧 已知問題與注意事項
+## Known Issues and Notes
 
-### 1. 圖示為暫時版本
-- 當前使用文字 "TRUCK" 作為暫時圖示
-- 建議後續替換為專業設計的圖示
-- 參考 `ICON_README.md` 獲取設計指南
+### 1. Icons are Temporary Versions
+- Current icons use text "TRUCK" as placeholder
+- Recommended to replace with professionally designed icons later
+- Refer to `ICON_README.md` for design guidelines
 
-### 2. 只支援新北市
-- 目前僅支援新北市垃圾車追蹤
-- API 綁定新北市環保局 API
-- 其他縣市需要修改 API 端點
+### 2. New Taipei City Only
+- Currently only supports New Taipei City garbage truck tracking
+- API is bound to New Taipei City Environmental Protection Bureau API
+- Other cities require API endpoint modifications
 
-### 3. 清運點名稱必須精確
-- `enter_point` 和 `exit_point` 必須與 API 回傳完全一致
-- 建議使用 CLI 工具確認名稱：
+### 3. Collection Point Names Must Match Exactly
+- `enter_point` and `exit_point` must match API responses exactly
+- Recommended to use CLI tool to confirm names:
   ```bash
   docker exec -it addon_trash_tracking python3 cli.py --lat 25.018269 --lng 121.471703
   ```
 
-### 4. 時區固定為 Asia/Taipei
-- 時區在 run.sh 中設定為 `Asia/Taipei`
-- 適用於台灣地區
-- 若需其他時區需修改 run.sh
+### 4. Timezone Fixed to Asia/Taipei
+- Timezone is set to `Asia/Taipei` in run.sh
+- Suitable for Taiwan region
+- Other timezones require modifying run.sh
 
 ---
 
-## 📊 技術規格
+## Technical Specifications
 
-### 基礎映像檔
+### Base Image
 ```yaml
 ghcr.io/home-assistant/[arch]-base-python:3.11-alpine3.19
 ```
 
-### Python 依賴
+### Python Dependencies
 - Flask 3.0.3
 - requests 2.32.3
 - PyYAML 6.0.2
 - pytz 2024.1
 - pydantic 2.9.2
 
-### Port 配置
-- 5000/tcp: Flask API 服務
+### Port Configuration
+- 5000/tcp: Flask API service
 
-### Volume 掛載
-- `/config/trash_tracking`: 配置檔案目錄（自動建立）
+### Volume Mounts
+- `/config/trash_tracking`: Configuration file directory (auto-created)
 
-### 健康檢查
+### Health Check
 ```dockerfile
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD curl -f http://localhost:5000/health || exit 1
@@ -333,75 +332,75 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 
 ---
 
-## 🎨 未來改進方向
+## Future Improvement Directions
 
-### 短期（v1.1.0）
-- [ ] 設計專業圖示
-- [ ] 新增更多範例自動化
-- [ ] 改善錯誤訊息
-- [ ] 新增 FAQ 文檔
+### Short-term (v1.1.0)
+- [ ] Design professional icons
+- [ ] Add more automation examples
+- [ ] Improve error messages
+- [ ] Add FAQ documentation
 
-### 中期（v1.2.0）
-- [ ] 支援多個進入/離開點
-- [ ] WebSocket 即時更新
-- [ ] 地圖視覺化
-- [ ] 通知模板自訂
+### Mid-term (v1.2.0)
+- [ ] Support multiple entry/exit points
+- [ ] WebSocket real-time updates
+- [ ] Map visualization
+- [ ] Custom notification templates
 
-### 長期（v2.0.0）
-- [ ] 支援其他縣市
-- [ ] 機器學習預測到達時間
-- [ ] 移動 App 整合
-- [ ] 社區共享清運點資料
+### Long-term (v2.0.0)
+- [ ] Support other cities/counties
+- [ ] Machine learning arrival time prediction
+- [ ] Mobile app integration
+- [ ] Community-shared collection point data
 
 ---
 
-## 📞 支援與回饋
+## Support and Feedback
 
-### 文檔資源
-- **安裝指南**: `docs/ADD_ON_INSTALLATION.md`
-- **使用文檔**: `trash_tracking_addon/DOCS.md`
-- **API 參考**: `trash_tracking_addon/README.md`
+### Documentation Resources
+- **Installation Guide**: `docs/ADD_ON_INSTALLATION.md`
+- **User Documentation**: `trash_tracking_addon/DOCS.md`
+- **API Reference**: `trash_tracking_addon/README.md`
 
-### 問題回報
+### Issue Reporting
 - GitHub Issues: https://github.com/iml885203/trash_tracking/issues
-- 請提供：
-  - Home Assistant 版本
-  - Add-on 版本
-  - Log 錯誤訊息
-  - 配置資訊（去除敏感資料）
+- Please provide:
+  - Home Assistant version
+  - Add-on version
+  - Log error messages
+  - Configuration information (remove sensitive data)
 
-### 貢獻
-歡迎提交 Pull Request：
-- Bug 修復
-- 新功能
-- 文檔改進
-- 翻譯
+### Contributions
+Pull requests welcome:
+- Bug fixes
+- New features
+- Documentation improvements
+- Translations
 
 ---
 
-## ✅ 發布檢查清單
+## Release Checklist
 
-準備發布時，請確認：
+Before publishing, confirm:
 
-- [x] 所有核心檔案已建立
-- [x] 文檔完整且正確
-- [x] 圖示檔案存在
-- [x] 多語言翻譯完成
-- [ ] 本地測試通過
+- [x] All core files created
+- [x] Documentation complete and correct
+- [x] Icon files exist
+- [x] Multi-language translation complete
+- [ ] Local testing passed
 - [ ] Git commit & push
-- [ ] 建立版本標籤
-- [ ] GitHub Release 發布
-- [ ] 測試用戶安裝流程
+- [ ] Create version tag
+- [ ] GitHub Release published
+- [ ] Test user installation process
 
 ---
 
-**狀態**: 🟢 **Add-on 打包完成，可以發布！**
+**Status**: 🟢 **Add-on packaging complete, ready to publish!**
 
-**建議下一步**:
-1. 執行本地測試確認功能正常
-2. 提交到 GitHub
-3. 建立 v1.0.0 Release
-4. 在實際 Home Assistant 環境測試安裝
+**Recommended Next Steps**:
+1. Run local testing to confirm functionality
+2. Commit to GitHub
+3. Create v1.0.0 Release
+4. Test installation in actual Home Assistant environment
 
-**維護者**: Logan ([@iml885203](https://github.com/iml885203))
-**最後更新**: 2025-11-18
+**Maintainer**: Logan ([@iml885203](https://github.com/iml885203))
+**Last Updated**: 2025-11-18

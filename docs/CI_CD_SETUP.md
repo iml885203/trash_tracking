@@ -1,124 +1,124 @@
-# CI/CD 設置指南
+# CI/CD Setup Guide
 
-本文檔說明如何設置和配置專案的 CI/CD 流程，包括 GitHub Actions 和 SonarQube 整合。
+This document explains how to set up and configure the project's CI/CD process, including GitHub Actions and SonarQube integration.
 
-## 目錄
+## Table of Contents
 
-1. [GitHub Actions 設置](#github-actions-設置)
-2. [SonarQube 整合](#sonarqube-整合)
-3. [程式碼品質工具](#程式碼品質工具)
-4. [本地開發環境](#本地開發環境)
+1. [GitHub Actions Setup](#github-actions-setup)
+2. [SonarQube Integration](#sonarqube-integration)
+3. [Code Quality Tools](#code-quality-tools)
+4. [Local Development Environment](#local-development-environment)
 
 ---
 
-## GitHub Actions 設置
+## GitHub Actions Setup
 
-### 1. CI/CD Pipeline 概述
+### 1. CI/CD Pipeline Overview
 
-專案使用 GitHub Actions 進行持續整合和持續部署，每次 push 或 pull request 都會自動執行以下檢查：
+The project uses GitHub Actions for continuous integration and deployment. The following checks are automatically executed on every push or pull request:
 
-- **程式碼品質檢查**：flake8, black, isort, mypy
-- **單元測試**：pytest 測試所有模組
-- **測試覆蓋率**：生成並上傳覆蓋率報告
-- **安全掃描**：bandit, safety, pip-audit
-- **SonarQube 分析**：代碼質量和技術債務分析
-- **Docker 建置測試**：確保 Docker 映像可正常建置
+- **Code Quality Checks**: flake8, black, isort, mypy
+- **Unit Tests**: pytest for all modules
+- **Test Coverage**: Generate and upload coverage reports
+- **Security Scanning**: bandit, safety, pip-audit
+- **SonarQube Analysis**: Code quality and technical debt analysis
+- **Docker Build Test**: Ensure Docker image builds correctly
 
-### 2. 必要的 GitHub Secrets
+### 2. Required GitHub Secrets
 
-在 GitHub repository 設置中需要配置以下 secrets：
+The following secrets need to be configured in GitHub repository settings:
 
-#### Codecov (可選)
+#### Codecov (Optional)
 ```
 CODECOV_TOKEN=<your-codecov-token>
 ```
-獲取方式：
-1. 訪問 https://codecov.io
-2. 使用 GitHub 帳號登入
-3. 新增專案並獲取 token
+How to obtain:
+1. Visit https://codecov.io
+2. Sign in with GitHub account
+3. Add project and get token
 
-#### SonarQube (必需，如果使用 SonarQube)
+#### SonarQube (Required, if using SonarQube)
 ```
 SONAR_TOKEN=<your-sonar-token>
 SONAR_HOST_URL=<your-sonarqube-server-url>
 ```
 
-獲取方式：
+How to obtain:
 
-**選項 1：使用 SonarCloud (推薦用於開源專案)**
-1. 訪問 https://sonarcloud.io
-2. 使用 GitHub 帳號登入
-3. 新增組織和專案
-4. 生成 token: Account > Security > Generate Tokens
-5. 設置 secrets:
-   - `SONAR_TOKEN`: 生成的 token
+**Option 1: Use SonarCloud (Recommended for open source projects)**
+1. Visit https://sonarcloud.io
+2. Sign in with GitHub account
+3. Add organization and project
+4. Generate token: Account > Security > Generate Tokens
+5. Set secrets:
+   - `SONAR_TOKEN`: Generated token
    - `SONAR_HOST_URL`: `https://sonarcloud.io`
 
-**選項 2：自架 SonarQube Server**
-1. 部署 SonarQube Server (使用 Docker)：
+**Option 2: Self-hosted SonarQube Server**
+1. Deploy SonarQube Server (using Docker):
    ```bash
    docker run -d --name sonarqube \
      -p 9000:9000 \
      -e SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true \
      sonarqube:community
    ```
-2. 訪問 http://localhost:9000 (預設帳號：admin/admin)
-3. 建立新專案並生成 token
-4. 設置 secrets:
-   - `SONAR_TOKEN`: 生成的 token
-   - `SONAR_HOST_URL`: 你的 SonarQube Server URL
+2. Visit http://localhost:9000 (default credentials: admin/admin)
+3. Create new project and generate token
+4. Set secrets:
+   - `SONAR_TOKEN`: Generated token
+   - `SONAR_HOST_URL`: Your SonarQube Server URL
 
-### 3. Workflow 檔案結構
+### 3. Workflow File Structure
 
 ```
 .github/
 └── workflows/
-    └── ci.yml    # 主要的 CI/CD workflow
+    └── ci.yml    # Main CI/CD workflow
 ```
 
-### 4. 觸發條件
+### 4. Trigger Conditions
 
-- **Push 事件**：推送到 `master` 或 `develop` 分支
-- **Pull Request 事件**：對 `master` 或 `develop` 分支的 PR
+- **Push events**: Pushes to `master` or `develop` branch
+- **Pull Request events**: PRs targeting `master` or `develop` branch
 
-### 5. 工作流程說明
+### 5. Workflow Description
 
 #### Job 1: test
-- 執行環境：Ubuntu Latest
-- Python 版本：3.11, 3.12 (矩陣建置)
-- 步驟：
-  1. Checkout 程式碼
-  2. 設置 Python 環境
-  3. 快取依賴
-  4. 安裝依賴
-  5. Lint 檢查 (flake8)
-  6. 格式檢查 (black)
-  7. Import 排序檢查 (isort)
-  8. 型別檢查 (mypy)
-  9. 執行測試並生成覆蓋率報告
-  10. 上傳覆蓋率到 Codecov
-  11. SonarQube 掃描
-  12. 上傳測試結果
+- Execution environment: Ubuntu Latest
+- Python versions: 3.11, 3.12 (matrix build)
+- Steps:
+  1. Checkout code
+  2. Setup Python environment
+  3. Cache dependencies
+  4. Install dependencies
+  5. Lint check (flake8)
+  6. Format check (black)
+  7. Import order check (isort)
+  8. Type check (mypy)
+  9. Run tests and generate coverage report
+  10. Upload coverage to Codecov
+  11. SonarQube scan
+  12. Upload test results
 
 #### Job 2: security
-- 安全性掃描：
-  - `bandit`: Python 代碼安全漏洞掃描
-  - `safety`: 依賴套件已知漏洞檢查
-  - `pip-audit`: PyPI 套件安全審計
+- Security scanning:
+  - `bandit`: Python code security vulnerability scanning
+  - `safety`: Check for known vulnerabilities in dependencies
+  - `pip-audit`: PyPI package security audit
 
 #### Job 3: docker
-- 測試 Docker 映像建置
-- 驗證應用程式在容器中可正常運行
+- Test Docker image build
+- Verify application runs correctly in container
 
 ---
 
-## SonarQube 整合
+## SonarQube Integration
 
-### 1. 專案配置
+### 1. Project Configuration
 
-SonarQube 配置檔案位於：`sonar-project.properties`
+SonarQube configuration file: `sonar-project.properties`
 
-主要配置項：
+Main configuration items:
 ```properties
 sonar.projectKey=trash_tracking
 sonar.projectName=Trash Tracking System
@@ -131,79 +131,79 @@ sonar.python.coverage.reportPaths=coverage.xml
 sonar.python.xunit.reportPath=test-results.xml
 ```
 
-### 2. Quality Gate 設定
+### 2. Quality Gate Settings
 
-建議的 Quality Gate 標準：
-- 覆蓋率: >= 80%
-- 重複代碼: <= 3%
-- 可維護性評級: A
-- 可靠性評級: A
-- 安全性評級: A
-- 技術債務比率: <= 5%
+Recommended Quality Gate standards:
+- Coverage: >= 80%
+- Code duplication: <= 3%
+- Maintainability rating: A
+- Reliability rating: A
+- Security rating: A
+- Technical debt ratio: <= 5%
 
-### 3. 查看分析結果
+### 3. View Analysis Results
 
-1. 推送程式碼後，GitHub Actions 會自動執行 SonarQube 掃描
-2. 訪問你的 SonarQube Server/SonarCloud 查看詳細報告
-3. 在 GitHub PR 中會顯示 Quality Gate 狀態
+1. After pushing code, GitHub Actions will automatically execute SonarQube scan
+2. Visit your SonarQube Server/SonarCloud to view detailed reports
+3. Quality Gate status will be displayed in GitHub PR
 
 ---
 
-## 程式碼品質工具
+## Code Quality Tools
 
 ### 1. Flake8 (Linting)
 
-配置檔案：`.flake8`
+Configuration file: `.flake8`
 
-執行命令：
+Run command:
 ```bash
 flake8 src tests cli.py app.py
 ```
 
-主要檢查：
-- PEP 8 風格違規
-- 語法錯誤
-- 未使用的變數
-- 程式複雜度
+Main checks:
+- PEP 8 style violations
+- Syntax errors
+- Unused variables
+- Code complexity
 
-### 2. Black (格式化)
+### 2. Black (Formatting)
 
-配置檔案：`pyproject.toml` -> `[tool.black]`
+Configuration file: `pyproject.toml` -> `[tool.black]`
 
-執行命令：
+Run commands:
 ```bash
-# 檢查
+# Check
 black --check src tests cli.py app.py
 
-# 自動格式化
+# Auto-format
 black src tests cli.py app.py
 ```
 
-### 3. isort (Import 排序)
+### 3. isort (Import Ordering)
 
-配置檔案：`pyproject.toml` -> `[tool.isort]`
+Configuration file: `pyproject.toml` -> `[tool.isort]`
 
-執行命令：
+Run commands:
 ```bash
-# 檢查
+# Check
 isort --check-only src tests cli.py app.py
 
-# 自動排序
+# Auto-sort
 isort src tests cli.py app.py
 ```
 
-### 4. mypy (型別檢查)
+### 4. mypy (Type Checking)
 
-配置檔案：`pyproject.toml` -> `[tool.mypy]`
+Configuration file: `pyproject.toml` -> `[tool.mypy]`
 
-執行命令：
+Run command:
 ```bash
 mypy src --ignore-missing-imports
 ```
 
-### 5. 一鍵執行所有檢查
+### 5. Run All Checks at Once
 
-建立 `Makefile` 或使用以下腳本：
+Create `Makefile` or use the following script:
 
 ```bash
 #!/bin/bash
@@ -229,22 +229,22 @@ echo "All checks passed!"
 
 ---
 
-## 本地開發環境
+## Local Development Environment
 
-### 1. 安裝開發依賴
+### 1. Install Development Dependencies
 
 ```bash
 pip install -r requirements-dev.txt
 ```
 
-### 2. Pre-commit Hooks (建議)
+### 2. Pre-commit Hooks (Recommended)
 
-安裝 pre-commit：
+Install pre-commit:
 ```bash
 pip install pre-commit
 ```
 
-建立 `.pre-commit-config.yaml`：
+Create `.pre-commit-config.yaml`:
 ```yaml
 repos:
   - repo: https://github.com/psf/black
@@ -272,132 +272,132 @@ repos:
       - id: check-added-large-files
 ```
 
-啟用 pre-commit：
+Enable pre-commit:
 ```bash
 pre-commit install
 ```
 
-### 3. 本地測試流程
+### 3. Local Testing Workflow
 
-推送前的檢查清單：
+Pre-push checklist:
 
 ```bash
-# 1. 執行程式碼格式化
+# 1. Run code formatting
 black src tests cli.py app.py
 isort src tests cli.py app.py
 
-# 2. 執行 linting
+# 2. Run linting
 flake8 src tests cli.py app.py
 
-# 3. 執行型別檢查
+# 3. Run type checking
 mypy src --ignore-missing-imports
 
-# 4. 執行測試
+# 4. Run tests
 pytest tests/ --cov=src --cov-report=html
 
-# 5. 檢查覆蓋率報告
+# 5. Check coverage report
 open htmlcov/index.html  # macOS
-# 或
+# or
 xdg-open htmlcov/index.html  # Linux
 ```
 
-### 4. 測試覆蓋率目標
+### 4. Test Coverage Goals
 
-- **整體目標**: >= 80%
-- **關鍵模組**: >= 90%
+- **Overall target**: >= 80%
+- **Critical modules**: >= 90%
   - `src/models/`
   - `src/core/state_manager.py`
   - `src/api/routes.py`
 
 ---
 
-## 常見問題
+## Common Issues
 
-### Q1: CI 失敗：flake8 錯誤
+### Q1: CI failure: flake8 error
 
-**解決方案**：
+**Solution**:
 ```bash
-# 在本地執行並修正
+# Run locally and fix
 flake8 src tests cli.py app.py
 
-# 常見問題：
-# - E501: 行太長 (使用 black 自動格式化)
-# - F401: 未使用的 import (手動移除)
-# - E402: import 位置錯誤 (移到檔案開頭)
+# Common issues:
+# - E501: Line too long (use black to auto-format)
+# - F401: Unused import (manually remove)
+# - E402: Import not at top of file (move to file beginning)
 ```
 
-### Q2: CI 失敗：black 格式檢查
+### Q2: CI failure: black format check
 
-**解決方案**：
+**Solution**:
 ```bash
-# 自動格式化
+# Auto-format
 black src tests cli.py app.py
 
-# 提交變更
+# Commit changes
 git add .
 git commit -m "style: apply black formatting"
 ```
 
-### Q3: CI 失敗：測試覆蓋率不足
+### Q3: CI failure: insufficient test coverage
 
-**解決方案**：
+**Solution**:
 ```bash
-# 查看哪些程式碼缺少測試
+# Check which code lacks tests
 pytest tests/ --cov=src --cov-report=term-missing
 
-# 為缺少覆蓋的模組新增測試
-# 目標：達到 80% 以上覆蓋率
+# Add tests for uncovered modules
+# Goal: Achieve 80%+ coverage
 ```
 
-### Q4: SonarQube Quality Gate 失敗
+### Q4: SonarQube Quality Gate failure
 
-**可能原因**：
-- 程式碼重複率過高
-- 技術債務過多
-- 安全漏洞
-- 覆蓋率不足
+**Possible causes**:
+- High code duplication
+- Excessive technical debt
+- Security vulnerabilities
+- Insufficient coverage
 
-**解決方案**：
-1. 登入 SonarQube 查看詳細報告
-2. 根據建議修正問題
-3. 重新提交
-
----
-
-## 持續改進
-
-### 監控指標
-
-定期檢查以下指標：
-- 測試覆蓋率趨勢
-- 程式碼複雜度
-- 技術債務
-- 安全漏洞數量
-- 建置時間
-
-### 優化建議
-
-1. **減少建置時間**：
-   - 使用快取（已啟用）
-   - 並行執行測試
-   - 優化 Docker 建置
-
-2. **提升程式碼品質**：
-   - 定期重構
-   - 降低程式複雜度
-   - 增加測試覆蓋率
-
-3. **加強安全性**：
-   - 定期更新依賴套件
-   - 修復安全漏洞
-   - 使用最新的基礎映像
+**Solution**:
+1. Log in to SonarQube to view detailed report
+2. Fix issues according to recommendations
+3. Re-commit
 
 ---
 
-## 參考資源
+## Continuous Improvement
 
-- [GitHub Actions 文檔](https://docs.github.com/en/actions)
-- [SonarQube 文檔](https://docs.sonarqube.org/)
-- [pytest 文檔](https://docs.pytest.org/)
-- [Black 文檔](https://black.readthedocs.io/)
-- [Flake8 文檔](https://flake8.pycqa.org/)
+### Monitoring Metrics
+
+Regularly check the following metrics:
+- Test coverage trends
+- Code complexity
+- Technical debt
+- Number of security vulnerabilities
+- Build time
+
+### Optimization Recommendations
+
+1. **Reduce build time**:
+   - Use caching (already enabled)
+   - Run tests in parallel
+   - Optimize Docker builds
+
+2. **Improve code quality**:
+   - Regular refactoring
+   - Reduce code complexity
+   - Increase test coverage
+
+3. **Enhance security**:
+   - Regularly update dependencies
+   - Fix security vulnerabilities
+   - Use latest base images
+
+---
+
+## Reference Resources
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [SonarQube Documentation](https://docs.sonarqube.org/)
+- [pytest Documentation](https://docs.pytest.org/)
+- [Black Documentation](https://black.readthedocs.io/)
+- [Flake8 Documentation](https://flake8.pycqa.org/)

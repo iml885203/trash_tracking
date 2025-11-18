@@ -1,4 +1,4 @@
-"""清運點資料模型"""
+"""Collection Point Data Model"""
 
 from dataclasses import dataclass
 from typing import Optional
@@ -6,7 +6,7 @@ from typing import Optional
 
 @dataclass
 class Point:
-    """清運點資料模型"""
+    """Collection point data model"""
 
     source_point_id: int
     vil: str
@@ -26,13 +26,13 @@ class Point:
     @classmethod
     def from_dict(cls, data: dict) -> 'Point':
         """
-        從 API 回傳的字典建立 Point 物件
+        Create Point object from API response dictionary
 
         Args:
-            data: API 回傳的清運點資料
+            data: Collection point data from API
 
         Returns:
-            Point: 清運點物件
+            Point: Collection point object
         """
         return cls(
             source_point_id=data.get('SourcePointID'),
@@ -53,10 +53,10 @@ class Point:
 
     def to_dict(self) -> dict:
         """
-        轉換為字典格式
+        Convert to dictionary format
 
         Returns:
-            dict: 清運點資料字典
+            dict: Collection point data dictionary
         """
         return {
             'name': self.point_name,
@@ -70,23 +70,23 @@ class Point:
 
     def has_passed(self) -> bool:
         """
-        判斷垃圾車是否已經過此點
+        Check if truck has passed this point
 
         Returns:
-            bool: True 表示已經過，False 表示未到達
+            bool: True if passed, False if not arrived
         """
         return self.arrival != "" and self.arrival_diff != 65535
 
     def is_in_scope(self) -> bool:
         """
-        判斷此點是否在查詢範圍內
+        Check if this point is within query range
 
         Returns:
-            bool: True 表示在範圍內
+            bool: True if in range
         """
         return self.in_scope == "Y"
 
     def __str__(self) -> str:
-        """返回清運點的字串表示"""
-        status = "已到達" if self.has_passed() else "未到達"
-        return f"{self.point_name} (順序: {self.point_rank}, {status})"
+        """Return string representation of collection point"""
+        status = "Arrived" if self.has_passed() else "Not arrived"
+        return f"{self.point_name} (rank: {self.point_rank}, {status})"

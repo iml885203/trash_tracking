@@ -1,31 +1,31 @@
-# API 規格文件
+# API Specification
 
-## 文件說明
+## Document Description
 
-本文件描述垃圾車動態偵測系統的 API 規格，包含：
-1. 新北市垃圾車 API 的詳細規格（外部 API）
-2. 本系統提供給 Home Assistant 的 RESTful API 規格（內部 API）
+This document describes the API specifications for the Garbage Truck Dynamic Detection System, including:
+1. Detailed specifications of New Taipei City Garbage Truck API (external API)
+2. RESTful API specifications provided by this system to Home Assistant (internal API)
 
 ---
 
-## 1. 新北市垃圾車 API（外部 API）
+## 1. New Taipei City Garbage Truck API (External API)
 
-### 基本資訊
+### Basic Information
 
-- **名稱**: 新北市垃圾車即時動態查詢 API
-- **提供者**: 新北市環保局
-- **端點**: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetAroundPoints`
-- **方法**: `POST`
+- **Name**: New Taipei City Garbage Truck Real-time Status Query API
+- **Provider**: New Taipei City Environmental Protection Bureau
+- **Endpoint**: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetAroundPoints`
+- **Method**: `POST`
 - **Content-Type**: `application/x-www-form-urlencoded`
 
-### 請求參數
+### Request Parameters
 
-| 參數名稱 | 類型 | 必填 | 說明 | 範例 |
-|---------|------|------|------|------|
-| `lat` | float | 是 | 查詢位置的緯度 | 25.005193869072745 |
-| `lng` | float | 是 | 查詢位置的經度 | 121.5099557021958 |
+| Parameter | Type | Required | Description | Example |
+|-----------|------|----------|-------------|---------|
+| `lat` | float | Yes | Latitude of query location | 25.005193869072745 |
+| `lng` | float | Yes | Longitude of query location | 121.5099557021958 |
 
-### 請求範例
+### Request Examples
 
 #### cURL
 ```bash
@@ -52,43 +52,43 @@ response = requests.post(url, data=payload, headers=headers)
 data = response.json()
 ```
 
-### 回應格式
+### Response Format
 
-#### 回應結構
+#### Response Structure
 
 ```json
 {
-  "TimeStamp": "string",      // API 回應的時間戳記（格式: YYYYMMDDHHmmss）
-  "LineCount": integer,        // 附近路線的數量
-  "FixedCount": integer,       // 固定點數量
-  "Line": [                    // 路線陣列
+  "TimeStamp": "string",      // API response timestamp (format: YYYYMMDDHHmmss)
+  "LineCount": integer,        // Number of nearby routes
+  "FixedCount": integer,       // Number of fixed points
+  "Line": [                    // Route array
     {
-      "LineID": "string",           // 路線 ID
-      "LineName": "string",         // 路線名稱（例如："三區晚9"）
-      "Area": "string",             // 行政區域（例如："永和區"）
-      "ArrivalRank": integer,       // 目前在路線上的第幾個停靠點
-      "Diff": integer,              // 與預定時間的差異（分鐘，正數=延遲，負數=提早）
-      "CarNO": "string",            // 垃圾車車牌號碼
-      "Location": "string",         // 目前位置的地址描述
-      "LocationLat": float,         // 目前位置的緯度
-      "LocationLon": float,         // 目前位置的經度
-      "BarCode": "string",          // 條碼識別
-      "Point": [                    // 該路線的所有停靠點
+      "LineID": "string",           // Route ID
+      "LineName": "string",         // Route name (e.g., "District 3 Evening 9")
+      "Area": "string",             // Administrative area (e.g., "Yonghe District")
+      "ArrivalRank": integer,       // Current stop number on the route
+      "Diff": integer,              // Time difference from schedule (minutes, positive=late, negative=early)
+      "CarNO": "string",            // Garbage truck license plate
+      "Location": "string",         // Current location address description
+      "LocationLat": float,         // Current location latitude
+      "LocationLon": float,         // Current location longitude
+      "BarCode": "string",          // Barcode identification
+      "Point": [                    // All stops on this route
         {
-          "SourcePointID": integer,     // 來源停靠點 ID
-          "Vil": "string",              // 里別
-          "PointName": "string",        // 停靠點名稱（例如："水源街36巷口"）
-          "Lon": float,                 // 停靠點經度
-          "Lat": float,                 // 停靠點緯度
-          "PointID": integer,           // 停靠點 ID
-          "PointRank": integer,         // 該停靠點在路線上的順序（從 1 開始）
-          "PointTime": "string",        // 預定到達時間（格式: HH:mm）
-          "Arrival": "string",          // 實際到達時間（格式: HH:mm，未到達則為空字串）
-          "ArrivalDiff": integer,       // 到達時間差異（分鐘，65535 表示未到達）
-          "FixedPoint": integer,        // 是否為固定點（0=否，1=是）
-          "PointWeekKnd": "string",     // 週末標記
-          "InScope": "string",          // 是否在查詢範圍內（"Y"=是，""=否）
-          "LikeCount": integer          // 按讚數量
+          "SourcePointID": integer,     // Source stop ID
+          "Vil": "string",              // Village
+          "PointName": "string",        // Stop name (e.g., "Shuiyuan St Lane 36 Entrance")
+          "Lon": float,                 // Stop longitude
+          "Lat": float,                 // Stop latitude
+          "PointID": integer,           // Stop ID
+          "PointRank": integer,         // Stop order on route (starts from 1)
+          "PointTime": "string",        // Scheduled arrival time (format: HH:mm)
+          "Arrival": "string",          // Actual arrival time (format: HH:mm, empty if not arrived)
+          "ArrivalDiff": integer,       // Arrival time difference (minutes, 65535 means not arrived)
+          "FixedPoint": integer,        // Whether it's a fixed point (0=no, 1=yes)
+          "PointWeekKnd": "string",     // Weekend marker
+          "InScope": "string",          // Within query range ("Y"=yes, ""=no)
+          "LikeCount": integer          // Like count
         }
       ]
     }
@@ -96,7 +96,7 @@ data = response.json()
 }
 ```
 
-### 回應範例
+### Response Example
 
 ```json
 {
@@ -106,20 +106,20 @@ data = response.json()
   "Line": [
     {
       "LineID": "234042",
-      "LineName": "三區晚9",
-      "Area": "永和區",
+      "LineName": "District 3 Evening 9",
+      "Area": "Yonghe District",
       "ArrivalRank": 35,
       "Diff": 0,
       "CarNO": "KEJ-6632",
-      "Location": "新北市永和區水源街28號",
+      "Location": "No. 28, Shuiyuan St, Yonghe District, New Taipei City",
       "LocationLat": 25.0098583333333,
       "LocationLon": 121.526181666667,
       "BarCode": "000013",
       "Point": [
         {
           "SourcePointID": 25022,
-          "Vil": "水源里",
-          "PointName": "水源街36巷口",
+          "Vil": "Shuiyuan Village",
+          "PointName": "Shuiyuan St Lane 36 Entrance",
           "Lon": 121.5109786,
           "Lat": 25.00444795,
           "PointID": 912674,
@@ -134,8 +134,8 @@ data = response.json()
         },
         {
           "SourcePointID": 4840,
-          "Vil": "水源里",
-          "PointName": "水源街28號",
+          "Vil": "Shuiyuan Village",
+          "PointName": "No. 28, Shuiyuan St",
           "Lon": 121.5114427,
           "Lat": 25.00457597,
           "PointID": 912677,
@@ -154,63 +154,63 @@ data = response.json()
 }
 ```
 
-### 重要欄位說明
+### Important Field Descriptions
 
-#### Line 物件
-- **ArrivalRank**: 垃圾車目前在第幾個停靠點（對應 Point 陣列中的 PointRank）
-- **LocationLat/LocationLon**: 垃圾車的即時 GPS 座標
+#### Line Object
+- **ArrivalRank**: Current stop number of garbage truck (corresponds to PointRank in Point array)
+- **LocationLat/LocationLon**: Real-time GPS coordinates of garbage truck
 
-#### Point 物件
-- **PointRank**: 停靠點順序，從 1 開始遞增
+#### Point Object
+- **PointRank**: Stop order, starts from 1 and increments
 - **Arrival**:
-  - 有值（例如 "19:35"）表示已經到達該點
-  - 空字串 `""` 表示尚未到達
+  - Has value (e.g., "19:35") means arrived at this point
+  - Empty string `""` means not yet arrived
 - **ArrivalDiff**:
-  - 正數: 比預定時間晚到
-  - 負數: 比預定時間早到
-  - 65535: 尚未到達
+  - Positive number: Arrived later than scheduled
+  - Negative number: Arrived earlier than scheduled
+  - 65535: Not yet arrived
 - **InScope**:
-  - `"Y"`: 該停靠點在查詢座標的範圍內
-  - `""`: 不在範圍內
+  - `"Y"`: This stop is within range of query coordinates
+  - `""`: Not within range
 
-### 錯誤處理
+### Error Handling
 
-| HTTP 狀態碼 | 說明 |
-|------------|------|
-| 200 | 請求成功 |
-| 400 | 請求參數錯誤（缺少 lat 或 lng） |
-| 500 | 伺服器內部錯誤 |
-| 503 | 服務暫時無法使用 |
+| HTTP Status Code | Description |
+|------------------|-------------|
+| 200 | Request successful |
+| 400 | Request parameter error (missing lat or lng) |
+| 500 | Internal server error |
+| 503 | Service temporarily unavailable |
 
 ---
 
-## 1.2. 新北市垃圾車 API - GetArrival（替代查詢方式）
+## 1.2. New Taipei City Garbage Truck API - GetArrival (Alternative Query Method)
 
-### 基本資訊
+### Basic Information
 
-- **名稱**: 新北市垃圾車路線查詢 API
-- **提供者**: 新北市環保局
-- **端點**: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetArrival`
-- **方法**: `POST`
+- **Name**: New Taipei City Garbage Truck Route Query API
+- **Provider**: New Taipei City Environmental Protection Bureau
+- **Endpoint**: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetArrival`
+- **Method**: `POST`
 - **Content-Type**: `application/x-www-form-urlencoded`
 
-### 與 GetAroundPoints 的差異
+### Differences from GetAroundPoints
 
-| 特性 | GetAroundPoints | GetArrival |
-|-----|-----------------|------------|
-| **查詢方式** | 透過座標查詢附近路線 | 透過 LineID 直接查詢特定路線 |
-| **輸入參數** | lat, lng（座標） | LineID（逗號分隔的路線 ID） |
-| **回傳資料** | 包含路線名稱、區域等完整資訊 | 僅包含路線 ID 和停靠點資訊 |
-| **停靠點資訊** | 包含停靠點名稱、座標、里別等 | 僅包含 PointID、到達時間等基本資訊 |
-| **使用情境** | 不知道路線 ID，需要探索附近路線 | 已知路線 ID，快速查詢特定路線狀態 |
+| Feature | GetAroundPoints | GetArrival |
+|---------|-----------------|------------|
+| **Query Method** | Query nearby routes via coordinates | Direct query of specific routes via LineID |
+| **Input Parameters** | lat, lng (coordinates) | LineID (comma-separated route IDs) |
+| **Returned Data** | Includes route name, area, and complete information | Only includes route ID and stop information |
+| **Stop Information** | Includes stop name, coordinates, village, etc. | Only includes PointID, arrival time, and basic information |
+| **Use Case** | Don't know route ID, need to explore nearby routes | Already know route ID, quickly query specific route status |
 
-### 請求參數
+### Request Parameters
 
-| 參數名稱 | 類型 | 必填 | 說明 | 範例 |
-|---------|------|------|------|------|
-| `LineID` | string | 是 | 路線 ID，多個用逗號分隔 | 234026,234042,234067 |
+| Parameter | Type | Required | Description | Example |
+|-----------|------|----------|-------------|---------|
+| `LineID` | string | Yes | Route ID, multiple separated by commas | 234026,234042,234067 |
 
-### 請求範例
+### Request Examples
 
 #### cURL
 ```bash
@@ -235,31 +235,31 @@ response = requests.post(url, data=payload, headers=headers)
 data = response.json()
 ```
 
-### 回應格式
+### Response Format
 
-#### 回應結構
+#### Response Structure
 
 ```json
 {
-  "TimeStamp": "string",      // API 回應的時間戳記（格式: YYYYMMDDHHmmss）
-  "LineCount": integer,        // 回傳的路線數量
-  "Line": [                    // 路線陣列
+  "TimeStamp": "string",      // API response timestamp (format: YYYYMMDDHHmmss)
+  "LineCount": integer,        // Number of routes returned
+  "Line": [                    // Route array
     {
-      "LineID": "string",           // 路線 ID
-      "ArrivalRank": integer,       // 目前在路線上的第幾個停靠點
-      "Diff": integer,              // 與預定時間的差異（分鐘）
-      "CarNO": "string",            // 垃圾車車牌號碼
-      "Location": "string",         // 目前位置的地址描述
-      "LocationLat": float,         // 目前位置的緯度
-      "LocationLon": float,         // 目前位置的經度
-      "BarCode": "string",          // 條碼識別
-      "Point": [                    // 該路線的所有停靠點
+      "LineID": "string",           // Route ID
+      "ArrivalRank": integer,       // Current stop number on route
+      "Diff": integer,              // Time difference from schedule (minutes)
+      "CarNO": "string",            // Garbage truck license plate
+      "Location": "string",         // Current location address description
+      "LocationLat": float,         // Current location latitude
+      "LocationLon": float,         // Current location longitude
+      "BarCode": "string",          // Barcode identification
+      "Point": [                    // All stops on this route
         {
-          "PointID": integer,           // 停靠點 ID
-          "PointRank": integer,         // 該停靠點在路線上的順序（從 1 開始）
-          "PointTime": "string",        // 預定到達時間（格式: HH:mm）
-          "Arrival": "string",          // 實際到達時間（格式: HH:mm，未到達則為空字串）
-          "ArrivalDiff": integer        // 到達時間差異（分鐘）
+          "PointID": integer,           // Stop ID
+          "PointRank": integer,         // Stop order on route (starts from 1)
+          "PointTime": "string",        // Scheduled arrival time (format: HH:mm)
+          "Arrival": "string",          // Actual arrival time (format: HH:mm, empty if not arrived)
+          "ArrivalDiff": integer        // Arrival time difference (minutes)
         }
       ]
     }
@@ -267,9 +267,9 @@ data = response.json()
 }
 ```
 
-**注意**: 此 API 回傳的 Point 資料不包含停靠點名稱、座標、里別等詳細資訊，僅包含 ID 和時間資訊。
+**Note**: Point data from this API does not include stop name, coordinates, village, and other detailed information, only ID and time information.
 
-### 回應範例
+### Response Example
 
 ```json
 {
@@ -281,7 +281,7 @@ data = response.json()
       "ArrivalRank": 36,
       "Diff": 8,
       "CarNO": "BWM-8152",
-      "Location": "新北市永和區福和路1號",
+      "Location": "No. 1, Fude Rd, Yonghe District, New Taipei City",
       "LocationLat": 25.00998,
       "LocationLon": 121.526588333333,
       "BarCode": "000004",
@@ -306,44 +306,44 @@ data = response.json()
 }
 ```
 
-### 優缺點分析
+### Pros and Cons Analysis
 
-#### 優點
-1. **更輕量**: 回傳資料較少，網路傳輸更快
-2. **更精確**: 直接查詢指定路線，無需過濾
-3. **效能更好**: 伺服器負擔較小，回應速度可能更快
+#### Advantages
+1. **More lightweight**: Less data returned, faster network transmission
+2. **More precise**: Direct query of specified routes, no filtering needed
+3. **Better performance**: Lower server load, possibly faster response
 
-#### 缺點
-1. **需要事先知道 LineID**: 必須先透過 GetAroundPoints 取得路線 ID
-2. **缺少停靠點詳細資訊**: 無法取得停靠點名稱，需要額外維護 PointID 對應表
-3. **無法探索新路線**: 如果路線變更或新增，無法自動偵測
+#### Disadvantages
+1. **Need to know LineID in advance**: Must first obtain route ID via GetAroundPoints
+2. **Lack of detailed stop information**: Cannot get stop names, need to maintain PointID mapping separately
+3. **Cannot discover new routes**: If routes change or are added, cannot auto-detect
 
-### 使用建議
+### Usage Recommendations
 
-#### 建議使用 GetAroundPoints（目前採用）
-- 適合不確定路線 ID 的情況
-- 可以根據停靠點名稱（如 "水源街36巷口"）進行匹配
-- 路線變更時無需修改設定
+#### Recommend Using GetAroundPoints (Currently Adopted)
+- Suitable when route ID is uncertain
+- Can match based on stop names (e.g., "Shuiyuan St Lane 36 Entrance")
+- No need to modify configuration when routes change
 
-#### 可考慮使用 GetArrival 的情況
-- 路線 ID 固定且不會變更
-- 需要追蹤多條特定路線
-- 對網路流量或回應速度有嚴格要求
-- 願意維護 PointID 與停靠點名稱的對應表
+#### Consider Using GetArrival When
+- Route IDs are fixed and won't change
+- Need to track multiple specific routes
+- Have strict requirements for network traffic or response speed
+- Willing to maintain PointID to stop name mapping
 
-### 整合範例
+### Integration Example
 
-如果決定使用 GetArrival API，需要修改的地方：
+If deciding to use GetArrival API, modifications needed:
 
 ```python
-# 設定檔中改為儲存 LineID 和 PointID
+# Store LineID and PointID in config instead
 tracking:
   target_line_ids:
-    - "234042"  # 三區晚9
-  enter_point_id: 912674  # 水源街36巷口的 PointID
-  exit_point_id: 912677   # 水源街28號的 PointID
+    - "234042"  # District 3 Evening 9
+  enter_point_id: 912674  # PointID for Shuiyuan St Lane 36 Entrance
+  exit_point_id: 912677   # PointID for No. 28, Shuiyuan St
 
-# API 客戶端修改
+# API client modification
 def get_line_status(self, line_ids: List[str]) -> dict:
     url = f"{self.BASE_URL}/GetArrival"
     payload = {"LineID": ",".join(line_ids)}
@@ -353,20 +353,20 @@ def get_line_status(self, line_ids: List[str]) -> dict:
 
 ---
 
-## 2. 系統內部 API（給 Home Assistant 使用）
+## 2. System Internal API (For Home Assistant)
 
-### 基本資訊
+### Basic Information
 
-- **名稱**: 垃圾車狀態查詢 API
-- **端點**: `http://localhost:5000/api/trash/status`
-- **方法**: `GET`
+- **Name**: Garbage Truck Status Query API
+- **Endpoint**: `http://localhost:5000/api/trash/status`
+- **Method**: `GET`
 - **Content-Type**: `application/json`
 
-### 請求參數
+### Request Parameters
 
-無需參數，直接 GET 請求即可。
+No parameters needed, direct GET request.
 
-### 請求範例
+### Request Examples
 
 #### cURL
 ```bash
@@ -381,38 +381,38 @@ response = requests.get("http://localhost:5000/api/trash/status")
 data = response.json()
 ```
 
-### 回應格式
+### Response Format
 
-#### 狀態: idle（無垃圾車在附近）
+#### Status: idle (No garbage truck nearby)
 
 ```json
 {
   "status": "idle",
-  "reason": "無垃圾車在附近",
+  "reason": "No garbage truck nearby",
   "truck": null,
   "timestamp": "2025-11-17T21:00:00+08:00"
 }
 ```
 
-#### 狀態: nearby（垃圾車在附近）
+#### Status: nearby (Garbage truck nearby)
 
 ```json
 {
   "status": "nearby",
-  "reason": "垃圾車即將到達進入清運點",
+  "reason": "Garbage truck approaching entry collection point",
   "truck": {
-    "line_name": "三區晚9",
+    "line_name": "District 3 Evening 9",
     "line_id": "234042",
     "car_no": "KEJ-6632",
-    "area": "永和區",
-    "current_location": "新北市永和區水源街14巷口",
+    "area": "Yonghe District",
+    "current_location": "Shuiyuan St Lane 14 Entrance, Yonghe District, New Taipei City",
     "current_lat": 25.0098583,
     "current_lon": 121.5261817,
     "current_rank": 32,
     "total_points": 71,
     "arrival_diff": 0,
     "enter_point": {
-      "name": "水源街36巷口",
+      "name": "Shuiyuan St Lane 36 Entrance",
       "rank": 34,
       "point_time": "19:30",
       "arrival": "",
@@ -421,7 +421,7 @@ data = response.json()
       "distance_to_current": 2
     },
     "exit_point": {
-      "name": "水源街28號",
+      "name": "No. 28, Shuiyuan St",
       "rank": 35,
       "point_time": "19:35",
       "arrival": "",
@@ -434,89 +434,89 @@ data = response.json()
 }
 ```
 
-### 回應欄位說明
+### Response Field Descriptions
 
-#### 根層級欄位
+#### Root Level Fields
 
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| `status` | string | 系統狀態：`idle` 或 `nearby` |
-| `reason` | string | 狀態原因的文字說明 |
-| `truck` | object \| null | 垃圾車詳細資訊，無垃圾車時為 null |
-| `timestamp` | string | API 回應時間（ISO 8601 格式） |
+| Field | Type | Description |
+|-------|------|-------------|
+| `status` | string | System status: `idle` or `nearby` |
+| `reason` | string | Text description of status reason |
+| `truck` | object \| null | Garbage truck detailed information, null when no truck |
+| `timestamp` | string | API response time (ISO 8601 format) |
 
-#### truck 物件欄位
+#### truck Object Fields
 
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| `line_name` | string | 路線名稱 |
-| `line_id` | string | 路線 ID |
-| `car_no` | string | 車牌號碼 |
-| `area` | string | 行政區域 |
-| `current_location` | string | 目前位置描述 |
-| `current_lat` | float | 目前緯度 |
-| `current_lon` | float | 目前經度 |
-| `current_rank` | integer | 目前在第幾個停靠點 |
-| `total_points` | integer | 路線總停靠點數 |
-| `arrival_diff` | integer | 與預定時間的差異（分鐘） |
-| `enter_point` | object | 進入清運點詳細資訊 |
-| `exit_point` | object | 離開清運點詳細資訊 |
+| Field | Type | Description |
+|-------|------|-------------|
+| `line_name` | string | Route name |
+| `line_id` | string | Route ID |
+| `car_no` | string | License plate number |
+| `area` | string | Administrative area |
+| `current_location` | string | Current location description |
+| `current_lat` | float | Current latitude |
+| `current_lon` | float | Current longitude |
+| `current_rank` | integer | Current stop number |
+| `total_points` | integer | Total stops on route |
+| `arrival_diff` | integer | Time difference from schedule (minutes) |
+| `enter_point` | object | Entry collection point detailed information |
+| `exit_point` | object | Exit collection point detailed information |
 
-#### enter_point / exit_point 物件欄位
+#### enter_point / exit_point Object Fields
 
-| 欄位 | 類型 | 說明 |
-|------|------|------|
-| `name` | string | 清運點名稱 |
-| `rank` | integer | 該點在路線上的順序 |
-| `point_time` | string | 預定到達時間（HH:mm） |
-| `arrival` | string | 實際到達時間（HH:mm），未到達則為空字串 |
-| `arrival_diff` | integer | 到達時間差異（65535 表示未到達） |
-| `passed` | boolean | 垃圾車是否已經過該點 |
-| `distance_to_current` | integer | 距離垃圾車目前位置的停靠點數 |
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | Collection point name |
+| `rank` | integer | Point order on route |
+| `point_time` | string | Scheduled arrival time (HH:mm) |
+| `arrival` | string | Actual arrival time (HH:mm), empty if not arrived |
+| `arrival_diff` | integer | Arrival time difference (65535 means not arrived) |
+| `passed` | boolean | Whether truck has passed this point |
+| `distance_to_current` | integer | Number of stops from truck's current location |
 
-### HTTP 狀態碼
+### HTTP Status Codes
 
-| 狀態碼 | 說明 |
-|--------|------|
-| 200 | 請求成功 |
-| 500 | 伺服器內部錯誤 |
-| 503 | 無法連接新北市 API |
+| Status Code | Description |
+|-------------|-------------|
+| 200 | Request successful |
+| 500 | Internal server error |
+| 503 | Unable to connect to New Taipei City API |
 
-### 錯誤回應格式
+### Error Response Format
 
 ```json
 {
-  "error": "錯誤訊息",
-  "detail": "詳細錯誤說明",
+  "error": "Error message",
+  "detail": "Detailed error description",
   "timestamp": "2025-11-17T21:00:00+08:00"
 }
 ```
 
 ---
 
-## 3. 整合範例：Home Assistant 設定
+## 3. Integration Example: Home Assistant Configuration
 
 ### configuration.yaml
 
 ```yaml
-# RESTful Sensor - 查詢垃圾車狀態
+# RESTful Sensor - Query garbage truck status
 sensor:
   - platform: rest
     name: "Garbage Truck Monitor"
     resource: "http://localhost:5000/api/trash/status"
-    scan_interval: 90  # 每 90 秒查詢一次
+    scan_interval: 90  # Query every 90 seconds
     json_attributes:
       - reason
       - truck
       - timestamp
     value_template: "{{ value_json.status }}"
 
-# Binary Sensor - 判斷垃圾車是否在附近
+# Binary Sensor - Determine if garbage truck is nearby
 binary_sensor:
   - platform: template
     sensors:
       garbage_truck_nearby:
-        friendly_name: "垃圾車在附近"
+        friendly_name: "Garbage Truck Nearby"
         value_template: "{{ is_state('sensor.garbage_truck_monitor', 'nearby') }}"
         device_class: presence
         attribute_templates:
@@ -525,13 +525,13 @@ binary_sensor:
           current_location: "{{ state_attr('sensor.garbage_truck_monitor', 'truck')['current_location'] if state_attr('sensor.garbage_truck_monitor', 'truck') else 'N/A' }}"
 ```
 
-### Automation 範例
+### Automation Examples
 
 ```yaml
-# 自動化：垃圾車抵達 - 開燈
+# Automation: Garbage truck arrival - Turn on light
 automation:
-  - alias: "垃圾車抵達 - 開啟通知燈"
-    description: "當垃圾車進入指定清運點範圍時，打開燈泡"
+  - alias: "Garbage Truck Arrival - Turn On Notification Light"
+    description: "Turn on light when garbage truck enters designated collection point range"
     trigger:
       - platform: state
         entity_id: binary_sensor.garbage_truck_nearby
@@ -545,11 +545,11 @@ automation:
           color_name: "red"
       - service: notify.mobile_app
         data:
-          title: "🚛 垃圾車來了！"
+          title: "🚛 Garbage Truck is Here!"
           message: "{{ state_attr('sensor.garbage_truck_monitor', 'reason') }}"
 
-  - alias: "垃圾車離開 - 關閉通知燈"
-    description: "當垃圾車離開指定清運點範圍時，關閉燈泡"
+  - alias: "Garbage Truck Departure - Turn Off Notification Light"
+    description: "Turn off light when garbage truck leaves designated collection point range"
     trigger:
       - platform: state
         entity_id: binary_sensor.garbage_truck_nearby
@@ -562,48 +562,48 @@ automation:
 
 ---
 
-## 4. API 測試指南
+## 4. API Testing Guide
 
-### 測試新北市 API - GetAroundPoints
+### Test New Taipei City API - GetAroundPoints
 
 ```bash
-# 測試查詢永和區附近垃圾車
+# Test query for nearby garbage trucks in Yonghe District
 curl --location 'https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetAroundPoints' \
   --header 'Content-Type: application/x-www-form-urlencoded' \
   --data-urlencode 'lat=25.005193869072745' \
   --data-urlencode 'lng=121.5099557021958' | jq
 ```
 
-### 測試新北市 API - GetArrival
+### Test New Taipei City API - GetArrival
 
 ```bash
-# 測試查詢特定路線（使用從 GetAroundPoints 取得的 LineID）
+# Test query for specific routes (using LineID obtained from GetAroundPoints)
 curl --location 'https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetArrival' \
   --header 'Content-Type: application/x-www-form-urlencoded' \
   --data 'LineID=234026,234042,234067' | jq
 
-# 比較兩個 API 回傳的資料差異
-# 注意：GetArrival 的 Point 物件不包含 PointName、Lat、Lon 等欄位
+# Compare data differences between the two APIs
+# Note: GetArrival's Point object does not include PointName, Lat, Lon fields
 ```
 
-### 測試系統內部 API
+### Test System Internal API
 
 ```bash
-# 啟動 Flask 服務後測試
+# Test after starting Flask service
 curl http://localhost:5000/api/trash/status | jq
 
-# 測試錯誤處理（當服務未啟動時）
+# Test error handling (when service is not started)
 curl http://localhost:5000/api/trash/status
 ```
 
-### Python 測試腳本
+### Python Test Script
 
 ```python
 import requests
 import json
 
 def test_system_api():
-    """測試系統內部 API"""
+    """Test system internal API"""
     url = "http://localhost:5000/api/trash/status"
 
     try:
@@ -613,7 +613,7 @@ def test_system_api():
         data = response.json()
         print(json.dumps(data, indent=2, ensure_ascii=False))
 
-        # 驗證必要欄位
+        # Verify required fields
         assert "status" in data
         assert "timestamp" in data
         assert data["status"] in ["idle", "nearby"]
@@ -622,12 +622,12 @@ def test_system_api():
             assert "truck" in data
             assert data["truck"] is not None
 
-        print("✅ API 測試通過")
+        print("✅ API test passed")
 
     except requests.exceptions.RequestException as e:
-        print(f"❌ API 請求失敗: {e}")
+        print(f"❌ API request failed: {e}")
     except AssertionError as e:
-        print(f"❌ 資料格式驗證失敗: {e}")
+        print(f"❌ Data format validation failed: {e}")
 
 if __name__ == "__main__":
     test_system_api()
@@ -635,21 +635,21 @@ if __name__ == "__main__":
 
 ---
 
-## 5. API 限制與注意事項
+## 5. API Limitations and Notes
 
-### 新北市 API 限制
-1. **查詢頻率**: 建議不超過每分鐘 1 次，避免對伺服器造成負擔
-2. **回應大小**: 可能回傳大量路線資料，建議使用 gzip 壓縮
-3. **即時性**: 垃圾車位置更新可能有 1-2 分鐘延遲
-4. **可用性**: 無 SLA 保證，可能因維護而暫停服務
+### New Taipei City API Limitations
+1. **Query Frequency**: Recommended not to exceed once per minute to avoid server overload
+2. **Response Size**: May return large amounts of route data, recommend using gzip compression
+3. **Real-time Nature**: Garbage truck location updates may have 1-2 minute delay
+4. **Availability**: No SLA guarantee, may be suspended for maintenance
 
-### 系統內部 API 限制
-1. **單執行緒**: 目前設計為單一使用者使用
-2. **無認證**: 未實作 API 認證機制
-3. **狀態儲存**: 僅保存記憶體中的狀態，重啟後遺失
+### System Internal API Limitations
+1. **Single-threaded**: Currently designed for single user use
+2. **No Authentication**: API authentication mechanism not implemented
+3. **State Storage**: Only stores state in memory, lost after restart
 
 ---
 
-**文件版本**: v1.0
-**最後更新**: 2025-11-17
-**維護者**: Logan
+**Document Version**: v1.0
+**Last Updated**: 2025-11-17
+**Maintainer**: Logan

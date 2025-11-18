@@ -1,47 +1,47 @@
-# 🚀 Trash Tracking Add-on 快速開始
+# 🚀 Trash Tracking Add-on Quick Start
 
-## 📦 已完成的 Add-on 套件
+## 📦 Completed Add-on Package
 
-你的 Flask Application 已經成功打包成 Home Assistant Add-on！
+Your Flask Application has been successfully packaged as a Home Assistant Add-on!
 
-### ✅ 已建立的檔案
+### ✅ Created Files
 
 ```
 trash_tracking_addon/
-├── config.yaml              ✅ Add-on 配置與 schema
-├── Dockerfile              ✅ Multi-arch 容器建置
-├── build.yaml              ✅ 架構建置配置
-├── run.sh                  ✅ Bashio 啟動腳本
-├── icon.png                ✅ Add-on 圖示（暫時版本）
-├── logo.png                ✅ Add-on Logo（暫時版本）
-├── README.md               ✅ 主要說明文件
-├── DOCS.md                 ✅ 詳細使用指南
-├── CHANGELOG.md            ✅ 版本更新記錄
-├── ICON_README.md          ✅ 圖示製作指南
-├── PACKAGE_SUMMARY.md      ✅ 完整總結文件
-├── repository.json         ✅ Repository 元資料
-├── .dockerignore           ✅ Docker 建置忽略
-├── generate_icon.py        ✅ 圖示產生腳本
-└── translations/           ✅ 多語言支援
-    ├── en.yaml             ✅ 英文翻譯
-    └── zh-Hant.yaml        ✅ 繁體中文翻譯
+├── config.yaml              ✅ Add-on configuration & schema
+├── Dockerfile              ✅ Multi-arch container build
+├── build.yaml              ✅ Architecture build configuration
+├── run.sh                  ✅ Bashio startup script
+├── icon.png                ✅ Add-on icon (temporary version)
+├── logo.png                ✅ Add-on logo (temporary version)
+├── README.md               ✅ Main documentation
+├── DOCS.md                 ✅ Detailed user guide
+├── CHANGELOG.md            ✅ Version changelog
+├── ICON_README.md          ✅ Icon creation guide
+├── PACKAGE_SUMMARY.md      ✅ Complete summary document
+├── repository.json         ✅ Repository metadata
+├── .dockerignore           ✅ Docker build ignore
+├── generate_icon.py        ✅ Icon generation script
+└── translations/           ✅ Multi-language support
+    ├── en.yaml             ✅ English translation
+    └── zh-Hant.yaml        ✅ Traditional Chinese translation
 ```
 
 ---
 
-## 🎯 三步驟發布到 GitHub
+## 🎯 Three Steps to Publish on GitHub
 
-### 步驟 1️⃣: 提交到 Git
+### Step 1️⃣: Commit to Git
 
 ```bash
 cd /Users/logan/dev/logan/trash_tracking
 
-# 加入所有檔案
+# Add all files
 git add trash_tracking_addon/
 git add docs/ADD_ON_INSTALLATION.md
 git add QUICK_START_ADDON.md
 
-# 提交
+# Commit
 git commit -m "feat: add Home Assistant Add-on package
 
 Complete add-on structure with:
@@ -52,163 +52,163 @@ Complete add-on structure with:
 - Multi-language support (en, zh-Hant)
 "
 
-# 推送
+# Push
 git push origin master
 ```
 
-### 步驟 2️⃣: 建立版本標籤
+### Step 2️⃣: Create Version Tag
 
 ```bash
-# 建立 v1.0.0 標籤
+# Create v1.0.0 tag
 git tag -a v1.0.0 -m "Release version 1.0.0 - Initial Home Assistant Add-on"
 
-# 推送標籤
+# Push tag
 git push origin v1.0.0
 ```
 
-### 步驟 3️⃣: 在 GitHub 建立 Release
+### Step 3️⃣: Create Release on GitHub
 
-1. 前往：https://github.com/iml885203/trash_tracking/releases
-2. 點擊 **"Create a new release"**
-3. 選擇 tag: `v1.0.0`
+1. Go to: https://github.com/iml885203/trash_tracking/releases
+2. Click **"Create a new release"**
+3. Select tag: `v1.0.0`
 4. Title: `v1.0.0 - Initial Release`
-5. 填入 Description（參考下方模板）
-6. 點擊 **"Publish release"**
+5. Fill in Description (see template below)
+6. Click **"Publish release"**
 
-#### Release Description 模板
+#### Release Description Template
 
 ```markdown
-## 🎉 Trash Tracking Home Assistant Add-on - 首次發布
+## 🎉 Trash Tracking Home Assistant Add-on - Initial Release
 
-### ✨ 功能特色
-- ✅ 新北市垃圾車即時追蹤
-- ✅ 自訂進入/離開清運點
-- ✅ 支援多條路線追蹤
-- ✅ 提前到達通知（可設定提前幾站）
-- ✅ RESTful API 整合
-- ✅ UI 配置介面（無需手動編輯 YAML）
-- ✅ 多架構支援（5 種架構）
+### ✨ Features
+- ✅ New Taipei City garbage truck real-time tracking
+- ✅ Custom enter/exit collection points
+- ✅ Support multiple route tracking
+- ✅ Early arrival notifications (configurable advance stations)
+- ✅ RESTful API integration
+- ✅ UI configuration interface (no manual YAML editing)
+- ✅ Multi-architecture support (5 architectures)
 
-### 📥 安裝方式
+### 📥 Installation
 
-在 Home Assistant 中新增此 Repository：
+Add this repository in Home Assistant:
 
 1. **Supervisor** → **Add-on Store** → ⋮ → **Repositories**
-2. 加入：`https://github.com/iml885203/trash_tracking`
-3. 找到 "垃圾車追蹤系統" → 點擊 **Install**
+2. Add: `https://github.com/iml885203/trash_tracking`
+3. Find "Garbage Truck Tracking System" → Click **Install**
 
-### 📖 文檔
-- [安裝指南](docs/ADD_ON_INSTALLATION.md)
-- [使用文檔](trash_tracking_addon/DOCS.md)
-- [配置範例](trash_tracking_addon/README.md)
+### 📖 Documentation
+- [Installation Guide](docs/ADD_ON_INSTALLATION.md)
+- [User Documentation](trash_tracking_addon/DOCS.md)
+- [Configuration Examples](trash_tracking_addon/README.md)
 
-### 🏗️ 支援架構
+### 🏗️ Supported Architectures
 - aarch64 (ARM 64-bit)
 - amd64 (x86 64-bit)
 - armhf (ARM 32-bit HF)
 - armv7 (ARM v7)
 - i386 (x86 32-bit)
 
-完整更新記錄：[CHANGELOG.md](trash_tracking_addon/CHANGELOG.md)
+Full changelog: [CHANGELOG.md](trash_tracking_addon/CHANGELOG.md)
 ```
 
 ---
 
-## 🧪 本地測試（發布前）
+## 🧪 Local Testing (Before Publishing)
 
-### 方法 1: Docker 測試
+### Method 1: Docker Testing
 
 ```bash
 cd /Users/logan/dev/logan/trash_tracking
 
-# 建置容器
+# Build container
 docker build -f trash_tracking_addon/Dockerfile -t trash_tracking:test .
 
-# 執行測試
+# Run test
 docker run -p 5000:5000 trash_tracking:test
 
-# 測試 API（開新 terminal）
+# Test API (open new terminal)
 curl http://localhost:5000/health
 curl http://localhost:5000/api/trash/status
 ```
 
-### 方法 2: Home Assistant 本地測試
+### Method 2: Local Home Assistant Testing
 
-如果你有運行中的 Home Assistant：
+If you have a running Home Assistant:
 
 ```bash
-# 複製到 HA addons 目錄
+# Copy to HA addons directory
 scp -r trash_tracking_addon/ root@homeassistant.local:/addons/trash_tracking
 
-# 或使用 Samba/SFTP 手動複製
+# Or manually copy using Samba/SFTP
 ```
 
-然後在 HA UI 中：
+Then in HA UI:
 1. **Supervisor** → **Add-on Store** → ⋮ → **Reload**
-2. 在 **Local add-ons** 找到 "垃圾車追蹤系統"
-3. 安裝並測試
+2. Find "Garbage Truck Tracking System" in **Local add-ons**
+3. Install and test
 
 ---
 
-## 📱 用戶安裝方式（發布後）
+## 📱 User Installation (After Publishing)
 
-### 安裝步驟
+### Installation Steps
 
-1. **新增 Repository**
+1. **Add Repository**
    - Home Assistant → Supervisor → Add-on Store
-   - 右上角 ⋮ → Repositories
-   - 加入：`https://github.com/iml885203/trash_tracking`
+   - Top right ⋮ → Repositories
+   - Add: `https://github.com/iml885203/trash_tracking`
 
-2. **安裝 Add-on**
-   - 在 Add-on Store 中找到 "垃圾車追蹤系統"
-   - 點擊 Install
+2. **Install Add-on**
+   - Find "Garbage Truck Tracking System" in Add-on Store
+   - Click Install
 
-3. **配置**
-   - Configuration 標籤中設定座標和清運點
-   - 儲存配置
+3. **Configuration**
+   - Configure coordinates and collection points in Configuration tab
+   - Save configuration
 
-4. **啟動**
-   - Info 標籤 → Start
-   - 檢查 Log 標籤確認正常運行
+4. **Start**
+   - Info tab → Start
+   - Check Log tab to confirm proper operation
 
-5. **Home Assistant 整合**
-   - 在 `configuration.yaml` 加入 sensor 和 binary_sensor
-   - 建立 automation
-   - 重新載入 YAML
+5. **Home Assistant Integration**
+   - Add sensor and binary_sensor in `configuration.yaml`
+   - Create automation
+   - Reload YAML
 
-詳細步驟請參考：`trash_tracking_addon/DOCS.md`
+See detailed steps in: `trash_tracking_addon/DOCS.md`
 
 ---
 
-## 🔍 重要檔案說明
+## 🔍 Important File Descriptions
 
 ### config.yaml
-定義 Add-on 的基本資訊、配置選項和 schema 驗證
+Defines Add-on basic information, configuration options and schema validation
 
 ### Dockerfile
-Multi-architecture 容器建置檔案，基於 Home Assistant 官方 Python 映像檔
+Multi-architecture container build file, based on Home Assistant official Python image
 
 ### run.sh
-Bashio 啟動腳本，負責：
-- 從 HA UI 讀取用戶配置
-- 產生 `/app/config.yaml`
-- 啟動 Flask 應用程式
+Bashio startup script responsible for:
+- Reading user configuration from HA UI
+- Generating `/app/config.yaml`
+- Starting Flask application
 
 ### DOCS.md
-詳細的使用者文檔，包含：
-- 安裝步驟
-- 配置說明
-- 範例程式碼
-- 疑難排解
+Detailed user documentation including:
+- Installation steps
+- Configuration instructions
+- Example code
+- Troubleshooting
 
 ### translations/
-多語言支援檔案，讓配置 UI 顯示翻譯文字
+Multi-language support files for localized configuration UI
 
 ---
 
-## 📝 配置範例
+## 📝 Configuration Examples
 
-### 基本配置（單一路線）
+### Basic Configuration (Single Route)
 
 ```yaml
 location:
@@ -216,120 +216,120 @@ location:
   lng: 121.471703
 tracking:
   target_lines:
-    - "C08路線下午"
-  enter_point: "民生路二段80號"
-  exit_point: "成功路23號"
+    - "C08 Route Afternoon"
+  enter_point: "Minsheng Rd Sec 2 No.80"
+  exit_point: "Chenggong Rd No.23"
   trigger_mode: "arriving"
   approaching_threshold: 2
 system:
   log_level: "INFO"
 ```
 
-### 追蹤所有路線
+### Track All Routes
 
 ```yaml
 location:
   lat: 25.018269
   lng: 121.471703
 tracking:
-  target_lines: []  # 空陣列 = 追蹤所有路線
-  enter_point: "民生路二段80號"
-  exit_point: "成功路23號"
+  target_lines: []  # Empty array = track all routes
+  enter_point: "Minsheng Rd Sec 2 No.80"
+  exit_point: "Chenggong Rd No.23"
   trigger_mode: "arriving"
   approaching_threshold: 3
 ```
 
 ---
 
-## 🎨 圖示改善（可選）
+## 🎨 Icon Improvements (Optional)
 
-當前使用暫時圖示（文字 "TRUCK"），建議後續改善：
+Current temporary icon (text "TRUCK"), recommended future improvements:
 
-### 快速改善方式
+### Quick Improvement Methods
 
-1. **使用 Canva**（推薦新手）
-   - 前往：https://www.canva.com/
-   - 建立 256x256 設計
-   - 搜尋垃圾車和位置圖示
-   - 匯出 PNG
+1. **Use Canva** (Recommended for beginners)
+   - Go to: https://www.canva.com/
+   - Create 256x256 design
+   - Search for truck and location icons
+   - Export as PNG
 
-2. **使用 AI 生成**
-   - DALL-E, Midjourney 等工具
+2. **Use AI Generation**
+   - DALL-E, Midjourney, etc.
    - Prompt: "256x256 icon of a garbage truck with location pin, flat design, green theme, transparent background"
 
-3. **參考現有 Add-ons**
+3. **Reference Existing Add-ons**
    - https://github.com/hassio-addons/repository
-   - 參考其他 Add-on 的圖示設計
+   - Reference icon designs from other add-ons
 
-詳細指南：`trash_tracking_addon/ICON_README.md`
+See detailed guide: `trash_tracking_addon/ICON_README.md`
 
 ---
 
-## ❓ 常見問題
+## ❓ FAQ
 
-### Q: Add-on 安裝後在哪裡？
-A: **Supervisor** → **Add-on Store** → 往下捲找 "垃圾車追蹤系統"
+### Q: Where is the add-on after installation?
+A: **Supervisor** → **Add-on Store** → Scroll down to find "Garbage Truck Tracking System"
 
-### Q: 如何知道清運點名稱？
-A: 使用內建 CLI 工具：
+### Q: How to find collection point names?
+A: Use built-in CLI tool:
 ```bash
-docker exec -it addon_trash_tracking python3 cli.py --lat 你的緯度 --lng 你的經度
+docker exec -it addon_trash_tracking python3 cli.py --lat YOUR_LAT --lng YOUR_LNG
 ```
 
-### Q: 支援哪些架構？
-A: 支援 5 種架構：aarch64, amd64, armhf, armv7, i386
+### Q: What architectures are supported?
+A: 5 architectures: aarch64, amd64, armhf, armv7, i386
 
-### Q: API 在哪個 port？
+### Q: What port does the API use?
 A: `http://localhost:5000`
 
-### Q: 如何更新 Add-on？
-A: 用戶在 Add-on 頁面會看到 "Update" 按鈕
+### Q: How to update the add-on?
+A: Users will see an "Update" button on the add-on page
 
-### Q: 如何除錯？
-A: 查看 Add-on 的 Log 標籤，或設定 `log_level: "DEBUG"`
-
----
-
-## 📚 完整文檔
-
-| 文件 | 說明 |
-|------|------|
-| `trash_tracking_addon/PACKAGE_SUMMARY.md` | **📦 完整總結（推薦閱讀）** |
-| `docs/ADD_ON_INSTALLATION.md` | **🔧 安裝與發布指南** |
-| `trash_tracking_addon/DOCS.md` | **📖 用戶使用文檔** |
-| `trash_tracking_addon/README.md` | 主要說明 |
-| `trash_tracking_addon/CHANGELOG.md` | 版本記錄 |
-| `trash_tracking_addon/ICON_README.md` | 圖示指南 |
-| `docs/CI_CD_SETUP.md` | CI/CD 設定指南 |
+### Q: How to debug?
+A: Check the add-on's Log tab, or set `log_level: "DEBUG"`
 
 ---
 
-## ✅ 發布檢查清單
+## 📚 Complete Documentation
 
-- [ ] 已完成本地測試
-- [ ] git commit 並 push
-- [ ] 建立 v1.0.0 tag
-- [ ] 在 GitHub 建立 Release
-- [ ] （可選）測試用戶安裝流程
-- [ ] （可選）改善圖示
-- [ ] （可選）設定 GitHub Actions 自動構建
-
----
-
-## 🎊 完成！
-
-你的 Flask Application 現在已經是一個完整的 Home Assistant Add-on！
-
-**下一步建議**：
-1. ✅ 執行本地 Docker 測試
-2. ✅ 提交到 GitHub
-3. ✅ 建立 v1.0.0 Release
-4. ✅ 在實際 HA 環境測試安裝
-5. ⭐ 改善圖示設計（可選）
-6. ⭐ 設定 CI/CD 自動構建（可選）
+| Document | Description |
+|----------|-------------|
+| `trash_tracking_addon/PACKAGE_SUMMARY.md` | **📦 Complete Summary (Recommended)** |
+| `docs/ADD_ON_INSTALLATION.md` | **🔧 Installation & Publishing Guide** |
+| `trash_tracking_addon/DOCS.md` | **📖 User Documentation** |
+| `trash_tracking_addon/README.md` | Main Description |
+| `trash_tracking_addon/CHANGELOG.md` | Version History |
+| `trash_tracking_addon/ICON_README.md` | Icon Guide |
+| `docs/CI_CD_SETUP.md` | CI/CD Setup Guide |
 
 ---
 
-**維護者**: Logan ([@iml885203](https://github.com/iml885203))
-**專案**: https://github.com/iml885203/trash_tracking
-**授權**: MIT License
+## ✅ Publishing Checklist
+
+- [ ] Completed local testing
+- [ ] Git commit and push
+- [ ] Created v1.0.0 tag
+- [ ] Created GitHub Release
+- [ ] (Optional) Tested user installation flow
+- [ ] (Optional) Improved icons
+- [ ] (Optional) Set up GitHub Actions auto-build
+
+---
+
+## 🎊 Complete!
+
+Your Flask Application is now a complete Home Assistant Add-on!
+
+**Recommended Next Steps**:
+1. ✅ Run local Docker testing
+2. ✅ Commit to GitHub
+3. ✅ Create v1.0.0 Release
+4. ✅ Test installation in actual HA environment
+5. ⭐ Improve icon design (optional)
+6. ⭐ Set up CI/CD auto-build (optional)
+
+---
+
+**Maintainer**: Logan ([@iml885203](https://github.com/iml885203))
+**Project**: https://github.com/iml885203/trash_tracking
+**License**: MIT License

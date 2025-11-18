@@ -1,4 +1,4 @@
-"""Flask API 路由"""
+"""Flask API Routes"""
 
 from flask import Flask, jsonify, request
 from typing import Dict, Any
@@ -9,7 +9,6 @@ from datetime import datetime
 import pytz
 
 
-# 全域變數
 app = Flask(__name__)
 tracker: TruckTracker = None
 config: ConfigManager = None
@@ -17,40 +16,37 @@ config: ConfigManager = None
 
 def create_app(config_path: str = "config.yaml") -> Flask:
     """
-    建立並設定 Flask 應用程式
+    Create and configure Flask application
 
     Args:
-        config_path: 設定檔路徑
+        config_path: Configuration file path
 
     Returns:
-        Flask: 設定好的 Flask app
+        Flask: Configured Flask app
     """
     global tracker, config
 
     try:
-        # 載入設定
         config = ConfigManager(config_path)
 
-        # 設定 logger
         log_level = config.log_level
         setup_logger(log_level=log_level, log_file="logs/app.log")
 
         logger.info("=" * 50)
-        logger.info("垃圾車動態偵測系統啟動")
+        logger.info("Garbage Truck Tracking System Starting")
         logger.info("=" * 50)
-        logger.info(f"設定: {config}")
+        logger.info(f"Config: {config}")
 
-        # 初始化追蹤器
         tracker = TruckTracker(config)
 
-        logger.info("Flask 應用程式初始化完成")
+        logger.info("Flask application initialized successfully")
 
     except ConfigError as e:
-        logger.error(f"設定檔錯誤: {e}")
+        logger.error(f"Config error: {e}")
         raise
 
     except Exception as e:
-        logger.error(f"應用程式初始化失敗: {e}", exc_info=True)
+        logger.error(f"Application initialization failed: {e}", exc_info=True)
         raise
 
     return app
@@ -59,34 +55,32 @@ def create_app(config_path: str = "config.yaml") -> Flask:
 @app.route('/api/trash/status', methods=['GET'])
 def get_status() -> tuple:
     """
-    取得垃圾車狀態
+    Get garbage truck status
 
     Returns:
         tuple: (JSON response, HTTP status code)
     """
     try:
-        logger.debug("收到狀態查詢請求")
+        logger.debug("Status query request received")
 
         if tracker is None:
             return jsonify({
-                'error': '系統尚未初始化',
+                'error': 'System not initialized',
                 'timestamp': datetime.now(pytz.timezone('Asia/Taipei')).isoformat()
             }), 500
 
-        # 取得目前狀態
         status = tracker.get_current_status()
 
-        # 如果回應中有錯誤，回傳 503
         if 'error' in status:
-            logger.warning(f"狀態查詢包含錯誤: {status['error']}")
+            logger.warning(f"Status query contains error: {status['error']}")
             return jsonify(status), 503
 
         return jsonify(status), 200
 
     except Exception as e:
-        logger.error(f"處理狀態請求時發生錯誤: {e}", exc_info=True)
+        logger.error(f"Error processing status request: {e}", exc_info=True)
         return jsonify({
-            'error': '內部伺服器錯誤',
+            'error': 'Internal server error',
             'detail': str(e),
             'timestamp': datetime.now(pytz.timezone('Asia/Taipei')).isoformat()
         }), 500
@@ -95,7 +89,7 @@ def get_status() -> tuple:
 @app.route('/health', methods=['GET'])
 def health_check() -> tuple:
     """
-    健康檢查端點
+    Health check endpoint
 
     Returns:
         tuple: (JSON response, HTTP status code)
@@ -116,7 +110,7 @@ def health_check() -> tuple:
         return jsonify(health_status), 200
 
     except Exception as e:
-        logger.error(f"健康檢查失敗: {e}")
+        logger.error(f"Health check failed: {e}")
         return jsonify({
             'status': 'error',
             'error': str(e),
@@ -127,59 +121,58 @@ def health_check() -> tuple:
 @app.route('/api/reset', methods=['POST'])
 def reset_tracker() -> tuple:
     """
-    重置追蹤器狀態（開發/測試用）
+    Reset tracker state (for development/testing)
 
     Returns:
         tuple: (JSON response, HTTP status code)
     """
     try:
         if tracker is None:
-            return jsonify({'error': '追蹤器尚未初始化'}), 500
+            return jsonify({'error': 'Tracker not initialized'}), 500
 
         tracker.reset()
-        logger.info("追蹤器狀態已重置")
+        logger.info("Tracker state reset")
 
         return jsonify({
-            'message': '追蹤器已重置',
+            'message': 'Tracker reset',
             'timestamp': datetime.now(pytz.timezone('Asia/Taipei')).isoformat()
         }), 200
 
     except Exception as e:
-        logger.error(f"重置追蹤器失敗: {e}")
+        logger.error(f"Tracker reset failed: {e}")
         return jsonify({
-            'error': '重置失敗',
+            'error': 'Reset failed',
             'detail': str(e)
         }), 500
 
 
 @app.errorhandler(404)
 def not_found(error) -> tuple:
-    """404 錯誤處理"""
+    """404 error handler"""
     return jsonify({
-        'error': '找不到請求的資源',
+        'error': 'Resource not found',
         'path': request.path
     }), 404
 
 
 @app.errorhandler(500)
 def internal_error(error) -> tuple:
-    """500 錯誤處理"""
-    logger.error(f"內部伺服器錯誤: {error}")
+    """500 error handler"""
+    logger.error(f"Internal server error: {error}")
     return jsonify({
-        'error': '內部伺服器錯誤',
+        'error': 'Internal server error',
         'detail': str(error)
     }), 500
 
 
-# 請求日誌
 @app.before_request
 def log_request():
-    """記錄每個請求"""
+    """Log each request"""
     logger.debug(f"{request.method} {request.path}")
 
 
 @app.after_request
 def log_response(response):
-    """記錄每個回應"""
+    """Log each response"""
     logger.debug(f"{request.method} {request.path} - {response.status_code}")
     return response

@@ -1,8 +1,8 @@
 # Home Assistant Add-on Configuration
-name: "Trash Tracking - 垃圾車追蹤系統"
+name: "Trash Tracking"
 version: "1.0.0"
 slug: trash_tracking
-description: "新北市垃圾車即時追蹤與自動化控制系統"
+description: "Real-time trash truck tracking and automation system for New Taipei City"
 arch:
   - aarch64
   - amd64
@@ -17,15 +17,15 @@ map:
 ports:
   5000/tcp: 5000
 ports_description:
-  5000/tcp: "API 服務端口"
+  5000/tcp: "API service port"
 options:
   location:
     lat: 25.018269
     lng: 121.471703
   tracking:
     target_lines: []
-    enter_point: "民生路二段80號"
-    exit_point: "成功路23號"
+    enter_point: "Minsheng Rd. Sec. 2, No. 80"
+    exit_point: "Chenggong Rd. No. 23"
     trigger_mode: "arriving"
     approaching_threshold: 2
   system:

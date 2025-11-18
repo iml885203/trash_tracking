@@ -1,4 +1,4 @@
-"""狀態管理器"""
+"""State Manager"""
 
 from enum import Enum
 from datetime import datetime
@@ -10,30 +10,30 @@ import pytz
 
 
 class TruckState(Enum):
-    """垃圾車狀態"""
+    """Truck state"""
     IDLE = "idle"
     NEARBY = "nearby"
 
 
 class StateManager:
-    """狀態管理器"""
+    """State manager"""
 
     def __init__(self, timezone: str = 'Asia/Taipei'):
         """
-        初始化狀態管理器
+        Initialize state manager
 
         Args:
-            timezone: 時區設定
+            timezone: Timezone setting
         """
         self.current_state = TruckState.IDLE
         self.current_truck: Optional[TruckLine] = None
         self.enter_point: Optional[Point] = None
         self.exit_point: Optional[Point] = None
         self.last_update: Optional[datetime] = None
-        self.reason = "系統初始化"
+        self.reason = "System initialized"
         self.timezone = pytz.timezone(timezone)
 
-        logger.info(f"StateManager 初始化: 狀態={self.current_state.value}")
+        logger.info(f"StateManager initialized: state={self.current_state.value}")
 
     def update_state(
         self,
@@ -44,33 +44,31 @@ class StateManager:
         exit_point: Optional[Point] = None
     ) -> None:
         """
-        更新系統狀態
+        Update system state
 
         Args:
-            new_state: 新狀態 ('idle' 或 'nearby')
-            reason: 狀態變更原因
-            truck_line: 垃圾車資料（當狀態為 nearby 時必填）
-            enter_point: 進入清運點資料
-            exit_point: 離開清運點資料
+            new_state: New state ('idle' or 'nearby')
+            reason: Reason for state change
+            truck_line: Truck data (required when state is nearby)
+            enter_point: Enter point data
+            exit_point: Exit point data
         """
         try:
             new_state_enum = TruckState(new_state)
         except ValueError:
-            logger.error(f"無效的狀態值: {new_state}")
+            logger.error(f"Invalid state value: {new_state}")
             return
 
-        # 檢查狀態是否有變更
         state_changed = (self.current_state != new_state_enum)
 
         if state_changed:
             logger.info(
-                f"🔄 狀態變更: {self.current_state.value} → {new_state_enum.value} "
+                f"🔄 State changed: {self.current_state.value} → {new_state_enum.value} "
                 f"({reason})"
             )
         else:
-            logger.debug(f"狀態維持: {self.current_state.value}")
+            logger.debug(f"State maintained: {self.current_state.value}")
 
-        # 更新狀態
         self.current_state = new_state_enum
         self.reason = reason
         self.current_truck = truck_line
@@ -78,17 +76,16 @@ class StateManager:
         self.exit_point = exit_point
         self.last_update = datetime.now(self.timezone)
 
-        # 如果切換為 idle，清除垃圾車資料
         if new_state_enum == TruckState.IDLE:
             if state_changed:
-                logger.info("垃圾車已離開，清除追蹤資料")
+                logger.info("Truck has left, clearing tracking data")
 
     def get_status_response(self) -> Dict[str, Any]:
         """
-        生成 API 回應
+        Generate API response
 
         Returns:
-            dict: 狀態回應資料
+            dict: Status response data
         """
         response = {
             'status': self.current_state.value,
@@ -97,7 +94,6 @@ class StateManager:
             'timestamp': self.last_update.isoformat() if self.last_update else None
         }
 
-        # 如果有垃圾車資料，加入詳細資訊
         if self.current_truck and self.current_state == TruckState.NEARBY:
             response['truck'] = self.current_truck.to_dict(
                 enter_point=self.enter_point,
@@ -107,27 +103,27 @@ class StateManager:
         return response
 
     def is_idle(self) -> bool:
-        """判斷是否為 idle 狀態"""
+        """Check if state is idle"""
         return self.current_state == TruckState.IDLE
 
     def is_nearby(self) -> bool:
-        """判斷是否為 nearby 狀態"""
+        """Check if state is nearby"""
         return self.current_state == TruckState.NEARBY
 
     def reset(self) -> None:
-        """重置狀態為 idle"""
-        logger.info("重置狀態管理器")
+        """Reset state to idle"""
+        logger.info("Resetting state manager")
         self.current_state = TruckState.IDLE
         self.current_truck = None
         self.enter_point = None
         self.exit_point = None
-        self.reason = "手動重置"
+        self.reason = "Manual reset"
         self.last_update = datetime.now(self.timezone)
 
     def __str__(self) -> str:
-        """返回狀態的字串表示"""
+        """Return string representation of state"""
         truck_info = ""
         if self.current_truck:
-            truck_info = f", 車輛={self.current_truck.line_name}"
+            truck_info = f", truck={self.current_truck.line_name}"
 
-        return f"StateManager(狀態={self.current_state.value}{truck_info})"
+        return f"StateManager(state={self.current_state.value}{truck_info})"

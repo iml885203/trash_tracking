@@ -1,58 +1,58 @@
-# Home Assistant Add-on: 垃圾車追蹤系統
+# Home Assistant Add-on: Trash Tracking
 
 ![Logo](icon.png)
 
-新北市垃圾車即時追蹤與 Home Assistant 自動化整合。
+Real-time New Taipei City garbage truck tracking integrated with Home Assistant automation.
 
-## 關於
+## About
 
-這個 Add-on 會即時追蹤新北市垃圾車的位置，當垃圾車接近或經過你設定的清運點時，自動更新狀態供 Home Assistant 自動化使用。
+This add-on tracks New Taipei City garbage trucks in real-time. When a truck approaches or passes your configured collection points, it automatically updates the status for use in Home Assistant automations.
 
-## 功能特色
+## Features
 
-- ✅ 即時追蹤新北市垃圾車位置
-- ✅ 自訂進入/離開清運點
-- ✅ 支援多條路線追蹤
-- ✅ 提供 RESTful API
-- ✅ 自動整合到 Home Assistant
-- ✅ 可透過 UI 配置，無需編輯 YAML
+- ✅ Real-time New Taipei City garbage truck tracking
+- ✅ Customizable entry/exit collection points
+- ✅ Multiple route tracking support
+- ✅ RESTful API integration
+- ✅ Automatic Home Assistant integration
+- ✅ UI-based configuration (no YAML editing required)
 
-## 安裝
+## Installation
 
-### 方法 1: 從本地安裝（開發/測試）
+### Method 1: Local Installation (Development/Testing)
 
-1. 前往 **Supervisor** → **Add-on Store** → 右上角三個點 → **Repositories**
-2. 加入 repository URL（如果有的話）
-3. 或者手動複製 `trash_tracking_addon` 資料夾到 `/addons/` 目錄
+1. Go to **Supervisor** → **Add-on Store** → Three dots (top right) → **Repositories**
+2. Add repository URL (if available)
+3. Or manually copy the `trash_tracking_addon` folder to `/addons/` directory
 
-### 方法 2: 從 GitHub 安裝
+### Method 2: Install from GitHub
 
-1. 在 **Add-on Store** 中加入 repository:
+1. Add this repository in **Add-on Store**:
    ```
-   https://github.com/你的用戶名/trash_tracking
+   https://github.com/your-username/trash_tracking
    ```
-2. 重新整理頁面
-3. 找到 "垃圾車追蹤系統" 並點擊安裝
+2. Refresh the page
+3. Find "Trash Tracking" and click Install
 
-## 配置
+## Configuration
 
-### 基本配置
+### Basic Configuration
 
-在 Add-on 配置頁面中設定：
+Configure in the Add-on configuration page:
 
 ```yaml
 location:
-  lat: 25.018269          # 你家的緯度
-  lng: 121.471703         # 你家的經度
+  lat: 25.018269          # Your latitude
+  lng: 121.471703         # Your longitude
 tracking:
-  target_lines:           # 要追蹤的路線（可留空追蹤全部）
-    - "C08路線下午"
-  enter_point: "民生路二段80號"    # 垃圾車到達時的清運點
-  exit_point: "成功路23號"         # 垃圾車離開時的清運點
-  trigger_mode: "arriving"          # arriving 或 arrived
-  approaching_threshold: 2          # 提前幾個停靠點通知
+  target_lines:           # Routes to track (leave empty to track all)
+    - "C08 Afternoon Route"
+  enter_point: "Minsheng Rd. Sec. 2, No. 80"    # Entry collection point
+  exit_point: "Chenggong Rd. No. 23"             # Exit collection point
+  trigger_mode: "arriving"                       # arriving or arrived
+  approaching_threshold: 2                       # Number of stops ahead to notify
 system:
-  log_level: "INFO"                 # DEBUG, INFO, WARNING, ERROR
+  log_level: "INFO"                              # DEBUG, INFO, WARNING, ERROR
 api:
   ntpc:
     timeout: 10
@@ -60,54 +60,54 @@ api:
     retry_delay: 2
 ```
 
-### 如何找到清運點名稱？
+### How to Find Collection Point Names
 
-#### 使用內建 CLI 工具
+#### Using Built-in CLI Tool
 
-1. 安裝並啟動 Add-on
-2. 前往 **Supervisor** → **System** → **Terminal**
-3. 執行：
+1. Install and start the Add-on
+2. Go to **Supervisor** → **System** → **Terminal**
+3. Execute:
    ```bash
-   docker exec -it addon_trash_tracking python3 cli.py --lat 你的緯度 --lng 你的經度
+   docker exec -it addon_trash_tracking python3 cli.py --lat YOUR_LATITUDE --lng YOUR_LONGITUDE
    ```
 
-#### 使用新北市官網
+#### Using New Taipei City Official Website
 
-1. 前往 [新北市垃圾車即時動態](https://crd-rubbish.epd.ntpc.gov.tw/)
-2. 輸入你的地址
-3. 找到清運點的完整名稱
+1. Visit [New Taipei City Garbage Truck Tracking](https://crd-rubbish.epd.ntpc.gov.tw/)
+2. Enter your address
+3. Find the exact collection point name
 
-**重要**：清運點名稱必須與 API 回傳的完全一致（包括空格）
+**Important**: Collection point names must match exactly with API responses (including spaces).
 
-### 觸發模式說明
+### Trigger Mode Explanation
 
-- **arriving**（推薦）: 提前通知
-  - 垃圾車距離進入點前 N 個停靠點時觸發
-  - N 由 `approaching_threshold` 設定
-  - 例如設為 2，表示提前 2 個停靠點通知
+- **arriving** (Recommended): Advance notification
+  - Triggers when truck is N stops away from entry point
+  - N is set by `approaching_threshold`
+  - Example: Setting to 2 notifies 2 stops in advance
 
-- **arrived**: 實際到達通知
-  - 垃圾車剛到達進入點時才觸發
-  - 時間較緊急
+- **arrived**: Actual arrival notification
+  - Triggers when truck reaches the entry point
+  - Less preparation time
 
-## 使用方式
+## Usage
 
-### 1. 啟動 Add-on
+### 1. Start the Add-on
 
-1. 安裝完成後，點擊 **START**
-2. 檢查 **Log** 標籤，確認啟動成功
-3. 應該會看到：
+1. After installation, click **START**
+2. Check the **Log** tab to confirm successful startup
+3. You should see:
    ```
    [INFO] Starting Trash Tracking Add-on...
    [INFO] Starting Flask application...
    * Running on http://0.0.0.0:5000
    ```
 
-### 2. 設定 Home Assistant Sensor
+### 2. Configure Home Assistant Sensor
 
-Add-on 啟動後，API 會在 `http://localhost:5000` 提供服務。
+Once the Add-on is running, the API will be available at `http://localhost:5000`.
 
-在 `configuration.yaml` 中加入：
+Add to your `configuration.yaml`:
 
 ```yaml
 # RESTful Sensor
@@ -127,17 +127,17 @@ binary_sensor:
   - platform: template
     sensors:
       garbage_truck_nearby:
-        friendly_name: "垃圾車在附近"
+        friendly_name: "Garbage Truck Nearby"
         value_template: "{{ is_state('sensor.garbage_truck_monitor', 'nearby') }}"
         device_class: presence
 ```
 
-### 3. 建立自動化
+### 3. Create Automations
 
 ```yaml
 automation:
-  # 垃圾車到達 - 開燈
-  - alias: "垃圾車抵達通知"
+  # Turn on light when truck arrives
+  - alias: "Garbage Truck Arrival Notification"
     trigger:
       - platform: state
         entity_id: binary_sensor.garbage_truck_nearby
@@ -150,8 +150,8 @@ automation:
           brightness: 255
           rgb_color: [255, 0, 0]
 
-  # 垃圾車離開 - 關燈
-  - alias: "垃圾車離開"
+  # Turn off light when truck leaves
+  - alias: "Garbage Truck Departure"
     trigger:
       - platform: state
         entity_id: binary_sensor.garbage_truck_nearby
@@ -162,29 +162,29 @@ automation:
           entity_id: light.notification_bulb
 ```
 
-## API 端點
+## API Endpoints
 
 ### GET `/api/trash/status`
 
-取得垃圾車狀態
+Get garbage truck status
 
-**回應範例（idle）**：
+**Response (idle)**:
 ```json
 {
   "status": "idle",
-  "reason": "無垃圾車在附近",
+  "reason": "No garbage truck nearby",
   "truck": null,
   "timestamp": "2025-11-18T14:00:00+08:00"
 }
 ```
 
-**回應範例（nearby）**：
+**Response (nearby)**:
 ```json
 {
   "status": "nearby",
-  "reason": "垃圾車即將到達進入清運點: 民生路二段80號",
+  "reason": "Garbage truck approaching entry point: Minsheng Rd. Sec. 2, No. 80",
   "truck": {
-    "line_name": "C08路線下午",
+    "line_name": "C08 Afternoon Route",
     "car_no": "KES-6950",
     "current_rank": 10,
     "total_points": 69,
@@ -198,71 +198,71 @@ automation:
 
 ### GET `/health`
 
-健康檢查
+Health check endpoint
 
 ### POST `/api/reset`
 
-重置追蹤器狀態（測試用）
+Reset tracker state (for testing)
 
-## 疑難排解
+## Troubleshooting
 
-### Add-on 無法啟動
+### Add-on Won't Start
 
-1. 檢查 Log：
-   - 前往 Add-on 頁面 → **Log** 標籤
-   - 查看錯誤訊息
+1. Check logs:
+   - Go to Add-on page → **Log** tab
+   - Review error messages
 
-2. 常見問題：
-   - **配置錯誤**：檢查 YAML 格式是否正確
-   - **Port 衝突**：確認 5000 port 沒被其他服務占用
-   - **網路問題**：確認可以連線到新北市 API
+2. Common issues:
+   - **Configuration error**: Check YAML formatting
+   - **Port conflict**: Ensure port 5000 is not in use
+   - **Network issue**: Verify connectivity to New Taipei City API
 
-### Sensor 顯示 unavailable
+### Sensor Shows Unavailable
 
-1. 確認 Add-on 正在運行
-2. 測試 API：
+1. Confirm Add-on is running
+2. Test API:
    ```bash
    curl http://localhost:5000/health
    ```
-3. 檢查 `configuration.yaml` 中的 resource URL
+3. Verify resource URL in `configuration.yaml`
 
-### 狀態一直是 idle
+### Status Always Shows Idle
 
-1. 確認座標設定正確
-2. 使用 CLI 工具確認附近有垃圾車：
+1. Verify coordinates are correct
+2. Use CLI tool to check for nearby trucks:
    ```bash
-   docker exec -it addon_trash_tracking python3 cli.py --lat 你的緯度 --lng 你的經度
+   docker exec -it addon_trash_tracking python3 cli.py --lat YOUR_LATITUDE --lng YOUR_LONGITUDE
    ```
-3. 檢查清運點名稱是否完全一致
-4. 確認垃圾車路線有包含你設定的清運點
+3. Ensure collection point names match exactly
+4. Verify the truck route includes your configured points
 
-### 檢視詳細日誌
+### View Detailed Logs
 
-將 log_level 設為 DEBUG：
+Set log_level to DEBUG:
 
 ```yaml
 system:
   log_level: "DEBUG"
 ```
 
-## 支援
+## Support
 
-- 📖 完整文檔：[GitHub Repository](https://github.com/你的用戶名/trash_tracking)
-- 🐛 問題回報：[GitHub Issues](https://github.com/你的用戶名/trash_tracking/issues)
-- 💬 討論區：[GitHub Discussions](https://github.com/你的用戶名/trash_tracking/discussions)
+- 📖 Full Documentation: [GitHub Repository](https://github.com/your-username/trash_tracking)
+- 🐛 Issue Reporting: [GitHub Issues](https://github.com/your-username/trash_tracking/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/your-username/trash_tracking/discussions)
 
-## 授權
+## License
 
 MIT License
 
-## 貢獻者
+## Contributors
 
 - Logan ([@iml885203](https://github.com/iml885203))
 
-## 更新日誌
+## Changelog
 
 ### 1.0.0
-- 初始發布
-- 支援新北市垃圾車追蹤
-- Home Assistant 整合
+- Initial release
+- New Taipei City garbage truck tracking support
+- Home Assistant integration
 - RESTful API

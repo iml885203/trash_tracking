@@ -1,4 +1,4 @@
-"""垃圾車動態偵測系統 - 主程式"""
+"""Garbage Truck Tracking System - Main Entry Point"""
 
 import sys
 from src.api.routes import create_app
@@ -7,21 +7,18 @@ from src.utils.logger import logger
 
 
 def main():
-    """主程式進入點"""
+    """Main entry point"""
     try:
-        # 建立 Flask 應用程式
         app = create_app(config_path="config.yaml")
 
-        # 取得伺服器設定
         config = ConfigManager("config.yaml")
         host = config.server_host
         port = config.server_port
         debug = config.server_debug
 
-        logger.info(f"啟動 Flask 伺服器: {host}:{port} (debug={debug})")
-        logger.info("按 Ctrl+C 停止服務")
+        logger.info(f"Starting Flask server: {host}:{port} (debug={debug})")
+        logger.info("Press Ctrl+C to stop service")
 
-        # 啟動服務
         app.run(
             host=host,
             port=port,
@@ -29,16 +26,16 @@ def main():
         )
 
     except ConfigError as e:
-        logger.error(f"❌ 設定檔錯誤: {e}")
-        logger.error("請檢查 config.yaml 檔案")
+        logger.error(f"❌ Config error: {e}")
+        logger.error("Please check config.yaml file")
         sys.exit(1)
 
     except KeyboardInterrupt:
-        logger.info("\n收到中斷信號，正在關閉服務...")
+        logger.info("\nShutdown signal received, stopping service...")
         sys.exit(0)
 
     except Exception as e:
-        logger.error(f"❌ 啟動失敗: {e}", exc_info=True)
+        logger.error(f"❌ Startup failed: {e}", exc_info=True)
         sys.exit(1)
 
 

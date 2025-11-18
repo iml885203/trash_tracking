@@ -8,10 +8,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      # 設定檔（唯讀）
-      - ./config.yaml:/app/config.yaml:ro
-      # 日誌目錄
-      - ./logs:/app/logs
+      - ./config.yaml:/app/config.yaml:ro  # Config file (read-only)
+      - ./logs:/app/logs                   # Log directory
     environment:
       - TZ=Asia/Taipei
       - PYTHONUNBUFFERED=1

@@ -1,4 +1,4 @@
-"""CLI 功能測試"""
+"""CLI functionality tests"""
 
 import pytest
 import sys
@@ -10,14 +10,13 @@ from src.models.truck import TruckLine
 
 
 class TestFormatPointInfo:
-    """測試清運點資訊格式化"""
+    """Point info formatting tests"""
 
     def test_format_passed_point(self):
-        """測試已經過的清運點"""
         point = Point(
             source_point_id=1,
-            vil='板橋區',
-            point_name='文化路一段100號',
+            vil='Banqiao District',
+            point_name='Wenhua Rd. Sec. 1, No. 100',
             lon=121.4705,
             lat=25.0199,
             point_id=1001,
@@ -35,14 +34,13 @@ class TestFormatPointInfo:
 
         assert '✅' in result
         assert '13:55' in result
-        assert '文化路一段100號' in result
+        assert 'Wenhua Rd. Sec. 1, No. 100' in result
 
     def test_format_upcoming_point_with_delay(self):
-        """測試未到達的清運點（有延遲）"""
         point = Point(
             source_point_id=1,
-            vil='板橋區',
-            point_name='文化路一段100號',
+            vil='Banqiao District',
+            point_name='Wenhua Rd. Sec. 1, No. 100',
             lon=121.4705,
             lat=25.0199,
             point_id=1001,
@@ -56,21 +54,19 @@ class TestFormatPointInfo:
             like_count=10
         )
 
-        # 測試延遲 5 分鐘
         result = format_point_info(point, 1, 5)
 
         assert '⏳' in result
-        assert '14:00' in result  # 預定時間
-        assert '14:05' in result  # 預計時間
+        assert '14:00' in result
+        assert '14:05' in result
         assert '晚5分' in result
-        assert '文化路一段100號' in result
+        assert 'Wenhua Rd. Sec. 1, No. 100' in result
 
     def test_format_upcoming_point_early(self):
-        """測試未到達的清運點（提早）"""
         point = Point(
             source_point_id=1,
-            vil='板橋區',
-            point_name='文化路一段100號',
+            vil='Banqiao District',
+            point_name='Wenhua Rd. Sec. 1, No. 100',
             lon=121.4705,
             lat=25.0199,
             point_id=1001,
@@ -84,20 +80,18 @@ class TestFormatPointInfo:
             like_count=10
         )
 
-        # 測試提早 3 分鐘
         result = format_point_info(point, 1, -3)
 
         assert '⏳' in result
-        assert '14:00' in result  # 預定時間
-        assert '13:57' in result  # 預計時間
+        assert '14:00' in result
+        assert '13:57' in result
         assert '早3分' in result
 
     def test_format_upcoming_point_no_delay(self):
-        """測試未到達的清運點（準時）"""
         point = Point(
             source_point_id=1,
-            vil='板橋區',
-            point_name='文化路一段100號',
+            vil='Banqiao District',
+            point_name='Wenhua Rd. Sec. 1, No. 100',
             lon=121.4705,
             lat=25.0199,
             point_id=1001,
@@ -115,14 +109,13 @@ class TestFormatPointInfo:
 
         assert '⏳' in result
         assert '14:00' in result
-        assert '文化路一段100號' in result
+        assert 'Wenhua Rd. Sec. 1, No. 100' in result
 
     def test_format_point_no_time(self):
-        """測試沒有時間資訊的清運點"""
         point = Point(
             source_point_id=1,
-            vil='板橋區',
-            point_name='文化路一段100號',
+            vil='Banqiao District',
+            point_name='Wenhua Rd. Sec. 1, No. 100',
             lon=121.4705,
             lat=25.0199,
             point_id=1001,
@@ -140,20 +133,19 @@ class TestFormatPointInfo:
 
         assert '⏳' in result
         assert '未到' in result
-        assert '文化路一段100號' in result
+        assert 'Wenhua Rd. Sec. 1, No. 100' in result
 
 
 class TestDisplayTruckInfo:
-    """測試垃圾車資訊顯示"""
+    """Truck info display tests"""
 
     @pytest.fixture
     def sample_truck(self):
-        """建立範例垃圾車"""
         points = [
             Point(
                 source_point_id=i,
-                vil='板橋區',
-                point_name=f'清運點{i}',
+                vil='Banqiao District',
+                point_name=f'Collection Point {i}',
                 lon=121.47 + i * 0.001,
                 lat=25.019 + i * 0.001,
                 point_id=1000 + i,
@@ -171,12 +163,12 @@ class TestDisplayTruckInfo:
 
         return TruckLine(
             line_id='C08',
-            line_name='C08路線下午',
-            area='板橋區',
+            line_name='C08 Afternoon Route',
+            area='Banqiao District',
             arrival_rank=5,
             diff=-2,
             car_no='KES-6950',
-            location='新北市板橋區文化路一段100號',
+            location='New Taipei City Banqiao District Wenhua Rd. Sec. 1, No. 100',
             location_lat=25.0199,
             location_lon=121.4705,
             bar_code='BC001',
@@ -184,33 +176,26 @@ class TestDisplayTruckInfo:
         )
 
     def test_display_truck_info_with_upcoming_points(self, sample_truck, capsys):
-        """測試顯示垃圾車資訊（有未到達的點）"""
         display_truck_info(sample_truck, next_points=5)
 
         captured = capsys.readouterr()
         output = captured.out
 
-        # 驗證基本資訊
-        assert 'C08路線下午' in output
+        assert 'C08 Afternoon Route' in output
         assert 'KES-6950' in output
-        assert '新北市板橋區文化路一段100號' in output
+        assert 'New Taipei City Banqiao District Wenhua Rd. Sec. 1, No. 100' in output
         assert '5/15' in output
-
-        # 驗證延遲狀態
         assert '提早狀態' in output
         assert '早 2 分鐘' in output
-
-        # 驗證顯示接下來的點
         assert '接下來' in output
         assert '5 個清運點' in output
 
     def test_display_truck_info_all_completed(self, capsys):
-        """測試顯示垃圾車資訊（所有點都完成）"""
         points = [
             Point(
                 source_point_id=i,
-                vil='板橋區',
-                point_name=f'清運點{i}',
+                vil='Banqiao District',
+                point_name=f'Collection Point {i}',
                 lon=121.47,
                 lat=25.019,
                 point_id=1000 + i,
@@ -228,12 +213,12 @@ class TestDisplayTruckInfo:
 
         truck = TruckLine(
             line_id='C08',
-            line_name='C08路線下午',
-            area='板橋區',
-            arrival_rank=10,  # 超過最大 rank
+            line_name='C08 Afternoon Route',
+            area='Banqiao District',
+            arrival_rank=10,
             diff=0,
             car_no='KES-6950',
-            location='新北市板橋區文化路一段100號',
+            location='New Taipei City Banqiao District Wenhua Rd. Sec. 1, No. 100',
             location_lat=25.0199,
             location_lon=121.4705,
             bar_code='BC001',
@@ -249,20 +234,18 @@ class TestDisplayTruckInfo:
 
 
 class TestMainCLI:
-    """測試 CLI 主程式"""
+    """CLI main program tests"""
 
     @patch('cli.NTPCApiClient')
     def test_main_success(self, mock_client_class):
-        """測試成功查詢"""
-        # 模擬 API 回應
         mock_client = Mock()
         mock_client_class.return_value = mock_client
 
         points = [
             Point(
                 source_point_id=1,
-                vil='板橋區',
-                point_name='清運點1',
+                vil='Banqiao District',
+                point_name='Collection Point 1',
                 lon=121.47,
                 lat=25.019,
                 point_id=1001,
@@ -279,12 +262,12 @@ class TestMainCLI:
 
         truck = TruckLine(
             line_id='C08',
-            line_name='C08路線下午',
-            area='板橋區',
+            line_name='C08 Afternoon Route',
+            area='Banqiao District',
             arrival_rank=3,
             diff=0,
             car_no='KES-6950',
-            location='新北市板橋區文化路一段100號',
+            location='New Taipei City Banqiao District Wenhua Rd. Sec. 1, No. 100',
             location_lat=25.0199,
             location_lon=121.4705,
             bar_code='BC001',
@@ -293,7 +276,6 @@ class TestMainCLI:
 
         mock_client.get_around_points.return_value = [truck]
 
-        # 測試執行
         test_args = ['cli.py', '--lat', '25.0199', '--lng', '121.4705']
         with patch.object(sys, 'argv', test_args):
             result = main()
@@ -303,7 +285,6 @@ class TestMainCLI:
 
     @patch('cli.NTPCApiClient')
     def test_main_no_trucks_found(self, mock_client_class):
-        """測試找不到垃圾車"""
         mock_client = Mock()
         mock_client_class.return_value = mock_client
         mock_client.get_around_points.return_value = []
@@ -316,7 +297,6 @@ class TestMainCLI:
 
     @patch('cli.NTPCApiClient')
     def test_main_with_radius(self, mock_client_class):
-        """測試指定半徑"""
         mock_client = Mock()
         mock_client_class.return_value = mock_client
         mock_client.get_around_points.return_value = []
@@ -329,18 +309,17 @@ class TestMainCLI:
 
     @patch('cli.NTPCApiClient')
     def test_main_with_line_filter(self, mock_client_class):
-        """測試過濾特定路線"""
         mock_client = Mock()
         mock_client_class.return_value = mock_client
 
         truck1 = Mock(spec=TruckLine)
-        truck1.line_name = 'C08路線下午'
+        truck1.line_name = 'C08 Afternoon Route'
         truck2 = Mock(spec=TruckLine)
-        truck2.line_name = 'C15路線下午'
+        truck2.line_name = 'C15 Afternoon Route'
 
         mock_client.get_around_points.return_value = [truck1, truck2]
 
-        test_args = ['cli.py', '--lat', '25.0199', '--lng', '121.4705', '--line', 'C08路線下午']
+        test_args = ['cli.py', '--lat', '25.0199', '--lng', '121.4705', '--line', 'C08 Afternoon Route']
         with patch.object(sys, 'argv', test_args):
             with patch('cli.display_truck_info'):
                 result = main()
@@ -348,7 +327,6 @@ class TestMainCLI:
         assert result == 0
 
     def test_main_missing_required_args(self):
-        """測試缺少必要參數"""
         test_args = ['cli.py']
         with patch.object(sys, 'argv', test_args):
             with pytest.raises(SystemExit):
@@ -356,12 +334,11 @@ class TestMainCLI:
 
     @patch('cli.NTPCApiClient')
     def test_main_api_error(self, mock_client_class):
-        """測試 API 錯誤"""
         from src.clients.ntpc_api import NTPCApiError
 
         mock_client = Mock()
         mock_client_class.return_value = mock_client
-        mock_client.get_around_points.side_effect = NTPCApiError("API 錯誤")
+        mock_client.get_around_points.side_effect = NTPCApiError("API error")
 
         test_args = ['cli.py', '--lat', '25.0199', '--lng', '121.4705']
         with patch.object(sys, 'argv', test_args):

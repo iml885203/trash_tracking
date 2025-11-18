@@ -1,91 +1,91 @@
-# Home Assistant Add-on 安裝與發布指南
+# Home Assistant Add-on Installation and Publishing Guide
 
-本指南說明如何安裝、測試和發布 Trash Tracking Home Assistant Add-on。
+This guide explains how to install, test, and publish the Trash Tracking Home Assistant Add-on.
 
-## 📋 目錄
+## 📋 Table of Contents
 
-- [本地開發測試](#本地開發測試)
-- [發布到 GitHub](#發布到-github)
-- [用戶安裝方式](#用戶安裝方式)
-- [疑難排解](#疑難排解)
+- [Local Development Testing](#local-development-testing)
+- [Publishing to GitHub](#publishing-to-github)
+- [User Installation](#user-installation)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## 本地開發測試
+## Local Development Testing
 
-### 方法 1: 直接複製到 Home Assistant
+### Method 1: Direct Copy to Home Assistant
 
-如果你有 Home Assistant OS 或 Supervised 安裝：
+If you have Home Assistant OS or Supervised installation:
 
-1. **複製 Add-on 資料夾到 `/addons/` 目錄**
+1. **Copy Add-on folder to `/addons/` directory**
 
    ```bash
-   # 在你的開發機器上
+   # On your development machine
    cd /path/to/trash_tracking
 
-   # 複製整個 addon 資料夾到 HA
+   # Copy entire addon folder to HA
    scp -r trash_tracking_addon/ root@homeassistant.local:/addons/trash_tracking
    ```
 
-   或者使用 Samba/SFTP 手動複製 `trash_tracking_addon/` 資料夾。
+   Or manually copy the `trash_tracking_addon/` folder using Samba/SFTP.
 
-2. **重新載入 Add-on Store**
+2. **Reload Add-on Store**
 
-   - 前往 Home Assistant UI
-   - **Supervisor** → **Add-on Store** → 右上角 ⋮ → **Reload**
+   - Go to Home Assistant UI
+   - **Supervisor** → **Add-on Store** → Top right ⋮ → **Reload**
 
-3. **安裝 Add-on**
+3. **Install Add-on**
 
-   - 在 **Local add-ons** 區域找到 "垃圾車追蹤系統"
-   - 點擊進入 → **Install**
+   - Find "Garbage Truck Tracking System" in the **Local add-ons** section
+   - Click to enter → **Install**
 
-4. **配置與啟動**
+4. **Configure and Start**
 
-   - 前往 **Configuration** 標籤
-   - 填寫你的配置（座標、清運點等）
-   - 點擊 **Save**
-   - 前往 **Info** 標籤
-   - 點擊 **Start**
+   - Go to **Configuration** tab
+   - Fill in your configuration (coordinates, collection points, etc.)
+   - Click **Save**
+   - Go to **Info** tab
+   - Click **Start**
 
-5. **檢查日誌**
+5. **Check Logs**
 
-   - 前往 **Log** 標籤
-   - 確認沒有錯誤訊息
-   - 應該看到：
+   - Go to **Log** tab
+   - Confirm there are no error messages
+   - You should see:
      ```
      [INFO] Starting Trash Tracking Add-on...
      [INFO] Starting Flask application...
      * Running on http://0.0.0.0:5000
      ```
 
-### 方法 2: Docker Compose 本地測試
+### Method 2: Docker Compose Local Testing
 
-在發布前先用 Docker Compose 測試：
+Test with Docker Compose before publishing:
 
-1. **建立測試環境**
+1. **Create test environment**
 
    ```bash
    cd trash_tracking
 
-   # 建立測試配置
+   # Create test configuration
    cp config.example.yaml config.yaml
-   # 編輯 config.yaml 填入你的設定
+   # Edit config.yaml to fill in your settings
 
-   # 使用 Docker Compose 啟動
+   # Start with Docker Compose
    docker-compose up --build
    ```
 
-2. **測試 API**
+2. **Test API**
 
    ```bash
-   # 健康檢查
+   # Health check
    curl http://localhost:5000/health
 
-   # 狀態查詢
+   # Status query
    curl http://localhost:5000/api/trash/status
    ```
 
-3. **停止測試**
+3. **Stop testing**
 
    ```bash
    docker-compose down
@@ -93,11 +93,11 @@
 
 ---
 
-## 發布到 GitHub
+## Publishing to GitHub
 
-### 步驟 1: 準備 GitHub Repository
+### Step 1: Prepare GitHub Repository
 
-1. **確認專案結構**
+1. **Verify project structure**
 
    ```
    trash_tracking/
@@ -122,7 +122,7 @@
    └── README.md
    ```
 
-2. **提交到 GitHub**
+2. **Commit to GitHub**
 
    ```bash
    git add trash_tracking_addon/
@@ -130,31 +130,31 @@
    git push origin master
    ```
 
-### 步驟 2: 建立 GitHub Release
+### Step 2: Create GitHub Release
 
-1. **建立版本標籤**
+1. **Create version tag**
 
    ```bash
    git tag -a v1.0.0 -m "Release version 1.0.0"
    git push origin v1.0.0
    ```
 
-2. **在 GitHub 上建立 Release**
+2. **Create Release on GitHub**
 
-   - 前往 `https://github.com/iml885203/trash_tracking/releases`
-   - 點擊 **Create a new release**
-   - 選擇 tag `v1.0.0`
-   - 標題：`v1.0.0 - Initial Release`
-   - 描述：從 `CHANGELOG.md` 複製內容
-   - 點擊 **Publish release**
+   - Go to `https://github.com/iml885203/trash_tracking/releases`
+   - Click **Create a new release**
+   - Select tag `v1.0.0`
+   - Title: `v1.0.0 - Initial Release`
+   - Description: Copy content from `CHANGELOG.md`
+   - Click **Publish release**
 
-### 步驟 3: 設定 GitHub Container Registry (可選)
+### Step 3: Set up GitHub Container Registry (Optional)
 
-如果要自動構建 Docker 映像檔：
+To automatically build Docker images:
 
-1. **建立 GitHub Actions Workflow**
+1. **Create GitHub Actions Workflow**
 
-   創建 `.github/workflows/addon-build.yml`：
+   Create `.github/workflows/addon-build.yml`:
 
    ```yaml
    name: Build Add-on
@@ -198,40 +198,40 @@
                --docker-hub ghcr.io/${{ github.repository_owner }}
    ```
 
-2. **啟用 GitHub Actions**
+2. **Enable GitHub Actions**
 
-   - 提交 workflow 檔案
-   - 前往 **Settings** → **Actions** → **General**
-   - 確認 Actions 已啟用
+   - Commit workflow file
+   - Go to **Settings** → **Actions** → **General**
+   - Confirm Actions are enabled
 
 ---
 
-## 用戶安裝方式
+## User Installation
 
-### 安裝步驟
+### Installation Steps
 
-用戶可以透過以下步驟安裝你的 Add-on：
+Users can install your add-on through the following steps:
 
-#### 1. 新增 Repository
+#### 1. Add Repository
 
-1. 前往 Home Assistant
-2. **Supervisor** → **Add-on Store** → 右上角 ⋮ → **Repositories**
-3. 新增：
+1. Go to Home Assistant
+2. **Supervisor** → **Add-on Store** → Top right ⋮ → **Repositories**
+3. Add:
    ```
    https://github.com/iml885203/trash_tracking
    ```
-4. 點擊 **Add**
+4. Click **Add**
 
-#### 2. 安裝 Add-on
+#### 2. Install Add-on
 
-1. 回到 **Add-on Store**
-2. 重新整理頁面
-3. 找到 "垃圾車追蹤系統"
-4. 點擊進入 → **Install**
+1. Return to **Add-on Store**
+2. Refresh the page
+3. Find "Garbage Truck Tracking System"
+4. Click to enter → **Install**
 
-#### 3. 配置
+#### 3. Configuration
 
-在 **Configuration** 標籤中設定：
+Configure in the **Configuration** tab:
 
 ```yaml
 location:
@@ -239,23 +239,23 @@ location:
   lng: 121.471703
 tracking:
   target_lines: []
-  enter_point: "民生路二段80號"
-  exit_point: "成功路23號"
+  enter_point: "Shuiyuan St Lane 36 Entrance"
+  exit_point: "Shuiyuan St No.28"
   trigger_mode: "arriving"
   approaching_threshold: 2
 system:
   log_level: "INFO"
 ```
 
-#### 4. 啟動
+#### 4. Start
 
-- 前往 **Info** 標籤
-- 點擊 **Start**
-- 確認 **Log** 標籤沒有錯誤
+- Go to **Info** tab
+- Click **Start**
+- Confirm no errors in **Log** tab
 
-#### 5. Home Assistant 整合
+#### 5. Home Assistant Integration
 
-在 `configuration.yaml` 中加入：
+Add to `configuration.yaml`:
 
 ```yaml
 sensor:
@@ -273,119 +273,119 @@ binary_sensor:
   - platform: template
     sensors:
       garbage_truck_nearby:
-        friendly_name: "垃圾車在附近"
+        friendly_name: "Garbage Truck Nearby"
         value_template: "{{ is_state('sensor.garbage_truck_monitor', 'nearby') }}"
         device_class: presence
 ```
 
-重新載入：**開發者工具** → **YAML** → **重新載入所有 YAML**
+Reload: **Developer Tools** → **YAML** → **Reload All YAML**
 
 ---
 
-## 疑難排解
+## Troubleshooting
 
-### 問題 1: Add-on 不在 Add-on Store 中顯示
+### Issue 1: Add-on not showing in Add-on Store
 
-**解決方案**：
+**Solution**:
 
-1. 確認 repository URL 正確
-2. 檢查 `repository.json` 是否在專案根目錄
-3. 嘗試手動重新載入：**Add-on Store** → ⋮ → **Reload**
-4. 查看 Supervisor 日誌：
+1. Confirm repository URL is correct
+2. Check if `repository.json` is in project root
+3. Try manual reload: **Add-on Store** → ⋮ → **Reload**
+4. Check Supervisor logs:
    ```bash
    docker logs hassio_supervisor
    ```
 
-### 問題 2: Add-on 無法啟動
+### Issue 2: Add-on fails to start
 
-**檢查步驟**：
+**Checking steps**:
 
-1. **查看 Add-on Log**
-   - **Log** 標籤中查看錯誤訊息
+1. **Check Add-on Log**
+   - View error messages in **Log** tab
 
-2. **常見錯誤**：
+2. **Common errors**:
 
    ```
    Error: Invalid configuration
    ```
-   → 檢查 Configuration 標籤中的 YAML 格式
+   → Check YAML format in Configuration tab
 
    ```
    Error: Port 5000 already in use
    ```
-   → 停止其他使用 5000 port 的服務
+   → Stop other services using port 5000
 
    ```
    ModuleNotFoundError: No module named 'xxx'
    ```
-   → Dockerfile 中缺少依賴，需要更新 `requirements.txt`
+   → Missing dependency in Dockerfile, need to update `requirements.txt`
 
-3. **手動測試容器**
+3. **Manual container testing**
 
    ```bash
-   # SSH 進入 Home Assistant OS
+   # SSH into Home Assistant OS
    ssh root@homeassistant.local
 
-   # 查看容器狀態
+   # Check container status
    docker ps -a | grep trash_tracking
 
-   # 查看容器日誌
+   # View container logs
    docker logs addon_trash_tracking
 
-   # 進入容器
+   # Enter container
    docker exec -it addon_trash_tracking /bin/bash
 
-   # 檢查檔案
+   # Check files
    ls -la /app
    cat /app/config.yaml
    ```
 
-### 問題 3: 配置檔案產生錯誤
+### Issue 3: Configuration file generation error
 
-**檢查 run.sh**：
+**Check run.sh**:
 
 ```bash
-# 進入容器
+# Enter container
 docker exec -it addon_trash_tracking /bin/bash
 
-# 檢查產生的配置
+# Check generated configuration
 cat /app/config.yaml
 
-# 手動測試 bashio
+# Manually test bashio
 bashio::config 'location.lat'
 ```
 
-### 問題 4: API 無法連線
+### Issue 4: API connection failure
 
-**測試步驟**：
+**Testing steps**:
 
-1. **確認 Add-on 正在運行**
+1. **Confirm Add-on is running**
    ```bash
    docker ps | grep trash_tracking
    ```
 
-2. **測試 API 連線**
+2. **Test API connection**
    ```bash
-   # 在 HA OS Terminal 或 SSH 中
+   # In HA OS Terminal or SSH
    curl http://localhost:5000/health
    curl http://localhost:5000/api/trash/status
    ```
 
-3. **檢查防火牆規則**
-   - 確認 port 5000 沒有被防火牆封鎖
+3. **Check firewall rules**
+   - Ensure port 5000 is not blocked by firewall
 
-### 問題 5: Multi-architecture 構建失敗
+### Issue 5: Multi-architecture build failure
 
-**解決方案**：
+**Solution**:
 
-1. **確認 build.yaml 正確**
+1. **Verify build.yaml is correct**
    ```yaml
    build_from:
      aarch64: "ghcr.io/home-assistant/aarch64-base-python:3.11-alpine3.19"
-     # ... 其他架構
+     # ... other architectures
    ```
 
-2. **本地測試特定架構**
+2. **Test specific architecture locally**
    ```bash
    docker buildx build \
      --platform linux/amd64 \
@@ -393,29 +393,29 @@ bashio::config 'location.lat'
      -t trash_tracking:test .
    ```
 
-3. **查看 Home Assistant Builder 日誌**
+3. **Check Home Assistant Builder logs**
    ```bash
    docker logs hassio_builder
    ```
 
 ---
 
-## 更新 Add-on
+## Updating Add-on
 
-### 發布新版本
+### Publishing New Version
 
-1. **更新版本號**
+1. **Update version number**
 
-   編輯 `trash_tracking_addon/config.yaml`：
+   Edit `trash_tracking_addon/config.yaml`:
    ```yaml
    version: "1.0.1"
    ```
 
-2. **更新 CHANGELOG**
+2. **Update CHANGELOG**
 
-   在 `trash_tracking_addon/CHANGELOG.md` 中加入新版本說明
+   Add new version description in `trash_tracking_addon/CHANGELOG.md`
 
-3. **提交與標籤**
+3. **Commit and tag**
    ```bash
    git add .
    git commit -m "chore: bump version to 1.0.1"
@@ -424,64 +424,64 @@ bashio::config 'location.lat'
    git push origin v1.0.1
    ```
 
-4. **建立 GitHub Release**
-   - 在 GitHub 上建立新的 Release
-   - 選擇 tag `v1.0.1`
+4. **Create GitHub Release**
+   - Create new Release on GitHub
+   - Select tag `v1.0.1`
 
-5. **用戶更新**
-   - 用戶在 Add-on 頁面會看到 "Update" 按鈕
-   - 點擊即可更新
+5. **User update**
+   - Users will see an "Update" button on the add-on page
+   - Click to update
 
 ---
 
-## 最佳實踐
+## Best Practices
 
-### 1. 版本控制
+### 1. Version Control
 
-- 遵循 [Semantic Versioning](https://semver.org/)
+- Follow [Semantic Versioning](https://semver.org/)
   - `MAJOR.MINOR.PATCH`
-  - MAJOR: 破壞性變更
-  - MINOR: 新功能（向後相容）
-  - PATCH: Bug 修復
+  - MAJOR: Breaking changes
+  - MINOR: New features (backward compatible)
+  - PATCH: Bug fixes
 
-### 2. 文件維護
+### 2. Documentation Maintenance
 
-- 每次發布前更新 `CHANGELOG.md`
-- README 保持最新
-- DOCS 提供詳細範例
+- Update `CHANGELOG.md` before each release
+- Keep README up to date
+- Provide detailed examples in DOCS
 
-### 3. 測試
+### 3. Testing
 
-- 本地測試所有變更
-- 在不同架構上測試（如果可能）
-- 測試升級路徑
+- Test all changes locally
+- Test on different architectures (if possible)
+- Test upgrade paths
 
-### 4. 安全性
+### 4. Security
 
-- 定期更新依賴
-- 使用 `safety` 掃描漏洞
-- 遵循最小權限原則
+- Regularly update dependencies
+- Use `safety` to scan vulnerabilities
+- Follow principle of least privilege
 
-### 5. 支援
+### 5. Support
 
-- 監控 GitHub Issues
-- 及時回應用戶問題
-- 維護 FAQ 文件
+- Monitor GitHub Issues
+- Respond to user questions promptly
+- Maintain FAQ documentation
 
 ---
 
-## 相關資源
+## Related Resources
 
-- [Home Assistant Add-on 開發文檔](https://developers.home-assistant.io/docs/add-ons)
+- [Home Assistant Add-on Development Documentation](https://developers.home-assistant.io/docs/add-ons)
 - [Home Assistant Builder](https://github.com/home-assistant/builder)
-- [Bashio 文檔](https://github.com/hassio-addons/bashio)
-- [Add-on 範例](https://github.com/home-assistant/addons-example)
+- [Bashio Documentation](https://github.com/hassio-addons/bashio)
+- [Add-on Examples](https://github.com/home-assistant/addons-example)
 
 ---
 
-## 支援
+## Support
 
-如有問題，請：
-- 查看 [GitHub Issues](https://github.com/iml885203/trash_tracking/issues)
-- 建立新的 Issue 回報問題
-- 參考完整文檔：[DOCS.md](../trash_tracking_addon/DOCS.md)
+If you have questions:
+- Check [GitHub Issues](https://github.com/iml885203/trash_tracking/issues)
+- Create new Issue to report problems
+- Refer to complete documentation: [DOCS.md](../trash_tracking_addon/DOCS.md)

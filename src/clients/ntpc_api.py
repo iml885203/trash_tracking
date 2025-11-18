@@ -1,4 +1,4 @@
-"""新北市垃圾車 API 客戶端"""
+"""New Taipei City Garbage Truck API Client"""
 
 import time
 import requests
@@ -8,12 +8,12 @@ from src.models.truck import TruckLine
 
 
 class NTPCApiError(Exception):
-    """新北市 API 錯誤"""
+    """New Taipei City API Error"""
     pass
 
 
 class NTPCApiClient:
-    """新北市垃圾車 API 客戶端"""
+    """New Taipei City Garbage Truck API Client"""
 
     def __init__(
         self,
@@ -23,13 +23,13 @@ class NTPCApiClient:
         retry_delay: int = 2
     ):
         """
-        初始化 API 客戶端
+        Initialize API client
 
         Args:
-            base_url: API 基礎 URL
-            timeout: 請求逾時時間（秒）
-            retry_count: 重試次數
-            retry_delay: 重試延遲（秒）
+            base_url: API base URL
+            timeout: Request timeout in seconds
+            retry_count: Number of retries
+            retry_delay: Retry delay in seconds
         """
         self.base_url = base_url
         self.timeout = timeout
@@ -39,17 +39,17 @@ class NTPCApiClient:
 
     def get_around_points(self, lat: float, lng: float) -> Optional[List[TruckLine]]:
         """
-        查詢附近的垃圾車
+        Query nearby garbage trucks
 
         Args:
-            lat: 查詢位置的緯度
-            lng: 查詢位置的經度
+            lat: Latitude of query location
+            lng: Longitude of query location
 
         Returns:
-            List[TruckLine]: 垃圾車路線列表，失敗時返回 None
+            List[TruckLine]: List of truck routes, None on failure
 
         Raises:
-            NTPCApiError: 當所有重試都失敗時
+            NTPCApiError: When all retries fail
         """
         url = f"{self.base_url}/GetAroundPoints"
         payload = {"lat": lat, "lng": lng}
@@ -60,7 +60,7 @@ class NTPCApiClient:
         for attempt in range(self.retry_count):
             try:
                 logger.debug(
-                    f"呼叫新北市 API (嘗試 {attempt + 1}/{self.retry_count}): "
+                    f"Calling NTPC API (attempt {attempt + 1}/{self.retry_count}): "
                     f"lat={lat}, lng={lng}"
                 )
 
@@ -71,77 +71,70 @@ class NTPCApiClient:
                     timeout=self.timeout
                 )
 
-                # 檢查 HTTP 狀態碼
                 response.raise_for_status()
 
-                # 解析 JSON
                 data = response.json()
 
-                # 驗證回應格式
                 if not isinstance(data, dict):
-                    raise NTPCApiError(f"API 回應格式錯誤: 不是字典類型")
+                    raise NTPCApiError(f"API response format error: not a dictionary")
 
                 if 'Line' not in data:
-                    logger.warning("API 回應中無 'Line' 欄位，可能沒有垃圾車在附近")
+                    logger.warning("No 'Line' field in API response, possibly no trucks nearby")
                     return []
 
-                # 轉換為 TruckLine 物件
                 lines = []
                 for line_data in data.get('Line', []):
                     try:
                         truck_line = TruckLine.from_dict(line_data)
                         lines.append(truck_line)
                     except Exception as e:
-                        logger.warning(f"解析路線資料失敗: {e}")
+                        logger.warning(f"Failed to parse route data: {e}")
                         continue
 
                 logger.info(
-                    f"成功查詢新北市 API: 找到 {len(lines)} 條路線 "
+                    f"Successfully queried NTPC API: found {len(lines)} route(s) "
                     f"(TimeStamp: {data.get('TimeStamp')})"
                 )
 
                 return lines
 
             except requests.exceptions.Timeout:
-                last_error = "請求逾時"
-                logger.warning(f"API 請求逾時 (嘗試 {attempt + 1}/{self.retry_count})")
+                last_error = "Request timeout"
+                logger.warning(f"API request timeout (attempt {attempt + 1}/{self.retry_count})")
 
             except requests.exceptions.HTTPError as e:
-                last_error = f"HTTP 錯誤: {e.response.status_code}"
+                last_error = f"HTTP error: {e.response.status_code}"
                 logger.warning(
-                    f"API 回傳錯誤狀態碼 {e.response.status_code} "
-                    f"(嘗試 {attempt + 1}/{self.retry_count})"
+                    f"API returned error status {e.response.status_code} "
+                    f"(attempt {attempt + 1}/{self.retry_count})"
                 )
 
             except requests.exceptions.RequestException as e:
-                last_error = f"網路錯誤: {str(e)}"
+                last_error = f"Network error: {str(e)}"
                 logger.warning(
-                    f"API 請求失敗: {e} "
-                    f"(嘗試 {attempt + 1}/{self.retry_count})"
+                    f"API request failed: {e} "
+                    f"(attempt {attempt + 1}/{self.retry_count})"
                 )
 
             except ValueError as e:
-                last_error = f"JSON 解析失敗: {str(e)}"
-                logger.error(f"API 回應無法解析為 JSON: {e}")
-                # JSON 解析失敗不重試
+                last_error = f"JSON parse error: {str(e)}"
+                logger.error(f"API response cannot be parsed as JSON: {e}")
                 break
 
             except Exception as e:
-                last_error = f"未知錯誤: {str(e)}"
-                logger.error(f"API 請求發生未預期的錯誤: {e}")
+                last_error = f"Unknown error: {str(e)}"
+                logger.error(f"Unexpected error in API request: {e}")
                 break
 
-            # 如果還有重試機會，等待後重試
             if attempt < self.retry_count - 1:
-                logger.info(f"等待 {self.retry_delay} 秒後重試...")
+                logger.info(f"Waiting {self.retry_delay} seconds before retry...")
                 time.sleep(self.retry_delay)
 
-        # 所有重試都失敗
-        error_msg = f"新北市 API 請求失敗 (重試 {self.retry_count} 次): {last_error}"
+        error_msg = f"NTPC API request failed after {self.retry_count} retries: {last_error}"
         logger.error(error_msg)
         raise NTPCApiError(error_msg)
 
     def __del__(self):
-        """清理資源"""
+        """Clean up resources"""
         if hasattr(self, 'session'):
             self.session.close()

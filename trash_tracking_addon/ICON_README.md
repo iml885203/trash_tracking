@@ -1,129 +1,129 @@
-# Add-on Icon 圖示說明
+# Add-on Icon Guide
 
-## 必要圖示檔案
+## Required Icon Files
 
-Home Assistant Add-on 需要以下圖示檔案：
+Home Assistant Add-on requires the following icon files:
 
 ### 1. icon.png
-- **尺寸**: 256x256 像素
-- **格式**: PNG
-- **用途**: 在 Add-on Store 中顯示
-- **位置**: `trash_tracking_addon/icon.png`
+- **Size**: 256x256 pixels
+- **Format**: PNG
+- **Usage**: Displayed in Add-on Store
+- **Location**: `trash_tracking_addon/icon.png`
 
-### 2. logo.png (可選)
-- **尺寸**: 256x256 像素
-- **格式**: PNG
-- **用途**: 在 Add-on 詳細頁面顯示
-- **位置**: `trash_tracking_addon/logo.png`
+### 2. logo.png (Optional)
+- **Size**: 256x256 pixels
+- **Format**: PNG
+- **Usage**: Displayed on Add-on detail page
+- **Location**: `trash_tracking_addon/logo.png`
 
-## 設計建議
+## Design Recommendations
 
-### 圖示主題
-垃圾車追蹤系統，建議包含以下元素：
-- 🚛 垃圾車圖示
-- 📍 位置標記
-- 🗺️ 地圖元素
-- 🔔 通知鈴鐺
+### Icon Theme
+Trash tracking system, suggested elements:
+- 🚛 Garbage truck icon
+- 📍 Location marker
+- 🗺️ Map elements
+- 🔔 Notification bell
 
-### 顏色方案
-- 主色：綠色（環保主題）`#4CAF50`
-- 輔色：藍色（科技感）`#2196F3`
-- 強調色：橙色/紅色（通知）`#FF9800` 或 `#F44336`
+### Color Scheme
+- Primary: Green (environmental theme) `#4CAF50`
+- Secondary: Blue (tech feel) `#2196F3`
+- Accent: Orange/Red (notification) `#FF9800` or `#F44336`
 
-### 風格
-- 扁平化設計
-- 圓角圖示
-- 清晰的輪廓
-- 適合深色/淺色背景
+### Style
+- Flat design
+- Rounded corners
+- Clear outlines
+- Suitable for both dark/light backgrounds
 
-## 製作工具
+## Design Tools
 
-### 線上工具
+### Online Tools
 1. **Canva** - https://www.canva.com/
-   - 提供免費圖示模板
-   - 可匯出 PNG
+   - Free icon templates
+   - Can export PNG
 
 2. **Figma** - https://www.figma.com/
-   - 專業設計工具
-   - 免費方案
+   - Professional design tool
+   - Free tier available
 
 3. **GIMP** - https://www.gimp.org/
-   - 開源圖像編輯器
-   - 免費
+   - Open source image editor
+   - Free
 
-### 圖示資源
-- [Font Awesome](https://fontawesome.com/) - 免費圖示
-- [Material Icons](https://fonts.google.com/icons) - Google 圖示
-- [Flaticon](https://www.flaticon.com/) - 扁平化圖示
-- [Icons8](https://icons8.com/) - 多種風格圖示
+### Icon Resources
+- [Font Awesome](https://fontawesome.com/) - Free icons
+- [Material Icons](https://fonts.google.com/icons) - Google icons
+- [Flaticon](https://www.flaticon.com/) - Flat icons
+- [Icons8](https://icons8.com/) - Various style icons
 
-## 快速製作步驟
+## Quick Creation Steps
 
-### 使用 Canva（推薦新手）
+### Using Canva (Recommended for Beginners)
 
-1. **註冊/登入 Canva**
-   - 前往 https://www.canva.com/
+1. **Sign up/Login to Canva**
+   - Go to https://www.canva.com/
 
-2. **建立自訂尺寸**
-   - 點擊 "Create a design"
-   - 選擇 "Custom size": 256 x 256 px
+2. **Create Custom Size**
+   - Click "Create a design"
+   - Select "Custom size": 256 x 256 px
 
-3. **新增元素**
-   - 搜尋 "truck" 或"垃圾車"
-   - 搜尋 "location pin"
-   - 選擇合適的圖示
+3. **Add Elements**
+   - Search "truck" or "garbage truck"
+   - Search "location pin"
+   - Select appropriate icons
 
-4. **組合設計**
-   - 放置垃圾車在中央
-   - 加入位置標記
-   - 調整顏色為綠色系
+4. **Compose Design**
+   - Place truck in center
+   - Add location marker
+   - Adjust colors to green theme
 
-5. **匯出**
-   - 點擊 "Share" → "Download"
-   - 格式：PNG
-   - 尺寸：256x256 px
+5. **Export**
+   - Click "Share" → "Download"
+   - Format: PNG
+   - Size: 256x256 px
 
-6. **儲存檔案**
-   - 將檔案重新命名為 `icon.png`
-   - 複製到 `trash_tracking_addon/icon.png`
+6. **Save File**
+   - Rename file to `icon.png`
+   - Copy to `trash_tracking_addon/icon.png`
 
-### 使用 Font Awesome + GIMP
+### Using Font Awesome + GIMP
 
-1. **下載圖示**
-   - 前往 https://fontawesome.com/
-   - 搜尋 "truck"、"location"
-   - 下載 SVG 檔案
+1. **Download Icons**
+   - Go to https://fontawesome.com/
+   - Search "truck", "location"
+   - Download SVG files
 
-2. **在 GIMP 中組合**
-   - 開啟 GIMP
-   - 建立新圖片：256x256 px
-   - 匯入 SVG 圖示
-   - 調整大小和位置
-   - 加入顏色
+2. **Compose in GIMP**
+   - Open GIMP
+   - Create new image: 256x256 px
+   - Import SVG icons
+   - Adjust size and position
+   - Add colors
 
-3. **匯出**
+3. **Export**
    - File → Export As
-   - 選擇 PNG 格式
-   - 儲存為 `icon.png`
+   - Select PNG format
+   - Save as `icon.png`
 
-## 暫時替代方案
+## Temporary Alternative
 
-如果暫時沒有圖示，可以使用簡單的替代方案：
+If you don't have an icon ready, use a simple alternative:
 
-### 使用 Emoji 生成器
+### Using Emoji Generator
 
-創建一個簡單的 256x256 PNG，內容為垃圾車 emoji 🚛：
+Create a simple 256x256 PNG with garbage truck emoji 🚛:
 
 ```python
 from PIL import Image, ImageDraw, ImageFont
 
-# 建立圖片
+# Create image
 img = Image.new('RGBA', (256, 256), color=(76, 175, 80, 255))
 draw = ImageDraw.Draw(img)
 
-# 加入文字（emoji）
+# Add text (emoji)
 try:
-    # 嘗試使用系統字體
+    # Try to use system font
     font = ImageFont.truetype("/System/Library/Fonts/Apple Color Emoji.ttc", 180)
 except:
     font = ImageFont.load_default()
@@ -136,42 +136,42 @@ x = (256 - text_width) // 2
 y = (256 - text_height) // 2
 draw.text((x, y), text, font=font, embedded_color=True)
 
-# 儲存
+# Save
 img.save('trash_tracking_addon/icon.png')
 print("Icon created!")
 ```
 
-運行：
+Run:
 ```bash
 pip install Pillow
 python generate_icon.py
 ```
 
-## 檢查清單
+## Checklist
 
-發布前確認：
+Before publishing, confirm:
 
-- [ ] `icon.png` 已建立
-- [ ] 尺寸為 256x256 px
-- [ ] 格式為 PNG
-- [ ] 檔案大小 < 1MB
-- [ ] 在深色/淺色背景都清晰可見
-- [ ] 放置在 `trash_tracking_addon/icon.png`
-- [ ] （可選）`logo.png` 也已建立
+- [ ] `icon.png` created
+- [ ] Size is 256x256 px
+- [ ] Format is PNG
+- [ ] File size < 1MB
+- [ ] Visible on both dark/light backgrounds
+- [ ] Placed in `trash_tracking_addon/icon.png`
+- [ ] (Optional) `logo.png` also created
 
-## 範例參考
+## Example References
 
-參考其他 Home Assistant Add-ons 的圖示設計：
+Reference icon designs from other Home Assistant Add-ons:
 - [Official Add-ons](https://github.com/home-assistant/addons)
 - [Community Add-ons](https://github.com/hassio-addons/repository)
 
-## 版權注意事項
+## Copyright Notes
 
-- 確保使用的圖示有適當授權
-- 標註來源（如需要）
-- 使用免費/開源圖示資源
-- 避免使用受版權保護的圖片
+- Ensure icons used have appropriate licensing
+- Attribute sources (if required)
+- Use free/open source icon resources
+- Avoid using copyrighted images
 
 ---
 
-**建議**: 先用簡單的 emoji 替代方案快速測試 Add-on，之後再替換成專業設計的圖示。
+**Recommendation**: Start with simple emoji alternative for quick testing, then replace with professionally designed icon later.

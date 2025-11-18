@@ -1,4 +1,4 @@
-"""日誌模組"""
+"""Logging Module"""
 
 import logging
 import sys
@@ -12,39 +12,34 @@ def setup_logger(
     log_file: Optional[str] = None
 ) -> logging.Logger:
     """
-    設定並返回 logger 實例
+    Configure and return logger instance
 
     Args:
-        name: Logger 名稱
-        log_level: 日誌等級 (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-        log_file: 日誌檔案路徑，若為 None 則只輸出到 console
+        name: Logger name
+        log_level: Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        log_file: Log file path, if None only outputs to console
 
     Returns:
-        logging.Logger: 設定好的 logger 實例
+        logging.Logger: Configured logger instance
     """
     logger = logging.getLogger(name)
 
-    # 避免重複添加 handler
     if logger.handlers:
         return logger
 
-    # 設定日誌等級
     level = getattr(logging, log_level.upper(), logging.INFO)
     logger.setLevel(level)
 
-    # 設定日誌格式
     formatter = logging.Formatter(
         '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S'
     )
 
-    # Console Handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
 
-    # File Handler (可選)
     if log_file:
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -57,5 +52,4 @@ def setup_logger(
     return logger
 
 
-# 預設 logger 實例
 logger = setup_logger()

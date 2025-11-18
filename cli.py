@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""垃圾車查詢 CLI 工具"""
+"""Garbage Truck Query CLI Tool"""
 
 import argparse
 import sys
@@ -12,23 +12,21 @@ from src.utils.logger import setup_logger, logger
 
 def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
     """
-    格式化清運點資訊
+    Format collection point information
 
     Args:
-        point: 清運點資料
-        index: 索引編號
-        truck_diff: 垃圾車目前的延遲時間（分鐘）
+        point: Collection point data
+        index: Index number
+        truck_diff: Truck's current delay in minutes
 
     Returns:
-        str: 格式化的字串
+        str: Formatted string
     """
-    # 狀態標示
     if point.has_passed():
         status = f"✅ {point.arrival}"
     elif point.arrival:
         status = f"⏰ {point.arrival}"
     else:
-        # 計算預計到達時間
         if point.point_time and truck_diff != 0:
             from datetime import datetime, timedelta
             try:
@@ -36,81 +34,75 @@ def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
                 estimated_time = scheduled_time + timedelta(minutes=truck_diff)
                 estimated_str = estimated_time.strftime("%H:%M")
 
-                # 顯示預定時間和預計時間
                 if truck_diff > 0:
-                    status = f"⏳ 預定 {point.point_time} (預計 {estimated_str}, 晚{truck_diff}分)"
+                    status = f"⏳ Scheduled {point.point_time} (Est. {estimated_str}, {truck_diff}min late)"
                 elif truck_diff < 0:
-                    status = f"⏳ 預定 {point.point_time} (預計 {estimated_str}, 早{abs(truck_diff)}分)"
+                    status = f"⏳ Scheduled {point.point_time} (Est. {estimated_str}, {abs(truck_diff)}min early)"
                 else:
-                    status = f"⏳ 預定 {point.point_time}"
+                    status = f"⏳ Scheduled {point.point_time}"
             except ValueError:
-                status = f"⏳ 預定 {point.point_time}"
+                status = f"⏳ Scheduled {point.point_time}"
         elif point.point_time:
-            status = f"⏳ 預定 {point.point_time}"
+            status = f"⏳ Scheduled {point.point_time}"
         else:
-            status = "⏳ 未到"
+            status = "⏳ Not arrived"
 
     return f"  {index:2d}. [{status}] {point.point_name}"
 
 
 def display_truck_info(truck: TruckLine, next_points: int = 10) -> None:
     """
-    顯示垃圾車資訊
+    Display garbage truck information
 
     Args:
-        truck: 垃圾車路線
-        next_points: 顯示接下來的地點數量
+        truck: Truck route
+        next_points: Number of upcoming points to display
     """
     print(f"\n{'='*80}")
-    print(f"🚛 路線名稱: {truck.line_name}")
-    print(f"   車號: {truck.car_no}")
-    print(f"   目前位置: {truck.location or '未知'}")
-    print(f"   目前停靠點序號: {truck.arrival_rank}/{len(truck.points)}")
+    print(f"🚛 Route Name: {truck.line_name}")
+    print(f"   Truck No.: {truck.car_no}")
+    print(f"   Current Location: {truck.location or 'Unknown'}")
+    print(f"   Current Stop: {truck.arrival_rank}/{len(truck.points)}")
 
-    # 顯示延遲狀態
     if truck.diff > 0:
-        print(f"   ⚠️  延遲狀態: 晚 {truck.diff} 分鐘")
+        print(f"   ⚠️  Delay Status: {truck.diff} minutes late")
     elif truck.diff < 0:
-        print(f"   ✅ 提早狀態: 早 {abs(truck.diff)} 分鐘")
+        print(f"   ✅ Early Status: {abs(truck.diff)} minutes early")
     else:
-        print(f"   ✅ 準時運行")
+        print(f"   ✅ On Time")
 
     print(f"{'='*80}")
 
-    # 取得未經過的清運點
     upcoming_points = truck.get_upcoming_points()
 
     if not upcoming_points:
-        print("\n   ℹ️  所有清運點都已完成")
+        print("\n   ℹ️  All collection points completed")
         return
 
-    # 限制顯示數量
     points_to_show = upcoming_points[:next_points]
 
-    print(f"\n📍 接下來 {len(points_to_show)} 個清運點:")
+    print(f"\n📍 Next {len(points_to_show)} collection points:")
     for i, point in enumerate(points_to_show, 1):
         print(format_point_info(point, i, truck.diff))
 
-    # 如果還有更多點
     remaining = len(upcoming_points) - len(points_to_show)
     if remaining > 0:
-        print(f"\n   ... 還有 {remaining} 個清運點")
+        print(f"\n   ... {remaining} more collection points")
 
     print()
 
 
 def main():
-    """主程式"""
-    # 解析命令列參數
+    """Main program"""
     parser = argparse.ArgumentParser(
-        description='查詢新北市垃圾車即時資訊',
+        description='Query New Taipei City garbage truck real-time information',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-範例:
+Examples:
   %(prog)s --lat 25.0199 --lng 121.4705
   %(prog)s --lat 25.0199 --lng 121.4705 --radius 1000
   %(prog)s --lat 25.0199 --lng 121.4705 --next 5
-  %(prog)s --lat 25.0199 --lng 121.4705 --line "一區晚1"
+  %(prog)s --lat 25.0199 --lng 121.4705 --line "Area 1 Evening 1"
         """
     )
 
@@ -118,88 +110,82 @@ def main():
         '--lat',
         type=float,
         required=True,
-        help='查詢位置的緯度 (例如: 25.0199)'
+        help='Latitude of query location (e.g., 25.0199)'
     )
 
     parser.add_argument(
         '--lng',
         type=float,
         required=True,
-        help='查詢位置的經度 (例如: 121.4705)'
+        help='Longitude of query location (e.g., 121.4705)'
     )
 
     parser.add_argument(
         '--radius',
         type=int,
         default=1000,
-        help='查詢半徑(公尺)，預設 1000'
+        help='Query radius in meters (default: 1000)'
     )
 
     parser.add_argument(
         '--next',
         type=int,
         default=10,
-        help='顯示接下來的清運點數量，預設 10'
+        help='Number of upcoming collection points to display (default: 10)'
     )
 
     parser.add_argument(
         '--line',
         type=str,
-        help='過濾特定路線名稱 (例如: "一區晚1")'
+        help='Filter by specific route name (e.g., "Area 1 Evening 1")'
     )
 
     parser.add_argument(
         '--debug',
         action='store_true',
-        help='顯示除錯訊息'
+        help='Show debug messages'
     )
 
     args = parser.parse_args()
 
-    # 設定 logger
     log_level = "DEBUG" if args.debug else "INFO"
     setup_logger(log_level=log_level)
 
     try:
-        # 建立 API 客戶端
         client = NTPCApiClient()
 
-        print(f"\n🔍 查詢位置: ({args.lat}, {args.lng})")
-        print(f"📏 查詢半徑: {args.radius} 公尺")
+        print(f"\n🔍 Query Location: ({args.lat}, {args.lng})")
+        print(f"📏 Query Radius: {args.radius} meters")
 
-        # 查詢垃圾車
         trucks = client.get_around_points(args.lat, args.lng)
 
         if not trucks:
-            print("\n❌ 查詢範圍內沒有垃圾車")
+            print("\n❌ No garbage trucks found in query range")
             return 0
 
-        # 過濾路線（如果有指定）
         if args.line:
             trucks = [t for t in trucks if t.line_name == args.line]
             if not trucks:
-                print(f"\n❌ 找不到路線: {args.line}")
+                print(f"\n❌ Route not found: {args.line}")
                 return 1
 
-        # 顯示找到的垃圾車數量
-        print(f"\n✅ 找到 {len(trucks)} 台垃圾車")
+        print(f"\n✅ Found {len(trucks)} garbage truck(s)")
 
-        # 顯示每台垃圾車的資訊
         for truck in trucks:
             display_truck_info(truck, args.next)
 
         return 0
 
     except NTPCApiError as e:
-        print(f"\n❌ API 錯誤: {e}", file=sys.stderr)
+        print(f"\n❌ API Error: {e}", file=sys.stderr)
         return 1
 
     except KeyboardInterrupt:
-        print("\n\n⚠️  已取消查詢")
+        print("\n\n⚠️  Query cancelled")
         return 130
 
     except Exception as e:
-        print(f"\n❌ 發生錯誤: {e}", file=sys.stderr)
+        print(f"\n❌ Error occurred: {e}", file=sys.stderr)
         if args.debug:
             import traceback
             traceback.print_exc()

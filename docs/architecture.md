@@ -1,28 +1,28 @@
-# 垃圾車動態偵測系統 - 架構設計文件
+# Garbage Truck Tracking System - Architecture Design Document
 
-## 文件說明
+## Document Overview
 
-本文件描述垃圾車動態偵測系統的技術架構、模組設計、資料流程與部署方案。
+This document describes the technical architecture, module design, data flow, and deployment strategy of the garbage truck tracking system.
 
 ---
 
-## 1. 系統架構概覽
+## 1. System Architecture Overview
 
-### 1.1 高階架構圖
+### 1.1 High-Level Architecture Diagram
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                     Home Assistant                          │
 │  ┌────────────────────────────────────────────────────────┐ │
-│  │  RESTful Sensor (每 90 秒輪詢)                         │ │
+│  │  RESTful Sensor (polls every 90 seconds)               │ │
 │  │  • sensor.garbage_truck_monitor                        │ │
 │  │  • binary_sensor.garbage_truck_nearby                  │ │
 │  └─────────────────────┬──────────────────────────────────┘ │
 │                        │                                     │
 │  ┌─────────────────────▼──────────────────────────────────┐ │
 │  │  Automation                                            │ │
-│  │  • 垃圾車抵達 → 燈泡亮起                                 │ │
-│  │  • 垃圾車離開 → 燈泡關閉                                 │ │
+│  │  • Truck arrives → Light turns on                      │ │
+│  │  • Truck leaves → Light turns off                      │ │
 │  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────┬───────────────────────────────────┘
                           │ HTTP GET /api/trash/status
@@ -37,98 +37,98 @@
 │                        │                                     │
 │  ┌─────────────────────▼──────────────────────────────────┐ │
 │  │  Business Logic Layer                                  │ │
-│  │  • TruckTracker: 垃圾車追蹤邏輯                         │ │
-│  │  • StateManager: 狀態管理（idle/nearby）               │ │
-│  │  • PointMatcher: 清運點匹配邏輯                         │ │
+│  │  • TruckTracker: Truck tracking logic                  │ │
+│  │  • StateManager: State management (idle/nearby)        │ │
+│  │  • PointMatcher: Collection point matching logic       │ │
 │  └─────────────────────┬──────────────────────────────────┘ │
 │                        │                                     │
 │  ┌─────────────────────▼──────────────────────────────────┐ │
 │  │  Data Access Layer                                     │ │
-│  │  • APIClient: 新北市 API 客戶端                         │ │
-│  │  • ConfigManager: 設定檔管理                            │ │
-│  │  • Cache: 快取機制（可選）                              │ │
+│  │  • APIClient: New Taipei City API client               │ │
+│  │  • ConfigManager: Configuration management             │ │
+│  │  • Cache: Caching mechanism (optional)                 │ │
 │  └────────────────────────────────────────────────────────┘ │
 └─────────────────────────┬───────────────────────────────────┘
                           │ HTTP POST
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│          新北市垃圾車 API (外部服務)                         │
+│          New Taipei City Garbage Truck API (External)       │
 │      https://crd-rubbish.epd.ntpc.gov.tw/WebAPI            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### 1.2 技術堆疊
+### 1.2 Technology Stack
 
-| 層級 | 技術選擇 | 理由 |
+| Layer | Technology | Rationale |
 |------|---------|------|
-| **Web 框架** | Flask 3.0+ | 輕量、易於開發、RESTful 友善 |
-| **程式語言** | Python 3.11+ | Home Assistant 生態、豐富的函式庫 |
-| **HTTP 客戶端** | requests | 標準、穩定、易用 |
-| **設定管理** | PyYAML | YAML 格式人性化，易於編輯 |
-| **日誌處理** | Python logging | 標準庫、無額外依賴 |
-| **部署方式** | Docker (可選) | 跨平台、易於部署到 HA OS |
-| **時區處理** | pytz | 正確處理台灣時區 |
+| **Web Framework** | Flask 3.0+ | Lightweight, easy to develop, RESTful-friendly |
+| **Programming Language** | Python 3.11+ | Home Assistant ecosystem, rich libraries |
+| **HTTP Client** | requests | Standard, stable, easy to use |
+| **Configuration Management** | PyYAML | YAML format is human-friendly, easy to edit |
+| **Logging** | Python logging | Standard library, no extra dependencies |
+| **Deployment** | Docker (optional) | Cross-platform, easy to deploy to HA OS |
+| **Timezone Handling** | pytz | Correctly handles Taiwan timezone |
 
 ---
 
-## 2. 模組設計
+## 2. Module Design
 
-### 2.1 專案結構
+### 2.1 Project Structure
 
 ```
 trash_light/
-├── app.py                      # Flask 應用程式進入點
-├── config.yaml                 # 使用者設定檔
-├── requirements.txt            # Python 依賴清單
-├── Dockerfile                  # Docker 容器化設定
-├── .env.example                # 環境變數範本
-├── README.md                   # 專案說明
+├── app.py                      # Flask application entry point
+├── config.yaml                 # User configuration file
+├── requirements.txt            # Python dependencies
+├── Dockerfile                  # Docker containerization config
+├── .env.example                # Environment variables template
+├── README.md                   # Project documentation
 │
-├── src/                        # 原始碼目錄
+├── src/                        # Source code directory
 │   ├── __init__.py
 │   │
-│   ├── api/                    # API 層
+│   ├── api/                    # API layer
 │   │   ├── __init__.py
-│   │   └── routes.py           # Flask 路由定義
+│   │   └── routes.py           # Flask route definitions
 │   │
-│   ├── core/                   # 核心業務邏輯
+│   ├── core/                   # Core business logic
 │   │   ├── __init__.py
-│   │   ├── tracker.py          # 垃圾車追蹤器
-│   │   ├── state_manager.py   # 狀態管理器
-│   │   └── point_matcher.py   # 清運點匹配器
+│   │   ├── tracker.py          # Garbage truck tracker
+│   │   ├── state_manager.py   # State manager
+│   │   └── point_matcher.py   # Collection point matcher
 │   │
-│   ├── clients/                # 外部服務客戶端
+│   ├── clients/                # External service clients
 │   │   ├── __init__.py
-│   │   └── ntpc_api.py         # 新北市 API 客戶端
+│   │   └── ntpc_api.py         # New Taipei City API client
 │   │
-│   ├── utils/                  # 工具模組
+│   ├── utils/                  # Utility modules
 │   │   ├── __init__.py
-│   │   ├── config.py           # 設定管理
-│   │   ├── logger.py           # 日誌設定
-│   │   └── cache.py            # 快取機制
+│   │   ├── config.py           # Configuration management
+│   │   ├── logger.py           # Logging configuration
+│   │   └── cache.py            # Caching mechanism
 │   │
-│   └── models/                 # 資料模型
+│   └── models/                 # Data models
 │       ├── __init__.py
-│       ├── truck.py            # 垃圾車資料模型
-│       └── point.py            # 清運點資料模型
+│       ├── truck.py            # Garbage truck data model
+│       └── point.py            # Collection point data model
 │
-├── tests/                      # 測試程式碼
+├── tests/                      # Test code
 │   ├── __init__.py
 │   ├── test_tracker.py
 │   ├── test_api.py
 │   └── test_point_matcher.py
 │
-└── docs/                       # 文件
-    ├── requirements.md         # 需求規格
-    ├── api-specification.md   # API 規格
-    └── architecture.md         # 架構設計（本文件）
+└── docs/                       # Documentation
+    ├── requirements.md         # Requirements specification
+    ├── api-specification.md   # API specification
+    └── architecture.md         # Architecture design (this document)
 ```
 
-### 2.2 核心模組說明
+### 2.2 Core Module Descriptions
 
 #### 2.2.1 API Layer (`src/api/routes.py`)
 
-**職責**: 處理 HTTP 請求與回應
+**Responsibility**: Handle HTTP requests and responses
 
 ```python
 from flask import Flask, jsonify
@@ -139,23 +139,23 @@ tracker = TruckTracker()
 
 @app.route('/api/trash/status', methods=['GET'])
 def get_status():
-    """取得垃圾車狀態"""
+    """Get garbage truck status"""
     status = tracker.get_current_status()
     return jsonify(status)
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """健康檢查端點"""
+    """Health check endpoint"""
     return jsonify({"status": "ok"})
 ```
 
 #### 2.2.2 Truck Tracker (`src/core/tracker.py`)
 
-**職責**: 協調各模組，實現垃圾車追蹤主邏輯
+**Responsibility**: Coordinate modules and implement main tracking logic
 
 ```python
 class TruckTracker:
-    """垃圾車追蹤器"""
+    """Garbage truck tracker"""
 
     def __init__(self, config: dict):
         self.config = config
@@ -168,37 +168,37 @@ class TruckTracker:
 
     def get_current_status(self) -> dict:
         """
-        取得當前垃圾車狀態
+        Get current garbage truck status
 
         Returns:
-            dict: 包含 status, reason, truck, timestamp 的狀態資訊
+            dict: Status information including status, reason, truck, timestamp
         """
-        # 1. 呼叫新北市 API
+        # 1. Call New Taipei City API
         api_data = self.api_client.get_around_points(
             lat=self.config['lat'],
             lng=self.config['lng']
         )
 
-        # 2. 過濾目標路線
+        # 2. Filter target routes
         target_lines = self._filter_target_lines(api_data)
 
-        # 3. 檢查每條路線的清運點狀態
+        # 3. Check collection point status for each route
         for line in target_lines:
             match_result = self.point_matcher.check_line(line)
 
             if match_result['should_trigger']:
-                # 更新狀態
+                # Update state
                 new_state = match_result['new_state']
                 self.state_manager.update_state(new_state, line)
                 break
 
-        # 4. 回傳目前狀態
+        # 4. Return current status
         return self.state_manager.get_status_response()
 ```
 
 #### 2.2.3 State Manager (`src/core/state_manager.py`)
 
-**職責**: 管理系統狀態（idle ↔ nearby）
+**Responsibility**: Manage system state (idle ↔ nearby)
 
 ```python
 from enum import Enum
@@ -209,7 +209,7 @@ class TruckState(Enum):
     NEARBY = "nearby"
 
 class StateManager:
-    """狀態管理器"""
+    """State manager"""
 
     def __init__(self):
         self.current_state = TruckState.IDLE
@@ -218,11 +218,11 @@ class StateManager:
 
     def update_state(self, new_state: TruckState, truck_data: dict = None):
         """
-        更新系統狀態
+        Update system state
 
         Args:
-            new_state: 新狀態
-            truck_data: 垃圾車資料（當狀態為 nearby 時必填）
+            new_state: New state
+            truck_data: Truck data (required when state is nearby)
         """
         if self.current_state != new_state:
             self.current_state = new_state
@@ -230,7 +230,7 @@ class StateManager:
             self.last_update = datetime.now()
 
     def get_status_response(self) -> dict:
-        """生成 API 回應"""
+        """Generate API response"""
         return {
             "status": self.current_state.value,
             "reason": self._get_reason(),
@@ -241,11 +241,11 @@ class StateManager:
 
 #### 2.2.4 Point Matcher (`src/core/point_matcher.py`)
 
-**職責**: 判斷垃圾車是否到達進入/離開清運點
+**Responsibility**: Determine if truck has reached entry/exit collection points
 
 ```python
 class PointMatcher:
-    """清運點匹配器"""
+    """Collection point matcher"""
 
     def __init__(self, enter_point: str, exit_point: str,
                  trigger_mode: str = 'arriving', threshold: int = 2):
@@ -256,10 +256,10 @@ class PointMatcher:
 
     def check_line(self, line_data: dict) -> dict:
         """
-        檢查路線是否觸發狀態變更
+        Check if route should trigger state change
 
         Args:
-            line_data: API 回傳的路線資料
+            line_data: Route data returned by API
 
         Returns:
             dict: {
@@ -271,34 +271,34 @@ class PointMatcher:
         current_rank = line_data['ArrivalRank']
         points = line_data['Point']
 
-        # 找到進入點和離開點
+        # Find entry and exit points
         enter_point_data = self._find_point(points, self.enter_point)
         exit_point_data = self._find_point(points, self.exit_point)
 
         if not enter_point_data or not exit_point_data:
             return {'should_trigger': False}
 
-        # 檢查是否到達進入點
+        # Check if approaching entry point
         if self._is_approaching_enter_point(current_rank, enter_point_data):
             return {
                 'should_trigger': True,
                 'new_state': TruckState.NEARBY,
-                'reason': f'垃圾車即將到達 {self.enter_point}'
+                'reason': f'Truck approaching {self.enter_point}'
             }
 
-        # 檢查是否已過離開點
+        # Check if passed exit point
         if self._has_passed_exit_point(exit_point_data):
             return {
                 'should_trigger': True,
                 'new_state': TruckState.IDLE,
-                'reason': f'垃圾車已離開 {self.exit_point}'
+                'reason': f'Truck passed {self.exit_point}'
             }
 
         return {'should_trigger': False}
 
     def _is_approaching_enter_point(self, current_rank: int,
                                      enter_point: dict) -> bool:
-        """判斷是否即將到達進入點"""
+        """Determine if approaching entry point"""
         enter_rank = enter_point['PointRank']
         distance = enter_rank - current_rank
 
@@ -308,20 +308,20 @@ class PointMatcher:
             return enter_point['Arrival'] != ""
 
     def _has_passed_exit_point(self, exit_point: dict) -> bool:
-        """判斷是否已經過離開點"""
+        """Determine if passed exit point"""
         return exit_point['Arrival'] != ""
 ```
 
 #### 2.2.5 NTPC API Client (`src/clients/ntpc_api.py`)
 
-**職責**: 封裝新北市 API 的呼叫邏輯
+**Responsibility**: Encapsulate New Taipei City API call logic
 
 ```python
 import requests
 from typing import Optional
 
 class NTPCApiClient:
-    """新北市垃圾車 API 客戶端"""
+    """New Taipei City garbage truck API client"""
 
     BASE_URL = "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI"
 
@@ -331,14 +331,14 @@ class NTPCApiClient:
 
     def get_around_points(self, lat: float, lng: float) -> Optional[dict]:
         """
-        查詢附近垃圾車
+        Query nearby garbage trucks
 
         Args:
-            lat: 緯度
-            lng: 經度
+            lat: Latitude
+            lng: Longitude
 
         Returns:
-            dict: API 回傳的資料，失敗時回傳 None
+            dict: API response data, None on failure
         """
         url = f"{self.BASE_URL}/GetAroundPoints"
         payload = {"lat": lat, "lng": lng}
@@ -355,58 +355,62 @@ class NTPCApiClient:
             return response.json()
 
         except requests.exceptions.RequestException as e:
-            # 記錄錯誤並回傳 None
-            logger.error(f"API 請求失敗: {e}")
+            # Log error and return None
+            logger.error(f"API request failed: {e}")
             return None
 ```
 
 ---
 
-## 3. 資料流程
+## 3. Data Flow
 
-### 3.1 狀態轉換流程
+### 3.1 State Transition Flow
 
 ```
                         ┌──────────────┐
-                        │ 系統啟動      │
+                        │ System Start │
                         └──────┬───────┘
                                │
                                ▼
                         ┌──────────────┐
-                   ┌────│  idle 狀態    │◄────┐
-                   │    │ (燈泡關閉)     │      │
+                   ┌────│  idle State  │◄────┐
+                   │    │ (light off)  │      │
                    │    └──────┬───────┘      │
                    │           │              │
-                   │           │ HA 每 90 秒   │
-                   │           │ 輪詢 API      │
+                   │           │ HA polls     │
+                   │           │ every 90s    │
                    │           ▼              │
                    │    ┌──────────────┐      │
-                   │    │ 查詢新北市API │      │
+                   │    │ Query NTPC   │      │
+                   │    │ API          │      │
                    │    └──────┬───────┘      │
                    │           │              │
                    │           ▼              │
                    │    ┌──────────────┐      │
-                   │    │ 檢查進入清運點 │      │
+                   │    │ Check Entry  │      │
+                   │    │ Point        │      │
                    │    └──────┬───────┘      │
                    │           │              │
-                   │           │ 是           │
+                   │           │ Yes          │
                    │           ▼              │
                    │    ┌──────────────┐      │
-                   │    │ nearby 狀態   │      │
-                   │    │ (燈泡亮起)     │      │
+                   │    │ nearby State │      │
+                   │    │ (light on)   │      │
                    │    └──────┬───────┘      │
                    │           │              │
-                   │           │ 持續輪詢      │
+                   │           │ Continue     │
+                   │           │ polling      │
                    │           ▼              │
                    │    ┌──────────────┐      │
-                   │    │ 檢查離開清運點 │      │
+                   │    │ Check Exit   │      │
+                   │    │ Point        │      │
                    │    └──────┬───────┘      │
                    │           │              │
-                   │           │ 是           │
+                   │           │ Yes          │
                    └───────────┴──────────────┘
 ```
 
-### 3.2 API 呼叫流程
+### 3.2 API Call Flow
 
 ```
 Home Assistant              Flask App              NTPC API
@@ -420,10 +424,10 @@ Home Assistant              Flask App              NTPC API
      │                         │   JSON Response      │
      │                         │<─────────────────────┤
      │                         │                      │
-     │                         │ 處理邏輯：            │
-     │                         │ 1. 過濾路線          │
-     │                         │ 2. 匹配清運點         │
-     │                         │ 3. 更新狀態          │
+     │                         │ Processing logic:    │
+     │                         │ 1. Filter routes     │
+     │                         │ 2. Match points      │
+     │                         │ 3. Update state      │
      │                         │                      │
      │   JSON Response         │                      │
      │<────────────────────────┤                      │
@@ -432,98 +436,98 @@ Home Assistant              Flask App              NTPC API
 
 ---
 
-## 4. 設定檔設計
+## 4. Configuration File Design
 
-### 4.1 config.yaml 結構
+### 4.1 config.yaml Structure
 
 ```yaml
-# 系統設定
+# System settings
 system:
-  log_level: INFO           # 日誌等級：DEBUG, INFO, WARNING, ERROR
-  cache_enabled: false      # 是否啟用快取（未來功能）
-  cache_ttl: 60            # 快取存活時間（秒）
+  log_level: INFO           # Log level: DEBUG, INFO, WARNING, ERROR
+  cache_enabled: false      # Enable caching (future feature)
+  cache_ttl: 60            # Cache TTL (seconds)
 
-# 查詢位置（你家的座標）
+# Query location (your home coordinates)
 location:
   lat: 25.005193869072745
   lng: 121.5099557021958
 
-# 垃圾車追蹤設定
+# Garbage truck tracking settings
 tracking:
-  # 指定追蹤的路線（留空陣列則追蹤所有路線）
+  # Specify target routes (empty array = track all routes)
   target_lines:
-    - "三區晚9"
-    # - "三區晚11"
+    - "District 3 Evening 9"
+    # - "District 3 Evening 11"
 
-  # 進入清運點
-  enter_point: "水源街36巷口"
+  # Entry point
+  enter_point: "Shuiyuan St. Lane 36 Intersection"
 
-  # 離開清運點
-  exit_point: "水源街28號"
+  # Exit point
+  exit_point: "Shuiyuan St. No. 28"
 
-  # 觸發模式
-  # arriving: 即將到達進入點時觸發
-  # arrived: 已經到達進入點時觸發
+  # Trigger mode
+  # arriving: Trigger when approaching entry point
+  # arrived: Trigger when arrived at entry point
   trigger_mode: "arriving"
 
-  # 提前通知停靠點數（僅當 trigger_mode=arriving 時有效）
+  # Number of stops ahead for advance notification (only when trigger_mode=arriving)
   approaching_threshold: 2
 
-# API 設定
+# API settings
 api:
-  # 新北市 API 設定
+  # New Taipei City API settings
   ntpc:
     base_url: "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI"
-    timeout: 10             # 請求逾時（秒）
-    retry_count: 3          # 重試次數
-    retry_delay: 2          # 重試延遲（秒）
+    timeout: 10             # Request timeout (seconds)
+    retry_count: 3          # Number of retries
+    retry_delay: 2          # Retry delay (seconds)
 
-  # Flask 服務設定
+  # Flask server settings
   server:
     host: "0.0.0.0"
     port: 5000
     debug: false
 
-# Home Assistant 整合設定（文件參考）
+# Home Assistant integration settings (documentation reference)
 home_assistant:
-  scan_interval: 90         # HA 輪詢間隔（秒）
-  light_entity_id: "light.notification_bulb"  # 控制的燈泡 entity ID
+  scan_interval: 90         # HA polling interval (seconds)
+  light_entity_id: "light.notification_bulb"  # Light entity ID to control
 ```
 
-### 4.2 設定檔驗證
+### 4.2 Configuration File Validation
 
-系統啟動時會驗證以下項目：
-- 必填欄位是否存在
-- 座標格式是否正確
-- 進入點和離開點不可相同
-- trigger_mode 必須為 'arriving' 或 'arrived'
-
----
-
-## 5. 錯誤處理策略
-
-### 5.1 外部 API 錯誤
-
-| 錯誤類型 | 處理方式 |
-|---------|---------|
-| 連線逾時 | 重試 3 次，失敗後維持上一次狀態 |
-| HTTP 4xx | 記錄錯誤，回傳錯誤訊息給 HA |
-| HTTP 5xx | 記錄錯誤，維持上一次狀態 |
-| JSON 解析失敗 | 記錄錯誤，維持上一次狀態 |
-
-### 5.2 內部邏輯錯誤
-
-| 錯誤類型 | 處理方式 |
-|---------|---------|
-| 找不到清運點 | 記錄警告，回傳 idle 狀態 |
-| 設定檔錯誤 | 啟動時拋出例外，拒絕啟動 |
-| 狀態異常 | 重置為 idle 狀態 |
+The system validates the following on startup:
+- Required fields exist
+- Coordinate format is correct
+- Entry and exit points are not the same
+- trigger_mode must be 'arriving' or 'arrived'
 
 ---
 
-## 6. 部署架構
+## 5. Error Handling Strategy
 
-### 6.1 Docker 部署
+### 5.1 External API Errors
+
+| Error Type | Handling Strategy |
+|---------|---------|
+| Connection timeout | Retry 3 times, maintain last state on failure |
+| HTTP 4xx | Log error, return error message to HA |
+| HTTP 5xx | Log error, maintain last state |
+| JSON parsing failure | Log error, maintain last state |
+
+### 5.2 Internal Logic Errors
+
+| Error Type | Handling Strategy |
+|---------|---------|
+| Collection point not found | Log warning, return idle state |
+| Configuration file error | Throw exception on startup, refuse to start |
+| State anomaly | Reset to idle state |
+
+---
+
+## 6. Deployment Architecture
+
+### 6.1 Docker Deployment
 
 #### Dockerfile
 ```dockerfile
@@ -531,17 +535,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# 安裝依賴
+# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# 複製程式碼
+# Copy code
 COPY . .
 
-# 暴露端口
+# Expose port
 EXPOSE 5000
 
-# 啟動應用
+# Start application
 CMD ["python", "app.py"]
 ```
 
@@ -563,17 +567,17 @@ services:
     restart: unless-stopped
 ```
 
-### 6.2 Home Assistant Add-on 部署
+### 6.2 Home Assistant Add-on Deployment
 
-專案可打包為 Home Assistant Add-on，直接透過 Add-on Store 安裝。
+The project can be packaged as a Home Assistant Add-on for direct installation via the Add-on Store.
 
-#### config.json (Add-on 設定)
+#### config.json (Add-on configuration)
 ```json
 {
   "name": "Garbage Truck Light",
   "version": "1.0.0",
   "slug": "garbage_truck_light",
-  "description": "新北市垃圾車動態偵測與燈泡控制",
+  "description": "New Taipei City garbage truck tracking and light control",
   "arch": ["armhf", "armv7", "aarch64", "amd64", "i386"],
   "startup": "application",
   "boot": "auto",
@@ -586,8 +590,8 @@ services:
       "lng": 121.5099557021958
     },
     "tracking": {
-      "enter_point": "水源街36巷口",
-      "exit_point": "水源街28號"
+      "enter_point": "Shuiyuan St. Lane 36 Intersection",
+      "exit_point": "Shuiyuan St. No. 28"
     }
   },
   "schema": {
@@ -608,63 +612,63 @@ services:
 
 ---
 
-## 7. 效能考量
+## 7. Performance Considerations
 
-### 7.1 效能指標
+### 7.1 Performance Metrics
 
-| 指標 | 目標值 | 測量方式 |
+| Metric | Target | Measurement Method |
 |------|--------|---------|
-| API 回應時間 | < 2 秒 | 使用 Flask 內建計時 |
-| 記憶體使用 | < 512 MB | Docker stats 監控 |
-| CPU 使用 | < 10% | Docker stats 監控 |
+| API response time | < 2 seconds | Using Flask built-in timing |
+| Memory usage | < 512 MB | Docker stats monitoring |
+| CPU usage | < 10% | Docker stats monitoring |
 
-### 7.2 最佳化策略
+### 7.2 Optimization Strategies
 
-1. **減少 API 呼叫**:
-   - HA 輪詢間隔設為 90 秒（可調整）
-   - 避免重複查詢同一時間的資料
+1. **Reduce API calls**:
+   - HA polling interval set to 90 seconds (adjustable)
+   - Avoid redundant queries for the same time period
 
-2. **快取機制**（未來功能）:
-   - 快取新北市 API 回應 60 秒
-   - 減少對外部 API 的負擔
+2. **Caching mechanism** (future feature):
+   - Cache NTPC API responses for 60 seconds
+   - Reduce load on external API
 
-3. **連線池**:
-   - 使用 `requests.Session()` 重用 TCP 連線
-
----
-
-## 8. 安全考量
-
-### 8.1 資料隱私
-- 使用者座標僅用於查詢 API，不記錄或傳送到其他地方
-- 日誌中不包含敏感資訊
-
-### 8.2 API 安全
-- 限制 API 僅監聽 localhost（除非需要遠端存取）
-- 未來可加入 API Key 認證機制
-
-### 8.3 依賴管理
-- 定期更新 Python 套件，修補安全漏洞
-- 使用 `pip-audit` 掃描已知漏洞
+3. **Connection pooling**:
+   - Use `requests.Session()` to reuse TCP connections
 
 ---
 
-## 9. 監控與日誌
+## 8. Security Considerations
 
-### 9.1 日誌格式
+### 8.1 Data Privacy
+- User coordinates are only used for API queries, not logged or sent elsewhere
+- Logs do not contain sensitive information
+
+### 8.2 API Security
+- Restrict API to listen on localhost only (unless remote access needed)
+- Future: add API key authentication mechanism
+
+### 8.3 Dependency Management
+- Regularly update Python packages to patch security vulnerabilities
+- Use `pip-audit` to scan for known vulnerabilities
+
+---
+
+## 9. Monitoring and Logging
+
+### 9.1 Log Format
 
 ```
-2025-11-17 21:00:00 [INFO] TruckTracker: 開始查詢垃圾車狀態
-2025-11-17 21:00:01 [INFO] NTPCApiClient: API 請求成功 (200)
-2025-11-17 21:00:01 [INFO] PointMatcher: 找到路線 "三區晚9"
-2025-11-17 21:00:01 [INFO] PointMatcher: 垃圾車即將到達進入點 "水源街36巷口"
-2025-11-17 21:00:01 [INFO] StateManager: 狀態變更: idle -> nearby
+2025-11-17 21:00:00 [INFO] TruckTracker: Starting garbage truck status query
+2025-11-17 21:00:01 [INFO] NTPCApiClient: API request successful (200)
+2025-11-17 21:00:01 [INFO] PointMatcher: Found route "District 3 Evening 9"
+2025-11-17 21:00:01 [INFO] PointMatcher: Truck approaching entry point "Shuiyuan St. Lane 36 Intersection"
+2025-11-17 21:00:01 [INFO] StateManager: State change: idle -> nearby
 2025-11-17 21:00:01 [INFO] Flask: 200 GET /api/trash/status
 ```
 
-### 9.2 健康檢查
+### 9.2 Health Check
 
-提供 `/health` 端點供監控系統查詢：
+Provides `/health` endpoint for monitoring systems:
 
 ```bash
 curl http://localhost:5000/health
@@ -673,11 +677,11 @@ curl http://localhost:5000/health
 
 ---
 
-## 10. 擴充性設計
+## 10. Extensibility Design
 
-### 10.1 支援多使用者
+### 10.1 Multi-User Support
 
-未來可擴充為多使用者版本，每個使用者有獨立的設定：
+Future extension to support multiple users with independent configurations:
 
 ```python
 class MultiUserTracker:
@@ -690,9 +694,9 @@ class MultiUserTracker:
         return self.trackers[user_id].get_current_status()
 ```
 
-### 10.2 支援其他縣市
+### 10.2 Support for Other Cities
 
-架構設計可支援其他縣市的垃圾車 API：
+Architecture design supports garbage truck APIs from other cities:
 
 ```python
 class APIClientFactory:
@@ -702,51 +706,51 @@ class APIClientFactory:
             return NTPCApiClient()
         elif city == "taipei":
             return TaipeiApiClient()
-        # ... 其他縣市
+        # ... other cities
 ```
 
 ---
 
-## 11. 測試策略
+## 11. Testing Strategy
 
-### 11.1 單元測試
+### 11.1 Unit Testing
 
-- 測試 PointMatcher 的邏輯判斷
-- 測試 StateManager 的狀態轉換
-- Mock 外部 API 呼叫
+- Test PointMatcher logic
+- Test StateManager state transitions
+- Mock external API calls
 
-### 11.2 整合測試
+### 11.2 Integration Testing
 
-- 測試 Flask API 端點
-- 測試完整的資料流程
+- Test Flask API endpoints
+- Test complete data flow
 
-### 11.3 端對端測試
+### 11.3 End-to-End Testing
 
-- 使用真實的新北市 API 測試
-- 驗證 Home Assistant 整合
-
----
-
-## 12. 已知限制與改進方向
-
-### 12.1 已知限制
-
-1. **單執行緒設計**: 目前不支援多使用者並發
-2. **無持久化**: 系統重啟後狀態遺失
-3. **無認證機制**: API 未實作認證
-4. **依賴外部 API**: 若新北市 API 異常則無法運作
-
-### 12.2 改進方向
-
-1. **加入資料庫**: 儲存歷史記錄，供統計分析
-2. **WebSocket 推送**: 主動推送狀態變更到 HA
-3. **Web 管理介面**: 提供圖形化設定介面
-4. **地圖視覺化**: 顯示垃圾車即時位置
-5. **多通知管道**: 支援 LINE、Telegram 推播
+- Test with real New Taipei City API
+- Verify Home Assistant integration
 
 ---
 
-**文件版本**: v1.0
-**最後更新**: 2025-11-17
-**維護者**: Logan
-**專案名稱**: trash_light
+## 12. Known Limitations and Future Improvements
+
+### 12.1 Known Limitations
+
+1. **Single-threaded design**: Does not support multi-user concurrency
+2. **No persistence**: State lost after system restart
+3. **No authentication**: API has no authentication implemented
+4. **External API dependency**: Cannot operate if NTPC API is down
+
+### 12.2 Future Improvements
+
+1. **Add database**: Store historical records for statistical analysis
+2. **WebSocket push**: Actively push state changes to HA
+3. **Web management interface**: Provide graphical configuration interface
+4. **Map visualization**: Display real-time truck location
+5. **Multiple notification channels**: Support LINE, Telegram notifications
+
+---
+
+**Document Version**: v1.0
+**Last Updated**: 2025-11-17
+**Maintainer**: Logan
+**Project Name**: trash_light

@@ -1,239 +1,239 @@
-# 垃圾車動態偵測系統 - 需求規格書
+# Garbage Truck Dynamic Detection System - Requirements Specification
 
-## 專案概述
+## Project Overview
 
-### 目的
-開發一個垃圾車動態偵測系統，用於偵測垃圾車是否抵達指定清運點附近，並透過 Home Assistant 自動化控制燈泡亮滅，提醒使用者垃圾車到達。
+### Purpose
+Develop a garbage truck dynamic detection system to detect whether garbage trucks arrive near designated collection points, and automatically control light on/off through Home Assistant automation to remind users of garbage truck arrival.
 
-### 目標
-- 即時追蹤垃圾車位置
-- 當垃圾車經過「進入清運點」時，燈泡亮起
-- 當垃圾車經過「離開清運點」時，燈泡關閉
-- 與 Home Assistant 深度整合
-
----
-
-## 功能需求
-
-### FR-1: 垃圾車位置追蹤
-
-**描述**: 系統需要定期查詢新北市垃圾車 API，取得即時垃圾車位置資訊。
-
-**需求細節**:
-- API 端點: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetAroundPoints`
-- 查詢頻率: 每 1-2 分鐘
-- 輸入參數: 使用者家中座標（經緯度）
-- 輸出資料: 附近垃圾車路線、停靠點、即時位置
-
-### FR-2: 清運點狀態判定
-
-**描述**: 系統需要追蹤垃圾車是否經過使用者指定的「進入清運點」和「離開清運點」。
-
-**判定邏輯**:
-
-#### 2.1 進入清運點觸發
-- **條件**: 垃圾車到達或即將到達「進入清運點」
-- **行為**: 系統狀態從 `idle` 切換為 `nearby`
-- **觸發模式**:
-  - 模式 A (arriving): 垃圾車距離進入點前 N 個停靠點時觸發
-  - 模式 B (arrived): 垃圾車已到達進入點（`Arrival` 欄位有值）時觸發
-
-#### 2.2 離開清運點觸發
-- **條件**: 垃圾車到達或經過「離開清運點」
-- **行為**: 系統狀態從 `nearby` 切換回 `idle`
-- **約束**: 離開清運點必須在路線順序上位於進入清運點**之後**
-
-#### 2.3 多路線處理
-- 使用者可指定多條需要追蹤的路線名稱
-- 若未指定，則追蹤所有經過兩個清運點的路線
-- 當任一追蹤路線的垃圾車進入範圍，狀態即觸發
-
-### FR-3: RESTful API 提供
-
-**描述**: 系統需要提供 HTTP API，供 Home Assistant 輪詢查詢目前垃圾車狀態。
-
-**API 規格**:
-- **端點**: `GET /api/trash/status`
-- **回傳格式**: JSON
-- **回傳內容**:
-  - 當前狀態 (`idle`, `nearby`)
-  - 觸發原因說明
-  - 垃圾車詳細資訊（路線名稱、車號、位置）
-  - 進入/離開清運點的到達狀態
-  - 時間戳記
-
-### FR-4: Home Assistant 整合
-
-**描述**: 系統需要提供完整的 Home Assistant 設定範例，實現自動化控制。
-
-**整合需求**:
-- 使用 RESTful Sensor 定期查詢系統狀態
-- 提供 Binary Sensor 判斷垃圾車是否在附近
-- 自動化規則:
-  - 當 `binary_sensor.garbage_truck_nearby` 切換為 `on` → 燈泡亮起
-  - 當 `binary_sensor.garbage_truck_nearby` 切換為 `off` → 燈泡關閉
+### Objectives
+- Real-time tracking of garbage truck location
+- Light turns on when garbage truck passes "entry collection point"
+- Light turns off when garbage truck passes "exit collection point"
+- Deep integration with Home Assistant
 
 ---
 
-## 非功能需求
+## Functional Requirements
 
-### NFR-1: 效能需求
-- API 回應時間 < 2 秒
-- 支援多使用者同時查詢（未來擴充考量）
-- 系統記憶體佔用 < 512 MB
+### FR-1: Garbage Truck Location Tracking
 
-### NFR-2: 可靠性需求
-- 當新北市 API 無法連線時，系統不應崩潰
-- 提供錯誤日誌記錄
-- API 查詢失敗時，維持上一次的狀態
+**Description**: The system needs to periodically query the New Taipei City Garbage Truck API to obtain real-time garbage truck location information.
 
-### NFR-3: 可維護性需求
-- 使用 YAML 設定檔管理所有參數
-- 程式碼需要包含註解
-- 提供完整的部署文件
+**Requirement Details**:
+- API Endpoint: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetAroundPoints`
+- Query Frequency: Every 1-2 minutes
+- Input Parameters: User's home coordinates (latitude/longitude)
+- Output Data: Nearby garbage truck routes, stops, real-time location
 
-### NFR-4: 安全性需求
-- 不記錄使用者敏感資訊（座標僅用於查詢 API）
-- 限制 API 查詢頻率，避免對新北市 API 造成負擔
+### FR-2: Collection Point Status Determination
 
----
+**Description**: The system needs to track whether garbage trucks pass through user-specified "entry collection point" and "exit collection point".
 
-## 使用者設定需求
+**Determination Logic**:
 
-使用者需要在設定檔中提供以下資訊：
+#### 2.1 Entry Collection Point Trigger
+- **Condition**: Garbage truck arrives at or is approaching "entry collection point"
+- **Behavior**: System state switches from `idle` to `nearby`
+- **Trigger Modes**:
+  - Mode A (arriving): Triggers when garbage truck is N stops before entry point
+  - Mode B (arrived): Triggers when garbage truck has arrived at entry point (`Arrival` field has value)
 
-### 必填欄位
-1. **家中座標** (lat, lng)
-   - 用途: 查詢新北市 API，取得附近垃圾車資訊
-   - 格式: 浮點數，精確到小數點後 6 位
+#### 2.2 Exit Collection Point Trigger
+- **Condition**: Garbage truck arrives at or passes "exit collection point"
+- **Behavior**: System state switches from `nearby` back to `idle`
+- **Constraint**: Exit collection point must be **after** entry collection point in route order
 
-2. **進入清運點名稱** (enter_point)
-   - 用途: 觸發燈泡亮起的清運點
-   - 格式: 字串，必須與 API 回傳的 `PointName` 完全一致
-   - 範例: "水源街36巷口"
+#### 2.3 Multi-Route Processing
+- Users can specify multiple route names to track
+- If not specified, all routes passing through both collection points are tracked
+- State triggers when garbage truck from any tracked route enters range
 
-3. **離開清運點名稱** (exit_point)
-   - 用途: 觸發燈泡關閉的清運點
-   - 格式: 字串，必須與 API 回傳的 `PointName` 完全一致
-   - 範例: "水源街28號"
-   - 約束: 必須在路線上位於進入點之後
+### FR-3: RESTful API Provision
 
-### 選填欄位
-4. **追蹤路線清單** (target_lines)
-   - 用途: 限制只追蹤特定路線
-   - 格式: 字串陣列
-   - 範例: ["三區晚9", "三區晚11"]
-   - 預設值: 空陣列（追蹤所有路線）
+**Description**: The system needs to provide an HTTP API for Home Assistant to poll and query current garbage truck status.
 
-5. **觸發模式** (trigger_mode)
-   - 用途: 決定何時觸發進入狀態
-   - 選項:
-     - `arriving`: 垃圾車即將到達進入點時觸發
-     - `arrived`: 垃圾車已到達進入點時觸發
-   - 預設值: `arriving`
+**API Specification**:
+- **Endpoint**: `GET /api/trash/status`
+- **Response Format**: JSON
+- **Response Content**:
+  - Current state (`idle`, `nearby`)
+  - Trigger reason description
+  - Garbage truck detailed information (route name, vehicle number, location)
+  - Entry/exit collection point arrival status
+  - Timestamp
 
-6. **提前通知停靠點數** (approaching_threshold)
-   - 用途: 當 trigger_mode 為 `arriving` 時，提前多少個停靠點觸發
-   - 格式: 整數
-   - 範例: 2（表示前 2 個停靠點就觸發）
-   - 預設值: 2
+### FR-4: Home Assistant Integration
+
+**Description**: The system needs to provide complete Home Assistant configuration examples to implement automation control.
+
+**Integration Requirements**:
+- Use RESTful Sensor to regularly query system status
+- Provide Binary Sensor to determine if garbage truck is nearby
+- Automation rules:
+  - When `binary_sensor.garbage_truck_nearby` switches to `on` → Light turns on
+  - When `binary_sensor.garbage_truck_nearby` switches to `off` → Light turns off
 
 ---
 
-## 系統狀態定義
+## Non-Functional Requirements
 
-### 狀態機
-系統使用簡單的狀態機管理垃圾車狀態：
+### NFR-1: Performance Requirements
+- API response time < 2 seconds
+- Support concurrent queries from multiple users (future expansion consideration)
+- System memory usage < 512 MB
+
+### NFR-2: Reliability Requirements
+- System should not crash when New Taipei City API is unavailable
+- Provide error logging
+- Maintain previous state when API query fails
+
+### NFR-3: Maintainability Requirements
+- Use YAML configuration file to manage all parameters
+- Code must include comments
+- Provide complete deployment documentation
+
+### NFR-4: Security Requirements
+- Do not log user sensitive information (coordinates only used for API queries)
+- Limit API query frequency to avoid overloading New Taipei City API
+
+---
+
+## User Configuration Requirements
+
+Users need to provide the following information in configuration file:
+
+### Required Fields
+1. **Home Coordinates** (lat, lng)
+   - Purpose: Query New Taipei City API to get nearby garbage truck information
+   - Format: Float, accurate to 6 decimal places
+
+2. **Entry Collection Point Name** (enter_point)
+   - Purpose: Collection point that triggers light on
+   - Format: String, must exactly match `PointName` returned by API
+   - Example: "Shuiyuan St Lane 36 Entrance"
+
+3. **Exit Collection Point Name** (exit_point)
+   - Purpose: Collection point that triggers light off
+   - Format: String, must exactly match `PointName` returned by API
+   - Example: "No. 28, Shuiyuan St"
+   - Constraint: Must be after entry point on route
+
+### Optional Fields
+4. **Tracked Route List** (target_lines)
+   - Purpose: Limit tracking to specific routes only
+   - Format: String array
+   - Example: ["District 3 Evening 9", "District 3 Evening 11"]
+   - Default: Empty array (track all routes)
+
+5. **Trigger Mode** (trigger_mode)
+   - Purpose: Determine when to trigger entry state
+   - Options:
+     - `arriving`: Triggers when garbage truck is approaching entry point
+     - `arrived`: Triggers when garbage truck has arrived at entry point
+   - Default: `arriving`
+
+6. **Advance Notification Stop Count** (approaching_threshold)
+   - Purpose: When trigger_mode is `arriving`, how many stops in advance to trigger
+   - Format: Integer
+   - Example: 2 (triggers 2 stops before)
+   - Default: 2
+
+---
+
+## System State Definition
+
+### State Machine
+System uses simple state machine to manage garbage truck status:
 
 ```
 ┌─────────┐
-│  idle   │ ← 初始狀態（燈關閉）
+│  idle   │ ← Initial state (light off)
 └────┬────┘
      │
-     │ 垃圾車到達/即將到達進入清運點
+     │ Garbage truck arrives/approaching entry collection point
      ▼
 ┌─────────┐
-│ nearby  │ ← 垃圾車在附近（燈亮起）
+│ nearby  │ ← Garbage truck nearby (light on)
 └────┬────┘
      │
-     │ 垃圾車經過離開清運點
+     │ Garbage truck passes exit collection point
      ▼
 ┌─────────┐
-│  idle   │ ← 回到初始狀態（燈關閉）
+│  idle   │ ← Return to initial state (light off)
 └─────────┘
 ```
 
-### 狀態說明
+### State Descriptions
 
-| 狀態 | 描述 | 燈泡狀態 | 觸發條件 |
-|------|------|----------|----------|
-| `idle` | 垃圾車不在附近 | 關閉 🌑 | 初始狀態或已離開 |
-| `nearby` | 垃圾車在附近 | 亮起 💡 | 經過進入清運點 |
-
----
-
-## 約束與限制
-
-### 技術限制
-1. 依賴新北市環保局 API，若 API 停止服務則系統無法運作
-2. API 更新頻率由新北市政府控制，可能有延遲
-3. 清運點名稱必須與 API 資料完全匹配，否則無法觸發
-
-### 使用限制
-1. 僅支援新北市轄區內的垃圾車追蹤
-2. 進入和離開清運點必須在同一條路線上
-3. 不支援跨路線的清運點配對
-
-### 設計假設
-1. 假設使用者能正確取得家中座標
-2. 假設清運點名稱在 API 中穩定存在（不會變更）
-3. 假設 Home Assistant 環境已正確設定並運行
+| State | Description | Light Status | Trigger Condition |
+|-------|-------------|--------------|-------------------|
+| `idle` | Garbage truck not nearby | Off 🌑 | Initial state or departed |
+| `nearby` | Garbage truck nearby | On 💡 | Passed entry collection point |
 
 ---
 
-## 未來擴充需求 (Optional)
+## Constraints and Limitations
 
-以下需求為未來可能的擴充方向，不在第一版實作範圍：
+### Technical Limitations
+1. Depends on New Taipei City Environmental Protection Bureau API, system cannot operate if API stops service
+2. API update frequency controlled by New Taipei City government, may have delays
+3. Collection point names must exactly match API data, otherwise cannot trigger
 
-1. **多使用者支援**: 允許多個使用者設定不同的清運點
-2. **推播通知**: 除了燈泡外，透過手機推播通知
-3. **語音通知**: 整合 TTS (Text-to-Speech) 語音播報
-4. **歷史記錄**: 記錄垃圾車到達時間，供統計分析
-5. **Web 管理介面**: 提供圖形化介面設定清運點
-6. **地圖視覺化**: 在網頁上顯示垃圾車即時位置
+### Usage Limitations
+1. Only supports garbage truck tracking within New Taipei City jurisdiction
+2. Entry and exit collection points must be on the same route
+3. Does not support cross-route collection point pairing
 
----
-
-## 驗收標準
-
-### 功能驗收
-- [ ] 系統能成功查詢新北市 API 並解析資料
-- [ ] 垃圾車經過進入清運點時，狀態正確切換為 `nearby`
-- [ ] 垃圾車經過離開清運點時，狀態正確切換為 `idle`
-- [ ] RESTful API 能正常回傳 JSON 格式資料
-- [ ] Home Assistant 能成功整合並控制燈泡
-
-### 效能驗收
-- [ ] API 回應時間平均 < 2 秒
-- [ ] 系統連續運行 24 小時無崩潰
-- [ ] 狀態切換延遲 < 5 分鐘（受 API 查詢頻率限制）
-
-### 可靠性驗收
-- [ ] 新北市 API 無法連線時，系統能正常處理錯誤
-- [ ] 錯誤日誌能正確記錄異常情況
-- [ ] 設定檔格式錯誤時，系統提供明確錯誤訊息
+### Design Assumptions
+1. Assumes users can correctly obtain their home coordinates
+2. Assumes collection point names stably exist in API (will not change)
+3. Assumes Home Assistant environment is correctly configured and running
 
 ---
 
-## 參考資料
+## Future Expansion Requirements (Optional)
 
-- 新北市垃圾車追蹤 API: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetAroundPoints`
-- Home Assistant 官方文件: https://www.home-assistant.io/
-- RESTful Sensor 文件: https://www.home-assistant.io/integrations/rest/
+The following requirements are possible future expansion directions, not in first version implementation scope:
+
+1. **Multi-user Support**: Allow multiple users to configure different collection points
+2. **Push Notifications**: In addition to lights, send mobile push notifications
+3. **Voice Notifications**: Integrate TTS (Text-to-Speech) voice broadcasting
+4. **Historical Records**: Record garbage truck arrival times for statistical analysis
+5. **Web Management Interface**: Provide graphical interface to configure collection points
+6. **Map Visualization**: Display garbage truck real-time location on webpage
 
 ---
 
-**文件版本**: v1.0
-**最後更新**: 2025-11-17
-**作者**: Logan
-**專案名稱**: trash_light
+## Acceptance Criteria
+
+### Functional Acceptance
+- [ ] System can successfully query New Taipei City API and parse data
+- [ ] State correctly switches to `nearby` when garbage truck passes entry collection point
+- [ ] State correctly switches to `idle` when garbage truck passes exit collection point
+- [ ] RESTful API can normally return JSON format data
+- [ ] Home Assistant can successfully integrate and control lights
+
+### Performance Acceptance
+- [ ] API response time average < 2 seconds
+- [ ] System runs continuously for 24 hours without crashes
+- [ ] State switching delay < 5 minutes (limited by API query frequency)
+
+### Reliability Acceptance
+- [ ] System can properly handle errors when New Taipei City API is unavailable
+- [ ] Error logs can correctly record abnormal situations
+- [ ] System provides clear error messages when configuration file format is incorrect
+
+---
+
+## Reference Materials
+
+- New Taipei City Garbage Truck Tracking API: `https://crd-rubbish.epd.ntpc.gov.tw/WebAPI/GetAroundPoints`
+- Home Assistant Official Documentation: https://www.home-assistant.io/
+- RESTful Sensor Documentation: https://www.home-assistant.io/integrations/rest/
+
+---
+
+**Document Version**: v1.0
+**Last Updated**: 2025-11-17
+**Author**: Logan
+**Project Name**: trash_light
