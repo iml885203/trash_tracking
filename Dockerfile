@@ -1,36 +1,36 @@
-FROM python:3.11-slim
+# Home Assistant Add-on Dockerfile
+ARG BUILD_FROM
+FROM $BUILD_FROM
 
-# 設定工作目錄
+# Set shell
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# Install Python and dependencies
+RUN apk add --no-cache \
+    python3 \
+    py3-pip \
+    curl \
+    && pip3 install --no-cache-dir --upgrade pip
+
+# Set working directory
 WORKDIR /app
 
-# 安裝系統依賴
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+# Copy application files
+COPY src/ /app/src/
+COPY app.py /app/
+COPY cli.py /app/
+COPY requirements.txt /app/
 
-# 複製依賴清單
-COPY requirements.txt .
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# 安裝 Python 依賴
-RUN pip install --no-cache-dir -r requirements.txt
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
 
-# 複製程式碼
-COPY . .
-
-# 建立 logs 目錄
-RUN mkdir -p logs
-
-# 暴露端口
-EXPOSE 5000
-
-# 設定環境變數
+# Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV TZ=Asia/Taipei
 
-# 健康檢查
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5000/health')"
-
-# 啟動應用
-CMD ["python", "app.py"]
+# Default command (will be overridden by run.sh in Home Assistant)
+CMD ["python3", "app.py"]

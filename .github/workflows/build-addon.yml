@@ -1,0 +1,94 @@
+name: Build and Push Add-on
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Add-on
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get version from tag or commit
+        id: version
+        run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            VERSION="dev-${GITHUB_SHA::7}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building version: ${VERSION}"
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push multi-arch images
+        run: |
+          # Define architectures
+          ARCHS=("amd64" "aarch64" "armv7" "armhf" "i386")
+          BASE_IMAGES=(
+            "amd64=ghcr.io/home-assistant/amd64-base-python:3.11-alpine3.19"
+            "aarch64=ghcr.io/home-assistant/aarch64-base-python:3.11-alpine3.19"
+            "armv7=ghcr.io/home-assistant/armv7-base-python:3.11-alpine3.19"
+            "armhf=ghcr.io/home-assistant/armhf-base-python:3.11-alpine3.19"
+            "i386=ghcr.io/home-assistant/i386-base-python:3.11-alpine3.19"
+          )
+          PLATFORMS=(
+            "amd64=linux/amd64"
+            "aarch64=linux/arm64"
+            "armv7=linux/arm/v7"
+            "armhf=linux/arm/v6"
+            "i386=linux/386"
+          )
+
+          # Build for each architecture
+          for arch in "${ARCHS[@]}"; do
+            echo "Building for ${arch}..."
+
+            # Get base image and platform for this arch
+            BASE_IMAGE=$(echo "${BASE_IMAGES[@]}" | grep -o "${arch}=[^ ]*" | cut -d= -f2)
+            PLATFORM=$(echo "${PLATFORMS[@]}" | grep -o "${arch}=[^ ]*" | cut -d= -f2)
+
+            # Build and push
+            docker buildx build \
+              --platform ${PLATFORM} \
+              --build-arg BUILD_FROM=${BASE_IMAGE} \
+              --tag ghcr.io/${{ github.repository_owner }}/${arch}-trash-tracking:${{ steps.version.outputs.version }} \
+              --tag ghcr.io/${{ github.repository_owner }}/${arch}-trash-tracking:latest \
+              --file Dockerfile \
+              --push \
+              .
+
+            echo "✓ Built and pushed ${arch}"
+          done
+
+      - name: Summary
+        run: |
+          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Images built:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${{ github.repository_owner }}/amd64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${{ github.repository_owner }}/aarch64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${{ github.repository_owner }}/armv7-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${{ github.repository_owner }}/armhf-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${{ github.repository_owner }}/i386-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
