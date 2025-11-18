@@ -1,144 +1,252 @@
-# 🚛 垃圾車動態偵測系統 (Trash Tracking)
+# 🚛 垃圾車追蹤系統 (Trash Tracking)
 
-新北市垃圾車即時追蹤與 Home Assistant 燈泡自動化控制系統。
+[![GitHub release](https://img.shields.io/github/v/release/iml885203/trash_tracking)](https://github.com/iml885203/trash_tracking/releases)
+[![License](https://img.shields.io/github/license/iml885203/trash_tracking)](LICENSE)
+[![CI](https://github.com/iml885203/trash_tracking/actions/workflows/ci.yml/badge.svg)](https://github.com/iml885203/trash_tracking/actions)
+
+新北市垃圾車即時追蹤與 Home Assistant 自動化整合系統。
 
 ## 📋 專案簡介
 
-本系統透過呼叫新北市環保局的垃圾車 API，即時追蹤垃圾車位置，並根據使用者設定的「進入清運點」和「離開清運點」，自動觸發 Home Assistant 燈泡的開關。
+透過新北市環保局的垃圾車 API，即時追蹤垃圾車位置，當垃圾車接近或經過你設定的清運點時，自動觸發 Home Assistant 設備（如燈泡、通知等）。
 
-### 主要功能
+### ✨ 主要功能
 
-- ✅ 即時追蹤新北市垃圾車位置
-- ✅ 自訂進入/離開清運點
-- ✅ 支援多條路線追蹤
-- ✅ 提供 RESTful API 供 Home Assistant 整合
-- ✅ CLI 命令列工具查詢垃圾車即時位置
-- ✅ 支援 Docker 容器化部署
-- ✅ 完整的日誌記錄
+- 🚛 **即時追蹤**：新北市垃圾車位置追蹤
+- 📍 **自訂清運點**：設定進入/離開清運點
+- 🎯 **多路線支援**：可追蹤多條垃圾車路線
+- ⏰ **提前通知**：可設定提前幾個停靠點通知
+- 🏠 **Home Assistant 整合**：RESTful API 無縫整合
+- 🐳 **容器化部署**：支援 Docker 和 Home Assistant Add-on
+- 🔧 **CLI 工具**：命令列查詢垃圾車即時位置
 
-### 工作流程
+### 🎬 工作流程
 
 ```
-垃圾車接近進入清運點 → API 狀態變更為 nearby → HA 自動化觸發 → 燈泡亮起 💡
-垃圾車經過離開清運點 → API 狀態變更為 idle → HA 自動化觸發 → 燈泡關閉 🌑
+垃圾車接近進入清運點 → API 狀態變更為 nearby → HA 自動化觸發 → 💡 燈泡亮起
+垃圾車經過離開清運點 → API 狀態變更為 idle → HA 自動化觸發 → 🌑 燈泡關閉
 ```
 
 ---
 
 ## 🚀 快速開始
 
-### 環境需求
+### 方法 1️⃣：Home Assistant Add-on（推薦）
 
-- Python 3.11+
-- Home Assistant (Optional)
-- Docker & Docker Compose (Optional)
+**最簡單的安裝方式**，適合所有 Home Assistant 使用者。
 
-### 安裝步驟
+#### 安裝步驟
 
-#### 方法 1: 直接運行 (Python)
+1. **新增 Add-on Repository**
+   - 在 Home Assistant 中前往：**Supervisor** → **Add-on Store**
+   - 點擊右上角 ⋮ → **Repositories**
+   - 新增：`https://github.com/iml885203/trash_tracking`
+   - 點擊 **Add**
+
+2. **安裝 Add-on**
+   - 在 Add-on Store 中找到 "**垃圾車追蹤系統**"
+   - 點擊 **Install**
+
+3. **配置 Add-on**
+   - 前往 **Configuration** 標籤
+   - 填寫你的座標和清運點名稱（參考下方說明）
+   - 點擊 **Save**
+
+4. **啟動 Add-on**
+   - 前往 **Info** 標籤
+   - 點擊 **Start**
+
+5. **設定 Home Assistant 整合**
+   - 參考 Add-on 的 **Documentation** 標籤
+   - 或查看 [完整使用指南](trash_tracking_addon/DOCS.md)
+
+#### 如何找到清運點名稱？
+
+**使用 Add-on 內建 CLI 工具**（最簡單）：
 
 ```bash
-# 1. Clone 專案
-git clone https://github.com/your-username/trash_tracking.git
-cd trash_tracking
-
-# 2. 建立虛擬環境
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# 3. 安裝依賴
-pip install -r requirements.txt
-
-# 4. 修改設定檔
-# 編輯 config.yaml，填入你的座標和清運點名稱
-
-# 5. 啟動服務
-python app.py
+# 在 Home Assistant 的 Terminal add-on 中執行
+docker exec -it addon_*_trash_tracking python3 cli.py --lat 你的緯度 --lng 你的經度
 ```
 
-#### 方法 2: Docker Compose (推薦)
+**或使用新北市官網**：
+- 前往 [新北市垃圾車即時動態](https://crd-rubbish.epd.ntpc.gov.tw/)
+- 輸入地址查詢清運點名稱
+
+#### 📖 詳細文檔
+
+- 📘 [完整使用指南](trash_tracking_addon/DOCS.md) - 配置範例、疑難排解
+- 📗 [Add-on 說明](trash_tracking_addon/README.md) - Add-on 功能介紹
+- 📙 [快速開始](QUICK_START_ADDON.md) - 發布與安裝指南
+
+---
+
+### 方法 2️⃣：Docker Compose（進階使用者）
+
+適合想要自己管理容器的進階使用者。
 
 ```bash
 # 1. Clone 專案
-git clone https://github.com/your-username/trash_tracking.git
+git clone https://github.com/iml885203/trash_tracking.git
 cd trash_tracking
 
-# 2. 修改設定檔
-# 編輯 config.yaml
+# 2. 編輯配置檔
+cp config.example.yaml config.yaml
+# 編輯 config.yaml，填入你的座標和清運點
 
-# 3. 啟動容器
+# 3. 啟動服務
 docker-compose up -d
 
 # 4. 查看日誌
 docker-compose logs -f
 ```
 
----
-
-## ⚙️ 設定檔說明
-
-編輯 `config.yaml`：
+配置範例：
 
 ```yaml
-# 你家的座標
 location:
-  lat: 25.0138
-  lng: 121.4627
+  lat: 25.018269
+  lng: 121.471703
 
-# 追蹤設定
 tracking:
-  # 指定路線（留空則追蹤所有路線）
   target_lines:
-    - "一區晚1"
-
-  # 進入清運點名稱
-  enter_point: "文化路一段188巷口"
-
-  # 離開清運點名稱
-  exit_point: "府中路29巷口"
-
-  # 觸發模式: arriving (即將到達) 或 arrived (已到達)
+    - "C08路線下午"
+  enter_point: "民生路二段80號"
+  exit_point: "成功路23號"
   trigger_mode: "arriving"
-
-  # 提前通知停靠點數
   approaching_threshold: 2
 ```
 
-### 如何找到清運點名稱？
+---
 
-1. 前往[新北市垃圾車即時動態查詢網站](https://crd-rubbish.epd.ntpc.gov.tw/)
-2. 輸入你家地址，查看附近的垃圾車路線
-3. 找到你想追蹤的路線，記下清運點的名稱
-4. 填入 `config.yaml` 的 `enter_point` 和 `exit_point`
+### 方法 3️⃣：Python 直接運行（開發者）
 
-**注意**：清運點名稱必須與 API 回傳的完全一致（包括空格和符號）
+適合開發測試或沒有 Docker 環境的情況。
+
+```bash
+# 1. Clone 專案
+git clone https://github.com/iml885203/trash_tracking.git
+cd trash_tracking
+
+# 2. 建立虛擬環境
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+
+# 3. 安裝依賴
+pip install -r requirements.txt
+
+# 4. 編輯配置
+cp config.example.yaml config.yaml
+# 編輯 config.yaml
+
+# 5. 啟動服務
+python3 app.py
+```
+
+---
+
+## 🔌 Home Assistant 整合
+
+無論使用哪種部署方式，都需要在 Home Assistant 中設定整合。
+
+### 基本設定
+
+編輯 `configuration.yaml`：
+
+```yaml
+# RESTful Sensor
+sensor:
+  - platform: rest
+    name: "Garbage Truck Monitor"
+    resource: "http://localhost:5000/api/trash/status"
+    scan_interval: 90
+    json_attributes:
+      - reason
+      - truck
+      - timestamp
+    value_template: "{{ value_json.status }}"
+
+# Binary Sensor
+binary_sensor:
+  - platform: template
+    sensors:
+      garbage_truck_nearby:
+        friendly_name: "垃圾車在附近"
+        value_template: "{{ is_state('sensor.garbage_truck_monitor', 'nearby') }}"
+        device_class: presence
+
+# Automation - 垃圾車到達時開燈
+automation:
+  - alias: "垃圾車抵達 - 開啟通知燈"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.garbage_truck_nearby
+        to: 'on'
+    action:
+      - service: light.turn_on
+        target:
+          entity_id: light.notification_bulb  # 改成你的燈泡
+        data:
+          brightness: 255
+          rgb_color: [255, 0, 0]
+
+  - alias: "垃圾車離開 - 關閉通知燈"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.garbage_truck_nearby
+        to: 'off'
+    action:
+      - service: light.turn_off
+        target:
+          entity_id: light.notification_bulb
+```
+
+更多範例請參考：[trash_tracking_addon/DOCS.md](trash_tracking_addon/DOCS.md)
 
 ---
 
 ## 🖥️ CLI 命令列工具
 
-除了 API 服務，本專案還提供了一個 CLI 工具，可以快速查詢附近垃圾車的即時位置和接下來的清運點。
+快速查詢附近垃圾車的即時位置。
 
 ### 基本使用
 
 ```bash
 # 查詢指定座標附近的垃圾車
-python3 cli.py --lat 25.0199 --lng 121.4705
+python3 cli.py --lat 25.018269 --lng 121.471703
 
-# 指定查詢半徑（預設 1000 公尺）
-python3 cli.py --lat 25.0199 --lng 121.4705 --radius 1000
+# 指定查詢半徑
+python3 cli.py --lat 25.018269 --lng 121.471703 --radius 1500
 
 # 只顯示接下來 5 個清運點
-python3 cli.py --lat 25.0199 --lng 121.4705 --next 5
+python3 cli.py --lat 25.018269 --lng 121.471703 --next 5
 
 # 過濾特定路線
-python3 cli.py --lat 25.0199 --lng 121.4705 --line "C08路線晚上"
+python3 cli.py --lat 25.018269 --lng 121.471703 --line "C08路線下午"
 
 # 顯示除錯訊息
-python3 cli.py --lat 25.0199 --lng 121.4705 --debug
+python3 cli.py --lat 25.018269 --lng 121.471703 --debug
+```
 
-# 查看所有可用參數
-python3 cli.py --help
+### 輸出範例
+
+```
+🔍 查詢位置: (25.018269, 121.471703)
+📏 查詢半徑: 1000 公尺
+
+✅ 找到 3 台垃圾車
+
+================================================================================
+🚛 路線名稱: C08路線下午
+   車號: KES-6950
+   目前停靠點序號: 10/69
+   ✅ 提早狀態: 早 5 分鐘
+
+📍 接下來 10 個清運點:
+   1. [⏳ 預定 14:00 (預計 13:55, 早5分)] 民生路二段80號
+   2. [⏳ 預定 14:05 (預計 14:00, 早5分)] 民生路二段100號
+   3. [⏳ 預定 14:10 (預計 14:05, 早5分)] 成功路23號
+   ...
 ```
 
 ### CLI 參數說明
@@ -154,211 +262,293 @@ python3 cli.py --help
 
 ---
 
-## 🔌 Home Assistant 整合
-
-### 設定 RESTful Sensor
-
-在 `configuration.yaml` 中加入：
-
-```yaml
-# RESTful Sensor - 查詢垃圾車狀態
-sensor:
-  - platform: rest
-    name: "Garbage Truck Monitor"
-    resource: "http://localhost:5000/api/trash/status"
-    scan_interval: 90  # 每 90 秒查詢一次
-    json_attributes:
-      - reason
-      - truck
-      - timestamp
-    value_template: "{{ value_json.status }}"
-
-# Binary Sensor - 判斷垃圾車是否在附近
-binary_sensor:
-  - platform: template
-    sensors:
-      garbage_truck_nearby:
-        friendly_name: "垃圾車在附近"
-        value_template: "{{ is_state('sensor.garbage_truck_monitor', 'nearby') }}"
-        device_class: presence
-
-# Automation - 自動化規則
-automation:
-  # 垃圾車抵達 - 開燈
-  - alias: "垃圾車抵達 - 開啟通知燈"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.garbage_truck_nearby
-        to: 'on'
-    action:
-      - service: light.turn_on
-        target:
-          entity_id: light.notification_bulb  # 改成你的燈泡 entity_id
-        data:
-          brightness: 255
-          color_name: "red"
-
-  # 垃圾車離開 - 關燈
-  - alias: "垃圾車離開 - 關閉通知燈"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.garbage_truck_nearby
-        to: 'off'
-    action:
-      - service: light.turn_off
-        target:
-          entity_id: light.notification_bulb
-```
-
----
-
 ## 📡 API 端點
 
-### GET `/api/trash/status`
+服務啟動後提供以下 API：
 
-取得垃圾車狀態
+### `GET /health`
 
-**回應欄位**:
-- `status`: 狀態 (`nearby` 或 `idle`)
-- `reason`: 狀態原因說明
-- `truck`: 垃圾車資訊（僅在 nearby 時有值）
-- `timestamp`: 時間戳記
+健康檢查端點。
 
-### GET `/health`
+**回應範例**：
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-11-18T14:00:00+08:00",
+  "config": {
+    "enter_point": "民生路二段80號",
+    "exit_point": "成功路23號",
+    "trigger_mode": "arriving"
+  }
+}
+```
 
-健康檢查端點
+### `GET /api/trash/status`
 
-### POST `/api/reset`
+取得垃圾車追蹤狀態。
 
-重置追蹤器狀態（開發/測試用）
+**回應範例（idle）**：
+```json
+{
+  "status": "idle",
+  "reason": "無垃圾車在附近",
+  "truck": null,
+  "timestamp": "2025-11-18T14:00:00+08:00"
+}
+```
+
+**回應範例（nearby）**：
+```json
+{
+  "status": "nearby",
+  "reason": "垃圾車即將到達進入清運點: 民生路二段80號",
+  "truck": {
+    "line_name": "C08路線下午",
+    "car_no": "KES-6950",
+    "current_rank": 10,
+    "total_points": 69,
+    "arrival_diff": -5,
+    "enter_point": {
+      "name": "民生路二段80號",
+      "rank": 12,
+      "time": "14:00"
+    },
+    "exit_point": {
+      "name": "成功路23號",
+      "rank": 15,
+      "time": "14:15"
+    }
+  },
+  "timestamp": "2025-11-18T14:05:00+08:00"
+}
+```
+
+### `POST /api/reset`
+
+重置追蹤器狀態（測試用）。
+
+完整 API 規格：[docs/api-specification.md](docs/api-specification.md)
 
 ---
 
-## 🐳 Docker 部署
+## ⚙️ 配置說明
 
-### 使用 Docker Compose（推薦）
+### 完整配置範例
 
-```bash
-# 啟動服務
-docker-compose up -d
+```yaml
+# 系統設定
+system:
+  log_level: INFO  # DEBUG, INFO, WARNING, ERROR
+  cache_enabled: false
+  cache_ttl: 60
 
-# 查看日誌
-docker-compose logs -f trash_tracking
+# 查詢位置（你家的座標）
+location:
+  lat: 25.018269
+  lng: 121.471703
 
-# 停止服務
-docker-compose down
+# 垃圾車追蹤設定
+tracking:
+  # 指定追蹤的路線（留空則追蹤所有路線）
+  target_lines:
+    - "C08路線下午"
+    - "C15路線下午"
+
+  # 進入清運點（燈泡亮起）
+  enter_point: "民生路二段80號"
+
+  # 離開清運點（燈泡關閉）
+  exit_point: "成功路23號"
+
+  # 觸發模式
+  # arriving: 提前通知（垃圾車即將到達時觸發）
+  # arrived: 實際到達（垃圾車已經到達時觸發）
+  trigger_mode: "arriving"
+
+  # 提前通知停靠點數（arriving 模式才有效）
+  # 2 表示垃圾車距離進入點前 2 個停靠點時觸發
+  approaching_threshold: 2
+
+# API 設定
+api:
+  ntpc:
+    base_url: "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI"
+    timeout: 10
+    retry_count: 3
+    retry_delay: 2
+
+  server:
+    host: "0.0.0.0"
+    port: 5000
+    debug: false
 ```
 
-### 手動 Docker 指令
+### 觸發模式說明
 
-```bash
-# 建置映像
-docker build -t trash_tracking .
+#### `arriving` 模式（推薦）
 
-# 運行容器
-docker run -d \
-  --name trash_tracking \
-  -p 5000:5000 \
-  -v $(pwd)/config.yaml:/app/config.yaml:ro \
-  -v $(pwd)/logs:/app/logs \
-  -e TZ=Asia/Taipei \
-  trash_tracking
+提前通知，有時間準備垃圾。
+
+```yaml
+trigger_mode: "arriving"
+approaching_threshold: 2  # 提前 2 個停靠點通知
+```
+
+**範例**：
+- 進入點：民生路二段80號（第 12 站）
+- 垃圾車目前在第 10 站
+- 距離進入點還有 2 站 → **觸發通知** ✅
+
+#### `arrived` 模式
+
+垃圾車剛到達時才通知，比較緊急。
+
+```yaml
+trigger_mode: "arrived"
+approaching_threshold: 0  # 此參數無效
 ```
 
 ---
 
-## 📂 專案結構
+## 🏗️ 專案架構
 
 ```
 trash_tracking/
-├── app.py                      # 主程式進入點（API 服務）
-├── cli.py                      # CLI 命令列工具
-├── config.yaml                 # 設定檔
+├── src/                        # 核心程式碼
+│   ├── api/                    # API 相關
+│   │   ├── client.py          # 新北市 API 客戶端
+│   │   └── routes.py          # Flask API 路由
+│   ├── core/                   # 核心邏輯
+│   │   ├── config.py          # 配置管理
+│   │   ├── logger.py          # 日誌系統
+│   │   ├── point_matcher.py  # 清運點匹配邏輯
+│   │   └── state_manager.py  # 狀態管理
+│   └── models/                 # 資料模型
+│       ├── point.py           # 清運點模型
+│       └── truck.py           # 垃圾車模型
+├── tests/                      # 測試程式
+├── docs/                       # 文檔
+├── trash_tracking_addon/       # Home Assistant Add-on 套件
+├── app.py                      # Flask 應用程式入口
+├── cli.py                      # CLI 工具
+├── config.yaml                 # 配置檔案範例
 ├── requirements.txt            # Python 依賴
-├── Dockerfile                  # Docker 映像定義
-├── docker-compose.yml          # Docker Compose 設定
-│
-├── src/                        # 原始碼
-│   ├── api/                    # API 層
-│   ├── core/                   # 核心業務邏輯
-│   ├── clients/                # 外部 API 客戶端
-│   ├── models/                 # 資料模型
-│   └── utils/                  # 工具模組
-│
-├── docs/                       # 文件
-├── logs/                       # 日誌目錄
-└── tests/                      # 測試程式碼
+├── Dockerfile                  # Docker 映像檔
+└── docker-compose.yml          # Docker Compose 配置
 ```
 
----
-
-## 🔧 疑難排解
-
-### 找不到清運點
-
-**解決方法**:
-1. 確認清運點名稱與 API 回傳的完全一致
-2. 使用 CLI 工具查詢路線和清運點名稱
-3. 在回傳結果中找到正確的 `PointName`
-
-### API 一直回傳 idle
-
-**可能原因**:
-- 清運點名稱錯誤
-- 目標路線不在附近
-- 垃圾車尚未進入範圍
-
-**解決方法**:
-1. 查看日誌： `tail -f logs/app.log`
-2. 確認 `target_lines` 設定正確
-3. 調整 `trigger_mode` 和 `approaching_threshold`
-
-### Home Assistant 無法連接
-
-**解決方法**:
-1. 確認服務運行： `curl http://localhost:5000/health`
-2. 檢查防火牆設定
-3. 如果使用 Docker，確認 port mapping 正確
+完整架構說明：[docs/architecture.md](docs/architecture.md)
 
 ---
 
-## 📝 開發相關
+## 🧪 測試
+
+專案包含完整的測試套件（91 個測試，~70% 覆蓋率）。
 
 ### 運行測試
 
 ```bash
-pytest tests/
+# 安裝開發依賴
+pip install -r requirements-dev.txt
+
+# 運行所有測試
+pytest
+
+# 運行測試並顯示覆蓋率
+pytest --cov=src --cov-report=html
+
+# 運行特定測試
+pytest tests/test_point_matcher.py -v
 ```
 
-### 查看日誌
+### 程式碼品質檢查
 
 ```bash
-# 檔案日誌
-tail -f logs/app.log
+# Linting
+flake8 src/ tests/
 
-# Docker 日誌
-docker-compose logs -f
+# 程式碼格式化
+black src/ tests/
+isort src/ tests/
+
+# 類型檢查
+mypy src/
+
+# 安全掃描
+bandit -r src/
+safety check
+```
+
+詳細 CI/CD 設定：[docs/CI_CD_SETUP.md](docs/CI_CD_SETUP.md)
+
+---
+
+## 📚 文檔
+
+### 使用者文檔
+- 📘 [Add-on 完整使用指南](trash_tracking_addon/DOCS.md) - **推薦閱讀**
+- 📗 [Add-on 說明](trash_tracking_addon/README.md)
+- 📙 [快速開始](QUICK_START_ADDON.md)
+- 📕 [安裝與發布指南](docs/ADD_ON_INSTALLATION.md)
+
+### 開發者文檔
+- 🔵 [專案架構](docs/architecture.md)
+- 🔵 [API 規格](docs/api-specification.md)
+- 🔵 [需求文件](docs/requirements.md)
+- 🔵 [CI/CD 設定](docs/CI_CD_SETUP.md)
+
+---
+
+## 🤝 貢獻
+
+歡迎提交 Pull Request 或回報 Issue！
+
+### 貢獻指南
+
+1. Fork 本專案
+2. 建立功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交變更 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 開啟 Pull Request
+
+### 開發設定
+
+```bash
+# Clone 專案
+git clone https://github.com/iml885203/trash_tracking.git
+cd trash_tracking
+
+# 安裝開發依賴
+pip install -r requirements-dev.txt
+
+# 安裝 pre-commit hooks
+pre-commit install
+
+# 運行測試
+pytest
+
+# 運行程式碼檢查
+flake8 src/ tests/
+black --check src/ tests/
+mypy src/
 ```
 
 ---
 
-## 📖 相關文件
+## 🐛 問題回報
 
-- [需求規格書](docs/requirements.md)
-- [API 規格文件](docs/api-specification.md)
-- [架構設計文件](docs/architecture.md)
+如遇到問題，請：
+1. 查看 [Issue 列表](https://github.com/iml885203/trash_tracking/issues)
+2. 建立新的 Issue，並提供：
+   - Home Assistant 版本（如使用 Add-on）
+   - 錯誤訊息和日誌
+   - 配置資訊（去除敏感資料）
 
 ---
 
 ## 📄 授權
 
-MIT License
-
----
-
-## 👤 作者
-
-Logan
+本專案採用 MIT License - 詳見 [LICENSE](LICENSE) 檔案
 
 ---
 
@@ -366,3 +556,16 @@ Logan
 
 - 新北市環保局提供的垃圾車 API
 - Home Assistant 社群
+- 所有貢獻者
+
+---
+
+## 📞 聯絡
+
+- GitHub: [@iml885203](https://github.com/iml885203)
+- Project: [trash_tracking](https://github.com/iml885203/trash_tracking)
+- Issues: [回報問題](https://github.com/iml885203/trash_tracking/issues)
+
+---
+
+**⭐ 如果這個專案對你有幫助，請給個星星！**
