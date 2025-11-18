@@ -111,28 +111,13 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Building version: ${VERSION}"
 
-      - name: Update addon config version
-        run: |
-          # Clone addons repository
-          git clone https://github.com/${{ github.repository_owner }}/homeassistant-addons.git /tmp/addons
-          cd /tmp/addons
-
-          # Update version in config.yaml (compatible with both macOS and Linux sed)
-          VERSION="${{ steps.version.outputs.version }}"
-          sed -i.bak "s/^version: .*/version: \"${VERSION}\"/" trash-tracking/config.yaml
-          rm -f trash-tracking/config.yaml.bak
-
-          # Commit and push if changed
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          if git diff --quiet; then
-            echo "No version change needed"
-          else
-            git add trash-tracking/config.yaml
-            git commit -m "chore: update addon version to ${VERSION}"
-            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository_owner }}/homeassistant-addons.git master
-            echo "Updated addon version to ${VERSION}"
-          fi
+      - name: Trigger addon repository update
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository_owner }}/homeassistant-addons
+          event-type: version-update
+          client-payload: '{"version": "${{ steps.version.outputs.version }}", "addon": "trash-tracking"}'
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
