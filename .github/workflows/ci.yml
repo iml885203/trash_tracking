@@ -1,0 +1,179 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+
+jobs:
+  test:
+    name: Test and Code Quality
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # 完整歷史記錄供 SonarQube 分析
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r requirements-dev.txt
+
+    - name: Lint with flake8
+      run: |
+        # 停止建構如果有 Python 語法錯誤或未定義的名稱
+        flake8 src tests cli.py app.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        # 警告但不停止建構的其他問題
+        flake8 src tests cli.py app.py --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+
+    - name: Check code formatting with black
+      run: |
+        black --check --diff src tests cli.py app.py
+
+    - name: Sort imports check with isort
+      run: |
+        isort --check-only --diff src tests cli.py app.py
+
+    - name: Type check with mypy
+      run: |
+        mypy src --ignore-missing-imports --no-strict-optional
+      continue-on-error: true  # 目前不強制要求通過
+
+    - name: Run tests with pytest
+      run: |
+        pytest tests/ -v --cov=src --cov=cli --cov=app --cov-report=xml --cov-report=term-missing --cov-report=html
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: SonarQube Scan
+      uses: SonarSource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      with:
+        args: >
+          -Dsonar.projectKey=trash_tracking
+          -Dsonar.python.coverage.reportPaths=coverage.xml
+
+    - name: SonarQube Quality Gate check
+      uses: SonarSource/sonarqube-quality-gate-action@master
+      timeout-minutes: 5
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      continue-on-error: true  # 初期不強制要求通過
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: |
+          htmlcov/
+          coverage.xml
+          .coverage
+
+    - name: Upload coverage reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report-${{ matrix.python-version }}
+        path: htmlcov/
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install safety bandit pip-audit
+
+    - name: Security check with bandit
+      run: |
+        bandit -r src/ -f json -o bandit-report.json
+      continue-on-error: true
+
+    - name: Check for known vulnerabilities with safety
+      run: |
+        safety check --json --output safety-report.json
+      continue-on-error: true
+
+    - name: Audit dependencies with pip-audit
+      run: |
+        pip-audit --desc --format json --output pip-audit-report.json
+      continue-on-error: true
+
+    - name: Upload security reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+          pip-audit-report.json
+
+  docker:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: trash_tracking:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Test Docker image
+      run: |
+        docker run --rm trash_tracking:test python --version
+        docker run --rm trash_tracking:test pytest --version

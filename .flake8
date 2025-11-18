@@ -1,0 +1,26 @@
+[flake8]
+max-line-length = 120
+extend-ignore = E203, W503, E501
+exclude =
+    .git,
+    __pycache__,
+    venv,
+    .venv,
+    htmlcov,
+    .pytest_cache,
+    .coverage,
+    *.egg-info,
+    build,
+    dist
+
+# 複雜度檢查
+max-complexity = 10
+
+# 每個檔案的最大錯誤數
+per-file-ignores =
+    __init__.py:F401
+
+# 統計
+count = True
+statistics = True
+show-source = True

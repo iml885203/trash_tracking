@@ -1,0 +1,35 @@
+# 包含所有生產依賴
+-r requirements.txt
+
+# 測試框架
+pytest==8.3.3
+pytest-cov==5.0.0
+pytest-mock==3.12.0
+pytest-asyncio==0.23.0
+
+# 程式碼格式化
+black==23.12.1
+isort==5.13.2
+
+# 程式碼檢查
+flake8==7.0.0
+pylint==3.0.3
+mypy==1.8.0
+
+# 型別檢查支援
+types-PyYAML==6.0.12.12
+types-pytz==2024.1.0.20240203
+types-requests==2.31.0.20240125
+
+# 安全性檢查
+bandit==1.7.6
+safety==3.0.1
+pip-audit==2.7.0
+
+# 文件生成
+mkdocs==1.5.3
+mkdocs-material==9.5.3
+
+# 開發工具
+ipython==8.20.0
+ipdb==0.13.13

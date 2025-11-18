@@ -34,12 +34,23 @@ logs/*.log
 # pytest
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
+test-results.xml
 
 # mypy
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# SonarQube
+.scannerwork/
+
+# Security reports
+bandit-report.json
+safety-report.json
+pip-audit-report.json
+pylint-report.txt
 
 # Environment variables
 .env
