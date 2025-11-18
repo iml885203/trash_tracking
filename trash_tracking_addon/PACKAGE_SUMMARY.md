@@ -10,8 +10,8 @@
 | `Dockerfile` | Multi-arch container build | ✅ |
 | `build.yaml` | Multi-architecture build configuration | ✅ |
 | `run.sh` | Bashio startup script | ✅ |
-| `icon.png` | 256x256 icon (temporary version) | ✅ |
-| `logo.png` | 256x256 logo (temporary version) | ✅ |
+| `icon.png` | 256x256 add-on icon | ✅ |
+| `logo.png` | 256x256 add-on logo | ✅ |
 
 ### 2. Documentation Files
 
@@ -36,7 +36,6 @@
 |------|-------------|--------|
 | `repository.json` | Repository metadata | ✅ |
 | `.dockerignore` | Docker build ignore file | ✅ |
-| `generate_icon.py` | Icon generation script | ✅ |
 
 ### 5. Project Documentation (docs/)
 
@@ -62,11 +61,9 @@ trash_tracking/
 │   ├── README.md                   # Main documentation
 │   ├── DOCS.md                     # Detailed documentation
 │   ├── CHANGELOG.md                # Changelog
-│   ├── ICON_README.md              # Icon guide
 │   ├── PACKAGE_SUMMARY.md          # This file
 │   ├── repository.json             # Repository metadata
 │   ├── .dockerignore               # Docker ignore file
-│   ├── generate_icon.py            # Icon generation script
 │   └── translations/               # Multi-language translations
 │       ├── en.yaml                 # English
 │       └── zh-Hant.yaml            # Traditional Chinese

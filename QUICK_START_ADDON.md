@@ -17,11 +17,9 @@ trash_tracking_addon/
 ├── README.md               ✅ Main documentation
 ├── DOCS.md                 ✅ Detailed user guide
 ├── CHANGELOG.md            ✅ Version changelog
-├── ICON_README.md          ✅ Icon creation guide
 ├── PACKAGE_SUMMARY.md      ✅ Complete summary document
 ├── repository.json         ✅ Repository metadata
 ├── .dockerignore           ✅ Docker build ignore
-├── generate_icon.py        ✅ Icon generation script
 └── translations/           ✅ Multi-language support
     ├── en.yaml             ✅ English translation
     └── zh-Hant.yaml        ✅ Traditional Chinese translation
