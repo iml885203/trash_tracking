@@ -1,5 +1,27 @@
 # Development Guide
 
+## Running the Application
+
+### Development Server
+
+For local development, use Flask's built-in development server:
+
+```bash
+python app.py
+```
+
+**Note**: You will see a warning about using the development server. This is expected for local development.
+
+### Production Server
+
+For production deployment (Docker/Home Assistant), the application uses **gunicorn**:
+
+```bash
+gunicorn app:app --bind 0.0.0.0:5000 --workers 2
+```
+
+The Dockerfile is configured to use gunicorn automatically.
+
 ## Setup Development Environment
 
 ### 1. Install Dependencies

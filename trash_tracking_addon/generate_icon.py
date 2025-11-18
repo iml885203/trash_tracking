@@ -4,9 +4,10 @@ Simple icon generator for Trash Tracking Add-on
 Creates a temporary 256x256 PNG icon with a truck emoji
 """
 
-from PIL import Image, ImageDraw, ImageFont
 import sys
 from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
 
 
 def generate_icon(output_path: str = "icon.png"):
@@ -15,7 +16,7 @@ def generate_icon(output_path: str = "icon.png"):
     # Create image with green background
     size = 256
     bg_color = (76, 175, 80, 255)  # Green (#4CAF50)
-    img = Image.new('RGBA', (size, size), color=bg_color)
+    img = Image.new("RGBA", (size, size), color=bg_color)
     draw = ImageDraw.Draw(img)
 
     # Add circular background
@@ -73,7 +74,7 @@ def generate_icon(output_path: str = "icon.png"):
     img.save(output_path)
     print(f"✅ Icon created: {output_path}")
     print(f"   Size: {size}x{size} px")
-    print(f"   Format: PNG")
+    print("   Format: PNG")
 
     return output_path
 

@@ -32,5 +32,11 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 ENV PYTHONUNBUFFERED=1
 ENV TZ=Asia/Taipei
 
-# Default command (will be overridden by run.sh in Home Assistant)
-CMD ["python3", "app.py"]
+# Default command - use gunicorn for production
+CMD ["gunicorn", "app:app", \
+     "--bind", "0.0.0.0:5000", \
+     "--workers", "2", \
+     "--timeout", "120", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "--log-level", "info"]

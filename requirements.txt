@@ -2,6 +2,9 @@
 Flask==3.0.3
 Werkzeug==3.0.3
 
+# Production WSGI Server
+gunicorn==21.2.0
+
 # HTTP Client
 requests==2.32.3
 

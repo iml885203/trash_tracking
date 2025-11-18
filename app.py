@@ -6,19 +6,25 @@ from src.api.routes import create_app
 from src.utils.config import ConfigError, ConfigManager
 from src.utils.logger import logger
 
+# Create Flask app for WSGI servers (gunicorn, etc.)
+try:
+    app = create_app(config_path="config.yaml")
+except Exception as e:
+    logger.error(f"Failed to create app: {e}", exc_info=True)
+    sys.exit(1)
+
 
 def main():
-    """Main entry point"""
+    """Main entry point for development server"""
     try:
-        app = create_app(config_path="config.yaml")
-
         config = ConfigManager("config.yaml")
         host = config.server_host
         port = config.server_port
         debug = config.server_debug
 
-        logger.info(f"Starting Flask server: {host}:{port} (debug={debug})")
+        logger.info(f"Starting Flask development server: {host}:{port} (debug={debug})")
         logger.info("Press Ctrl+C to stop service")
+        logger.warning("⚠️  This is a development server. Use a production WSGI server for deployment.")
 
         app.run(host=host, port=port, debug=debug)
 
