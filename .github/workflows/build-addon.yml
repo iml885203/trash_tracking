@@ -12,6 +12,9 @@ jobs:
   build:
     name: Build Add-on
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -67,12 +70,13 @@ jobs:
             BASE_IMAGE=$(echo "${BASE_IMAGES[@]}" | grep -o "${arch}=[^ ]*" | cut -d= -f2)
             PLATFORM=$(echo "${PLATFORMS[@]}" | grep -o "${arch}=[^ ]*" | cut -d= -f2)
 
-            # Build and push
+            # Build and push (convert to lowercase for GHCR)
+            REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
             docker buildx build \
               --platform ${PLATFORM} \
               --build-arg BUILD_FROM=${BASE_IMAGE} \
-              --tag ghcr.io/${{ github.repository_owner }}/${arch}-trash-tracking:${{ steps.version.outputs.version }} \
-              --tag ghcr.io/${{ github.repository_owner }}/${arch}-trash-tracking:latest \
+              --tag ghcr.io/${REPO_OWNER}/${arch}-trash-tracking:${{ steps.version.outputs.version }} \
+              --tag ghcr.io/${REPO_OWNER}/${arch}-trash-tracking:latest \
               --file Dockerfile \
               --push \
               .
@@ -82,13 +86,14 @@ jobs:
 
       - name: Summary
         run: |
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Images built:**" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${{ github.repository_owner }}/amd64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${{ github.repository_owner }}/aarch64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${{ github.repository_owner }}/armv7-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${{ github.repository_owner }}/armhf-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${{ github.repository_owner }}/i386-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/amd64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/aarch64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/armv7-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/armhf-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ghcr.io/${REPO_OWNER}/i386-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
