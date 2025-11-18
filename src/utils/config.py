@@ -1,13 +1,16 @@
 """Configuration Management Module"""
 
-import yaml
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+import yaml
+
 from src.utils.logger import logger
 
 
 class ConfigError(Exception):
     """Configuration file error"""
+
     pass
 
 
@@ -42,7 +45,7 @@ class ConfigManager:
             raise ConfigError(f"Config file does not exist: {self.config_path}")
 
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
+            with open(self.config_path, "r", encoding="utf-8") as f:
                 config = yaml.safe_load(f)
 
             if config is None:
@@ -63,18 +66,18 @@ class ConfigManager:
         Raises:
             ConfigError: When required fields are missing or have invalid format
         """
-        required_keys = ['location', 'tracking', 'api']
+        required_keys = ["location", "tracking", "api"]
         for key in required_keys:
             if key not in self.config:
                 raise ConfigError(f"Config missing required field: {key}")
 
-        location = self.config['location']
-        if 'lat' not in location or 'lng' not in location:
+        location = self.config["location"]
+        if "lat" not in location or "lng" not in location:
             raise ConfigError("location must contain lat and lng")
 
         try:
-            lat = float(location['lat'])
-            lng = float(location['lng'])
+            lat = float(location["lat"])
+            lng = float(location["lng"])
 
             if not (-90 <= lat <= 90):
                 raise ConfigError(f"Latitude out of range (-90 to 90): {lat}")
@@ -84,19 +87,19 @@ class ConfigManager:
         except (ValueError, TypeError) as e:
             raise ConfigError(f"Coordinate format error: {e}")
 
-        tracking = self.config['tracking']
-        required_tracking = ['enter_point', 'exit_point']
+        tracking = self.config["tracking"]
+        required_tracking = ["enter_point", "exit_point"]
         for key in required_tracking:
             if key not in tracking:
                 raise ConfigError(f"tracking missing required field: {key}")
             if not tracking[key] or not isinstance(tracking[key], str):
                 raise ConfigError(f"{key} must be a non-empty string")
 
-        if tracking['enter_point'] == tracking['exit_point']:
+        if tracking["enter_point"] == tracking["exit_point"]:
             raise ConfigError("Enter point and exit point cannot be the same")
 
-        trigger_mode = tracking.get('trigger_mode', 'arriving')
-        if trigger_mode not in ['arriving', 'arrived']:
+        trigger_mode = tracking.get("trigger_mode", "arriving")
+        if trigger_mode not in ["arriving", "arrived"]:
             raise ConfigError(f"trigger_mode must be 'arriving' or 'arrived': {trigger_mode}")
 
         logger.info("Config validation passed")
@@ -112,7 +115,7 @@ class ConfigManager:
         Returns:
             Config value, or default if not exists
         """
-        keys = key.split('.')
+        keys = key.split(".")
         value = self.config
 
         for k in keys:
@@ -129,69 +132,63 @@ class ConfigManager:
     @property
     def location(self) -> Dict[str, float]:
         """Get query location coordinates"""
-        return {
-            'lat': float(self.config['location']['lat']),
-            'lng': float(self.config['location']['lng'])
-        }
+        return {"lat": float(self.config["location"]["lat"]), "lng": float(self.config["location"]["lng"])}
 
     @property
     def target_lines(self) -> List[str]:
         """Get list of routes to track"""
-        lines = self.config['tracking'].get('target_lines', [])
+        lines = self.config["tracking"].get("target_lines", [])
         return lines if lines else []
 
     @property
     def enter_point(self) -> str:
         """Get enter point name"""
-        return self.config['tracking']['enter_point']
+        return self.config["tracking"]["enter_point"]
 
     @property
     def exit_point(self) -> str:
         """Get exit point name"""
-        return self.config['tracking']['exit_point']
+        return self.config["tracking"]["exit_point"]
 
     @property
     def trigger_mode(self) -> str:
         """Get trigger mode"""
-        return self.config['tracking'].get('trigger_mode', 'arriving')
+        return self.config["tracking"].get("trigger_mode", "arriving")
 
     @property
     def approaching_threshold(self) -> int:
         """Get number of stops ahead for early notification"""
-        return self.config['tracking'].get('approaching_threshold', 2)
+        return self.config["tracking"].get("approaching_threshold", 2)
 
     @property
     def log_level(self) -> str:
         """Get log level"""
-        return self.config.get('system', {}).get('log_level', 'INFO')
+        return self.config.get("system", {}).get("log_level", "INFO")
 
     @property
     def api_timeout(self) -> int:
         """Get API timeout"""
-        return self.config.get('api', {}).get('ntpc', {}).get('timeout', 10)
+        return self.config.get("api", {}).get("ntpc", {}).get("timeout", 10)
 
     @property
     def api_base_url(self) -> str:
         """Get NTPC API base URL"""
-        return self.config.get('api', {}).get('ntpc', {}).get(
-            'base_url',
-            'https://crd-rubbish.epd.ntpc.gov.tw/WebAPI'
-        )
+        return self.config.get("api", {}).get("ntpc", {}).get("base_url", "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI")
 
     @property
     def server_host(self) -> str:
         """Get Flask server host"""
-        return self.config.get('api', {}).get('server', {}).get('host', '0.0.0.0')
+        return self.config.get("api", {}).get("server", {}).get("host", "0.0.0.0")
 
     @property
     def server_port(self) -> int:
         """Get Flask server port"""
-        return self.config.get('api', {}).get('server', {}).get('port', 5000)
+        return self.config.get("api", {}).get("server", {}).get("port", 5000)
 
     @property
     def server_debug(self) -> bool:
         """Get Flask debug mode"""
-        return self.config.get('api', {}).get('server', {}).get('debug', False)
+        return self.config.get("api", {}).get("server", {}).get("debug", False)
 
     def __str__(self) -> str:
         """Return string representation of config"""

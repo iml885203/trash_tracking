@@ -1,8 +1,9 @@
 """Garbage Truck Tracking System - Main Entry Point"""
 
 import sys
+
 from src.api.routes import create_app
-from src.utils.config import ConfigManager, ConfigError
+from src.utils.config import ConfigError, ConfigManager
 from src.utils.logger import logger
 
 
@@ -19,11 +20,7 @@ def main():
         logger.info(f"Starting Flask server: {host}:{port} (debug={debug})")
         logger.info("Press Ctrl+C to stop service")
 
-        app.run(
-            host=host,
-            port=port,
-            debug=debug
-        )
+        app.run(host=host, port=port, debug=debug)
 
     except ConfigError as e:
         logger.error(f"❌ Config error: {e}")

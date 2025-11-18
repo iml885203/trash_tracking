@@ -3,11 +3,12 @@
 
 import argparse
 import sys
-from typing import Optional, List
+from typing import List, Optional
+
 from src.clients.ntpc_api import NTPCApiClient, NTPCApiError
-from src.models.truck import TruckLine
 from src.models.point import Point
-from src.utils.logger import setup_logger, logger
+from src.models.truck import TruckLine
+from src.utils.logger import logger, setup_logger
 
 
 def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
@@ -29,6 +30,7 @@ def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
     else:
         if point.point_time and truck_diff != 0:
             from datetime import datetime, timedelta
+
             try:
                 scheduled_time = datetime.strptime(point.point_time, "%H:%M")
                 estimated_time = scheduled_time + timedelta(minutes=truck_diff)
@@ -95,7 +97,7 @@ def display_truck_info(truck: TruckLine, next_points: int = 10) -> None:
 def main():
     """Main program"""
     parser = argparse.ArgumentParser(
-        description='Query New Taipei City garbage truck real-time information',
+        description="Query New Taipei City garbage truck real-time information",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -103,48 +105,22 @@ Examples:
   %(prog)s --lat 25.0199 --lng 121.4705 --radius 1000
   %(prog)s --lat 25.0199 --lng 121.4705 --next 5
   %(prog)s --lat 25.0199 --lng 121.4705 --line "Area 1 Evening 1"
-        """
+        """,
     )
 
-    parser.add_argument(
-        '--lat',
-        type=float,
-        required=True,
-        help='Latitude of query location (e.g., 25.0199)'
-    )
+    parser.add_argument("--lat", type=float, required=True, help="Latitude of query location (e.g., 25.0199)")
+
+    parser.add_argument("--lng", type=float, required=True, help="Longitude of query location (e.g., 121.4705)")
+
+    parser.add_argument("--radius", type=int, default=1000, help="Query radius in meters (default: 1000)")
 
     parser.add_argument(
-        '--lng',
-        type=float,
-        required=True,
-        help='Longitude of query location (e.g., 121.4705)'
+        "--next", type=int, default=10, help="Number of upcoming collection points to display (default: 10)"
     )
 
-    parser.add_argument(
-        '--radius',
-        type=int,
-        default=1000,
-        help='Query radius in meters (default: 1000)'
-    )
+    parser.add_argument("--line", type=str, help='Filter by specific route name (e.g., "Area 1 Evening 1")')
 
-    parser.add_argument(
-        '--next',
-        type=int,
-        default=10,
-        help='Number of upcoming collection points to display (default: 10)'
-    )
-
-    parser.add_argument(
-        '--line',
-        type=str,
-        help='Filter by specific route name (e.g., "Area 1 Evening 1")'
-    )
-
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='Show debug messages'
-    )
+    parser.add_argument("--debug", action="store_true", help="Show debug messages")
 
     args = parser.parse_args()
 
@@ -188,6 +164,7 @@ Examples:
         print(f"\n❌ Error occurred: {e}", file=sys.stderr)
         if args.debug:
             import traceback
+
             traceback.print_exc()
         return 1
 

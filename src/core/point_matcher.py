@@ -1,8 +1,9 @@
 """Collection Point Matcher"""
 
-from typing import Optional, Dict, Any
-from src.models.truck import TruckLine
+from typing import Any, Dict, Optional
+
 from src.models.point import Point
+from src.models.truck import TruckLine
 from src.utils.logger import logger
 
 
@@ -16,7 +17,7 @@ class MatchResult:
         reason: str = "",
         truck_line: Optional[TruckLine] = None,
         enter_point: Optional[Point] = None,
-        exit_point: Optional[Point] = None
+        exit_point: Optional[Point] = None,
     ):
         self.should_trigger = should_trigger
         self.new_state = new_state
@@ -33,8 +34,8 @@ class PointMatcher:
         self,
         enter_point_name: str,
         exit_point_name: str,
-        trigger_mode: str = 'arriving',
-        approaching_threshold: int = 2
+        trigger_mode: str = "arriving",
+        approaching_threshold: int = 2,
     ):
         """
         Initialize collection point matcher
@@ -72,17 +73,11 @@ class PointMatcher:
         exit_point = truck_line.find_point(self.exit_point_name)
 
         if not enter_point:
-            logger.debug(
-                f"Enter point not found in route {truck_line.line_name}: "
-                f"{self.enter_point_name}"
-            )
+            logger.debug(f"Enter point not found in route {truck_line.line_name}: " f"{self.enter_point_name}")
             return MatchResult(should_trigger=False)
 
         if not exit_point:
-            logger.debug(
-                f"Exit point not found in route {truck_line.line_name}: "
-                f"{self.exit_point_name}"
-            )
+            logger.debug(f"Exit point not found in route {truck_line.line_name}: " f"{self.exit_point_name}")
             return MatchResult(should_trigger=False)
 
         if exit_point.point_rank <= enter_point.point_rank:
@@ -102,35 +97,28 @@ class PointMatcher:
             )
             return MatchResult(
                 should_trigger=True,
-                new_state='nearby',
+                new_state="nearby",
                 reason=reason,
                 truck_line=truck_line,
                 enter_point=enter_point,
-                exit_point=exit_point
+                exit_point=exit_point,
             )
 
         if self._should_trigger_exit(truck_line, exit_point):
             reason = f"Truck has passed exit point: {self.exit_point_name}"
-            logger.info(
-                f"✅ Trigger exit state: {truck_line.line_name} - "
-                f"exit point arrival={exit_point.arrival}"
-            )
+            logger.info(f"✅ Trigger exit state: {truck_line.line_name} - " f"exit point arrival={exit_point.arrival}")
             return MatchResult(
                 should_trigger=True,
-                new_state='idle',
+                new_state="idle",
                 reason=reason,
                 truck_line=truck_line,
                 enter_point=enter_point,
-                exit_point=exit_point
+                exit_point=exit_point,
             )
 
         return MatchResult(should_trigger=False)
 
-    def _should_trigger_enter(
-        self,
-        truck_line: TruckLine,
-        enter_point: Point
-    ) -> bool:
+    def _should_trigger_enter(self, truck_line: TruckLine, enter_point: Point) -> bool:
         """
         Determine if enter state should be triggered
 
@@ -144,7 +132,7 @@ class PointMatcher:
         current_rank = truck_line.arrival_rank
         enter_rank = enter_point.point_rank
 
-        if self.trigger_mode == 'arriving':
+        if self.trigger_mode == "arriving":
             distance = enter_rank - current_rank
 
             if 0 <= distance <= self.approaching_threshold:
@@ -157,11 +145,7 @@ class PointMatcher:
 
         return False
 
-    def _should_trigger_exit(
-        self,
-        truck_line: TruckLine,
-        exit_point: Point
-    ) -> bool:
+    def _should_trigger_exit(self, truck_line: TruckLine, exit_point: Point) -> bool:
         """
         Determine if exit state should be triggered
 

@@ -7,9 +7,7 @@ from typing import Optional
 
 
 def setup_logger(
-    name: str = "trash_tracking",
-    log_level: str = "INFO",
-    log_file: Optional[str] = None
+    name: str = "trash_tracking", log_level: str = "INFO", log_file: Optional[str] = None
 ) -> logging.Logger:
     """
     Configure and return logger instance
@@ -30,10 +28,7 @@ def setup_logger(
     level = getattr(logging, log_level.upper(), logging.INFO)
     logger.setLevel(level)
 
-    formatter = logging.Formatter(
-        '%(asctime)s [%(levelname)s] %(name)s: %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
@@ -44,7 +39,7 @@ def setup_logger(
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
 
-        file_handler = logging.FileHandler(log_file, encoding='utf-8')
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)

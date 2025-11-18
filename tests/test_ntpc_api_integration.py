@@ -1,6 +1,7 @@
 """New Taipei City API integration tests"""
 
 import pytest
+
 from src.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from src.models.truck import TruckLine
 
@@ -50,17 +51,16 @@ class TestNTPCApiIntegration:
 
         if len(result) > 0:
             for truck in result:
-                assert truck.arrival_rank <= len(truck.points), \
-                    f"{truck.line_name}: arrival_rank should not exceed total points"
+                assert truck.arrival_rank <= len(
+                    truck.points
+                ), f"{truck.line_name}: arrival_rank should not exceed total points"
 
                 point_ranks = [p.point_rank for p in truck.points]
-                assert len(point_ranks) == len(set(point_ranks)), \
-                    f"{truck.line_name}: point_rank should be unique"
+                assert len(point_ranks) == len(set(point_ranks)), f"{truck.line_name}: point_rank should be unique"
 
                 current_point = truck.get_current_point()
                 if truck.arrival_rank > 0:
-                    assert current_point is not None, \
-                        f"{truck.line_name}: Should have current collection point"
+                    assert current_point is not None, f"{truck.line_name}: Should have current collection point"
 
     def test_get_around_points_upcoming_logic(self, client):
         lat, lng = 25.0199, 121.4705
@@ -72,12 +72,12 @@ class TestNTPCApiIntegration:
                 upcoming = truck.get_upcoming_points()
 
                 for point in upcoming:
-                    assert point.point_rank > truck.arrival_rank, \
-                        f"{truck.line_name}: Upcoming point rank should be greater than current rank"
+                    assert (
+                        point.point_rank > truck.arrival_rank
+                    ), f"{truck.line_name}: Upcoming point rank should be greater than current rank"
 
                 ranks = [p.point_rank for p in upcoming]
-                assert ranks == sorted(ranks), \
-                    f"{truck.line_name}: Upcoming points should be sorted by rank"
+                assert ranks == sorted(ranks), f"{truck.line_name}: Upcoming points should be sorted by rank"
 
                 print(f"\n{truck.line_name}:")
                 print(f"  Current stop number: {truck.arrival_rank}")
@@ -99,8 +99,7 @@ class TestNTPCApiIntegration:
 
             upcoming = truck.get_upcoming_points()
             for point in upcoming:
-                assert not point.arrival or point.arrival == "", \
-                    "Upcoming points should not have arrival time"
+                assert not point.arrival or point.arrival == "", "Upcoming points should not have arrival time"
 
             print(f"\n{truck.line_name} collection point status:")
             print(f"  Passed: {len(passed_points)} points")
@@ -114,11 +113,7 @@ class TestNTPCApiIntegration:
         assert isinstance(result, list), "Should return list even with no results"
 
     def test_api_retry_mechanism(self):
-        client = NTPCApiClient(
-            base_url="https://invalid-url-for-testing.example.com",
-            retry_count=2,
-            retry_delay=1
-        )
+        client = NTPCApiClient(base_url="https://invalid-url-for-testing.example.com", retry_count=2, retry_delay=1)
 
         with pytest.raises(NTPCApiError) as exc_info:
             client.get_around_points(25.0199, 121.4705)
@@ -132,10 +127,7 @@ class TestNTPCApiIntegration:
         lat, lng = 25.0199, 121.4705
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            futures = [
-                executor.submit(client.get_around_points, lat, lng)
-                for _ in range(3)
-            ]
+            futures = [executor.submit(client.get_around_points, lat, lng) for _ in range(3)]
 
             results = [future.result() for future in futures]
 

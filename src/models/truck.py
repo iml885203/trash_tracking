@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from typing import List, Optional
+
 from src.models.point import Point
 
 
@@ -22,7 +23,7 @@ class TruckLine:
     points: List[Point]
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'TruckLine':
+    def from_dict(cls, data: dict) -> "TruckLine":
         """
         Create TruckLine object from API response dictionary
 
@@ -32,21 +33,21 @@ class TruckLine:
         Returns:
             TruckLine: Truck route object
         """
-        points_data = data.get('Point', [])
+        points_data = data.get("Point", [])
         points = [Point.from_dict(p) for p in points_data]
 
         return cls(
-            line_id=data.get('LineID', ''),
-            line_name=data.get('LineName', ''),
-            area=data.get('Area', ''),
-            arrival_rank=data.get('ArrivalRank', 0),
-            diff=data.get('Diff', 0),
-            car_no=data.get('CarNO', ''),
-            location=data.get('Location', ''),
-            location_lat=data.get('LocationLat', 0.0),
-            location_lon=data.get('LocationLon', 0.0),
-            bar_code=data.get('BarCode', ''),
-            points=points
+            line_id=data.get("LineID", ""),
+            line_name=data.get("LineName", ""),
+            area=data.get("Area", ""),
+            arrival_rank=data.get("ArrivalRank", 0),
+            diff=data.get("Diff", 0),
+            car_no=data.get("CarNO", ""),
+            location=data.get("Location", ""),
+            location_lat=data.get("LocationLat", 0.0),
+            location_lon=data.get("LocationLon", 0.0),
+            bar_code=data.get("BarCode", ""),
+            points=points,
         )
 
     def find_point(self, point_name: str) -> Optional[Point]:
@@ -87,8 +88,7 @@ class TruckLine:
         upcoming.sort(key=lambda p: p.point_rank)
         return upcoming
 
-    def to_dict(self, enter_point: Optional[Point] = None,
-                exit_point: Optional[Point] = None) -> dict:
+    def to_dict(self, enter_point: Optional[Point] = None, exit_point: Optional[Point] = None) -> dict:
         """
         Convert to dictionary format (for API response)
 
@@ -102,29 +102,25 @@ class TruckLine:
         current_point = self.get_current_point()
 
         result = {
-            'line_name': self.line_name,
-            'line_id': self.line_id,
-            'car_no': self.car_no,
-            'area': self.area,
-            'current_location': self.location,
-            'current_lat': self.location_lat,
-            'current_lon': self.location_lon,
-            'current_rank': self.arrival_rank,
-            'total_points': len(self.points),
-            'arrival_diff': self.diff
+            "line_name": self.line_name,
+            "line_id": self.line_id,
+            "car_no": self.car_no,
+            "area": self.area,
+            "current_location": self.location,
+            "current_lat": self.location_lat,
+            "current_lon": self.location_lon,
+            "current_rank": self.arrival_rank,
+            "total_points": len(self.points),
+            "arrival_diff": self.diff,
         }
 
         if enter_point:
-            result['enter_point'] = enter_point.to_dict()
-            result['enter_point']['distance_to_current'] = (
-                enter_point.point_rank - self.arrival_rank
-            )
+            result["enter_point"] = enter_point.to_dict()
+            result["enter_point"]["distance_to_current"] = enter_point.point_rank - self.arrival_rank
 
         if exit_point:
-            result['exit_point'] = exit_point.to_dict()
-            result['exit_point']['distance_to_current'] = (
-                exit_point.point_rank - self.arrival_rank
-            )
+            result["exit_point"] = exit_point.to_dict()
+            result["exit_point"]["distance_to_current"] = exit_point.point_rank - self.arrival_rank
 
         return result
 

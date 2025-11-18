@@ -1,14 +1,17 @@
 """New Taipei City Garbage Truck API Client"""
 
 import time
+from typing import Any, Dict, List, Optional
+
 import requests
-from typing import Optional, Dict, Any, List
-from src.utils.logger import logger
+
 from src.models.truck import TruckLine
+from src.utils.logger import logger
 
 
 class NTPCApiError(Exception):
     """New Taipei City API Error"""
+
     pass
 
 
@@ -20,7 +23,7 @@ class NTPCApiClient:
         base_url: str = "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI",
         timeout: int = 10,
         retry_count: int = 3,
-        retry_delay: int = 2
+        retry_delay: int = 2,
     ):
         """
         Initialize API client
@@ -59,17 +62,9 @@ class NTPCApiClient:
 
         for attempt in range(self.retry_count):
             try:
-                logger.debug(
-                    f"Calling NTPC API (attempt {attempt + 1}/{self.retry_count}): "
-                    f"lat={lat}, lng={lng}"
-                )
+                logger.debug(f"Calling NTPC API (attempt {attempt + 1}/{self.retry_count}): " f"lat={lat}, lng={lng}")
 
-                response = self.session.post(
-                    url,
-                    data=payload,
-                    headers=headers,
-                    timeout=self.timeout
-                )
+                response = self.session.post(url, data=payload, headers=headers, timeout=self.timeout)
 
                 response.raise_for_status()
 
@@ -78,12 +73,12 @@ class NTPCApiClient:
                 if not isinstance(data, dict):
                     raise NTPCApiError(f"API response format error: not a dictionary")
 
-                if 'Line' not in data:
+                if "Line" not in data:
                     logger.warning("No 'Line' field in API response, possibly no trucks nearby")
                     return []
 
                 lines = []
-                for line_data in data.get('Line', []):
+                for line_data in data.get("Line", []):
                     try:
                         truck_line = TruckLine.from_dict(line_data)
                         lines.append(truck_line)
@@ -105,16 +100,12 @@ class NTPCApiClient:
             except requests.exceptions.HTTPError as e:
                 last_error = f"HTTP error: {e.response.status_code}"
                 logger.warning(
-                    f"API returned error status {e.response.status_code} "
-                    f"(attempt {attempt + 1}/{self.retry_count})"
+                    f"API returned error status {e.response.status_code} " f"(attempt {attempt + 1}/{self.retry_count})"
                 )
 
             except requests.exceptions.RequestException as e:
                 last_error = f"Network error: {str(e)}"
-                logger.warning(
-                    f"API request failed: {e} "
-                    f"(attempt {attempt + 1}/{self.retry_count})"
-                )
+                logger.warning(f"API request failed: {e} " f"(attempt {attempt + 1}/{self.retry_count})")
 
             except ValueError as e:
                 last_error = f"JSON parse error: {str(e)}"
@@ -136,5 +127,5 @@ class NTPCApiClient:
 
     def __del__(self):
         """Clean up resources"""
-        if hasattr(self, 'session'):
+        if hasattr(self, "session"):
             self.session.close()

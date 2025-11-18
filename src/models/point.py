@@ -24,7 +24,7 @@ class Point:
     like_count: int
 
     @classmethod
-    def from_dict(cls, data: dict) -> 'Point':
+    def from_dict(cls, data: dict) -> "Point":
         """
         Create Point object from API response dictionary
 
@@ -35,20 +35,20 @@ class Point:
             Point: Collection point object
         """
         return cls(
-            source_point_id=data.get('SourcePointID'),
-            vil=data.get('Vil', ''),
-            point_name=data.get('PointName', ''),
-            lon=data.get('Lon', 0.0),
-            lat=data.get('Lat', 0.0),
-            point_id=data.get('PointID'),
-            point_rank=data.get('PointRank', 0),
-            point_time=data.get('PointTime', ''),
-            arrival=data.get('Arrival', ''),
-            arrival_diff=data.get('ArrivalDiff', 65535),
-            fixed_point=data.get('FixedPoint', 0),
-            point_weekknd=data.get('PointWeekKnd', ''),
-            in_scope=data.get('InScope', ''),
-            like_count=data.get('LikeCount', 0)
+            source_point_id=data.get("SourcePointID"),
+            vil=data.get("Vil", ""),
+            point_name=data.get("PointName", ""),
+            lon=data.get("Lon", 0.0),
+            lat=data.get("Lat", 0.0),
+            point_id=data.get("PointID"),
+            point_rank=data.get("PointRank", 0),
+            point_time=data.get("PointTime", ""),
+            arrival=data.get("Arrival", ""),
+            arrival_diff=data.get("ArrivalDiff", 65535),
+            fixed_point=data.get("FixedPoint", 0),
+            point_weekknd=data.get("PointWeekKnd", ""),
+            in_scope=data.get("InScope", ""),
+            like_count=data.get("LikeCount", 0),
         )
 
     def to_dict(self) -> dict:
@@ -59,13 +59,13 @@ class Point:
             dict: Collection point data dictionary
         """
         return {
-            'name': self.point_name,
-            'rank': self.point_rank,
-            'point_time': self.point_time,
-            'arrival': self.arrival,
-            'arrival_diff': self.arrival_diff,
-            'passed': self.has_passed(),
-            'in_scope': self.is_in_scope()
+            "name": self.point_name,
+            "rank": self.point_rank,
+            "point_time": self.point_time,
+            "arrival": self.arrival,
+            "arrival_diff": self.arrival_diff,
+            "passed": self.has_passed(),
+            "in_scope": self.is_in_scope(),
         }
 
     def has_passed(self) -> bool:

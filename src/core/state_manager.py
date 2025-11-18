@@ -1,16 +1,19 @@
 """State Manager"""
 
-from enum import Enum
 from datetime import datetime
-from typing import Optional, Dict, Any
-from src.models.truck import TruckLine
-from src.models.point import Point
-from src.utils.logger import logger
+from enum import Enum
+from typing import Any, Dict, Optional
+
 import pytz
+
+from src.models.point import Point
+from src.models.truck import TruckLine
+from src.utils.logger import logger
 
 
 class TruckState(Enum):
     """Truck state"""
+
     IDLE = "idle"
     NEARBY = "nearby"
 
@@ -18,7 +21,7 @@ class TruckState(Enum):
 class StateManager:
     """State manager"""
 
-    def __init__(self, timezone: str = 'Asia/Taipei'):
+    def __init__(self, timezone: str = "Asia/Taipei"):
         """
         Initialize state manager
 
@@ -41,7 +44,7 @@ class StateManager:
         reason: str,
         truck_line: Optional[TruckLine] = None,
         enter_point: Optional[Point] = None,
-        exit_point: Optional[Point] = None
+        exit_point: Optional[Point] = None,
     ) -> None:
         """
         Update system state
@@ -59,13 +62,10 @@ class StateManager:
             logger.error(f"Invalid state value: {new_state}")
             return
 
-        state_changed = (self.current_state != new_state_enum)
+        state_changed = self.current_state != new_state_enum
 
         if state_changed:
-            logger.info(
-                f"🔄 State changed: {self.current_state.value} → {new_state_enum.value} "
-                f"({reason})"
-            )
+            logger.info(f"🔄 State changed: {self.current_state.value} → {new_state_enum.value} " f"({reason})")
         else:
             logger.debug(f"State maintained: {self.current_state.value}")
 
@@ -88,17 +88,14 @@ class StateManager:
             dict: Status response data
         """
         response = {
-            'status': self.current_state.value,
-            'reason': self.reason,
-            'truck': None,
-            'timestamp': self.last_update.isoformat() if self.last_update else None
+            "status": self.current_state.value,
+            "reason": self.reason,
+            "truck": None,
+            "timestamp": self.last_update.isoformat() if self.last_update else None,
         }
 
         if self.current_truck and self.current_state == TruckState.NEARBY:
-            response['truck'] = self.current_truck.to_dict(
-                enter_point=self.enter_point,
-                exit_point=self.exit_point
-            )
+            response["truck"] = self.current_truck.to_dict(enter_point=self.enter_point, exit_point=self.exit_point)
 
         return response
 
