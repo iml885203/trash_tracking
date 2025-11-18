@@ -1,7 +1,6 @@
 """Flask API Routes"""
 
 from datetime import datetime
-from typing import Any, Dict
 
 import pytz
 from flask import Flask, jsonify, request

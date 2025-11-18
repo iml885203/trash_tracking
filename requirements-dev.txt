@@ -32,3 +32,4 @@ mkdocs-material==9.5.3
 # 開發工具
 ipython==8.20.0
 ipdb==0.13.13
+pre-commit==3.5.0

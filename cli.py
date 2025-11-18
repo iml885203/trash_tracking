@@ -3,12 +3,11 @@
 
 import argparse
 import sys
-from typing import List, Optional
 
 from src.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from src.models.point import Point
 from src.models.truck import TruckLine
-from src.utils.logger import logger, setup_logger
+from src.utils.logger import setup_logger
 
 
 def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
@@ -71,7 +70,7 @@ def display_truck_info(truck: TruckLine, next_points: int = 10) -> None:
     elif truck.diff < 0:
         print(f"   ✅ Early Status: {abs(truck.diff)} minutes early")
     else:
-        print(f"   ✅ On Time")
+        print("   ✅ On Time")
 
     print(f"{'='*80}")
 
