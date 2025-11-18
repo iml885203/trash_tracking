@@ -106,7 +106,9 @@ def health_check() -> tuple:
         tuple: (JSON response, HTTP status code)
     """
     try:
-        health_status = {
+        from typing import Any, Dict
+
+        health_status: Dict[str, Any] = {
             "status": "ok" if tracker is not None else "initializing",
             "timestamp": datetime.now(pytz.timezone("Asia/Taipei")).isoformat(),
         }

@@ -112,7 +112,6 @@ jobs:
           echo "Building version: ${VERSION}"
 
       - name: Update addon config version
-        continue-on-error: true
         run: |
           # Clone addons repository
           git clone https://github.com/${{ github.repository_owner }}/homeassistant-addons.git /tmp/addons

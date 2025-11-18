@@ -87,7 +87,9 @@ class StateManager:
         Returns:
             dict: Status response data
         """
-        response = {
+        from typing import Any, Dict
+
+        response: Dict[str, Any] = {
             "status": self.current_state.value,
             "reason": self.reason,
             "truck": None,

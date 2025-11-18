@@ -115,12 +115,14 @@ class TruckLine:
         }
 
         if enter_point:
-            result["enter_point"] = enter_point.to_dict()
-            result["enter_point"]["distance_to_current"] = enter_point.point_rank - self.arrival_rank
+            enter_point_dict = enter_point.to_dict()
+            enter_point_dict["distance_to_current"] = enter_point.point_rank - self.arrival_rank
+            result["enter_point"] = enter_point_dict
 
         if exit_point:
-            result["exit_point"] = exit_point.to_dict()
-            result["exit_point"]["distance_to_current"] = exit_point.point_rank - self.arrival_rank
+            exit_point_dict = exit_point.to_dict()
+            exit_point_dict["distance_to_current"] = exit_point.point_rank - self.arrival_rank
+            result["exit_point"] = exit_point_dict
 
         return result
 

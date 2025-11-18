@@ -51,6 +51,9 @@ class ConfigManager:
             if config is None:
                 raise ConfigError("Config file is empty")
 
+            if not isinstance(config, dict):
+                raise ConfigError("Config file must contain a dictionary")
+
             logger.info(f"Config file loaded successfully: {self.config_path}")
             return config
 
@@ -138,57 +141,59 @@ class ConfigManager:
     def target_lines(self) -> List[str]:
         """Get list of routes to track"""
         lines = self.config["tracking"].get("target_lines", [])
-        return lines if lines else []
+        return list(lines) if lines else []
 
     @property
     def enter_point(self) -> str:
         """Get enter point name"""
-        return self.config["tracking"]["enter_point"]
+        return str(self.config["tracking"]["enter_point"])
 
     @property
     def exit_point(self) -> str:
         """Get exit point name"""
-        return self.config["tracking"]["exit_point"]
+        return str(self.config["tracking"]["exit_point"])
 
     @property
     def trigger_mode(self) -> str:
         """Get trigger mode"""
-        return self.config["tracking"].get("trigger_mode", "arriving")
+        return str(self.config["tracking"].get("trigger_mode", "arriving"))
 
     @property
     def approaching_threshold(self) -> int:
         """Get number of stops ahead for early notification"""
-        return self.config["tracking"].get("approaching_threshold", 2)
+        return int(self.config["tracking"].get("approaching_threshold", 2))
 
     @property
     def log_level(self) -> str:
         """Get log level"""
-        return self.config.get("system", {}).get("log_level", "INFO")
+        return str(self.config.get("system", {}).get("log_level", "INFO"))
 
     @property
     def api_timeout(self) -> int:
         """Get API timeout"""
-        return self.config.get("api", {}).get("ntpc", {}).get("timeout", 10)
+        return int(self.config.get("api", {}).get("ntpc", {}).get("timeout", 10))
 
     @property
     def api_base_url(self) -> str:
         """Get NTPC API base URL"""
-        return self.config.get("api", {}).get("ntpc", {}).get("base_url", "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI")
+        return str(
+            self.config.get("api", {}).get("ntpc", {}).get("base_url", "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI")
+        )
 
     @property
     def server_host(self) -> str:
         """Get Flask server host"""
-        return self.config.get("api", {}).get("server", {}).get("host", "0.0.0.0")
+        return str(self.config.get("api", {}).get("server", {}).get("host", "0.0.0.0"))
 
     @property
     def server_port(self) -> int:
         """Get Flask server port"""
-        return self.config.get("api", {}).get("server", {}).get("port", 5000)
+        return int(self.config.get("api", {}).get("server", {}).get("port", 5000))
 
     @property
     def server_debug(self) -> bool:
         """Get Flask debug mode"""
-        return self.config.get("api", {}).get("server", {}).get("debug", False)
+        return bool(self.config.get("api", {}).get("server", {}).get("debug", False))
 
     def __str__(self) -> str:
         """Return string representation of config"""
