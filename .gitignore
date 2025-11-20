@@ -57,6 +57,9 @@ pylint-report.txt
 .env.local
 .env.*.local
 
+# User configuration
+config.yaml
+
 # Other
 *.bak
 *.tmp

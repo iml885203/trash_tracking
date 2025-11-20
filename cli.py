@@ -135,15 +135,17 @@ def interactive_setup() -> int:  # noqa: C901
     # Step 2: Query nearby routes
     print("\n🚛 步驟 2/4: 查詢附近的垃圾車路線")
     print("-" * 80)
-    print("正在查詢...")
+    print("正在查詢所有時段的路線（早上、下午、晚上）...")
 
     try:
         client = NTPCApiClient()
-        trucks = client.get_around_points(lat, lng)
+        trucks = client.get_around_points(lat, lng, time_filter=0)
 
         if not trucks:
-            print("❌ 附近沒有找到垃圾車路線")
-            print("提示: 可能現在沒有垃圾車在運行，請稍後再試")
+            print("\n❌ 附近沒有找到垃圾車路線")
+            print("可能原因:")
+            print("  1. 搜尋範圍內沒有垃圾車路線經過")
+            print("  2. 或訪問官網查看完整時刻表: https://crd-rubbish.epd.ntpc.gov.tw/")
             return 1
 
         analyzer = RouteAnalyzer(lat, lng)
@@ -163,7 +165,9 @@ def interactive_setup() -> int:  # noqa: C901
                 distance_str = f"{distance_m/1000:.1f}km"
 
             print(f"[{i}] {rec.truck.line_name}")
+            print(f"    車號: {rec.truck.car_no}")
             print(f"    時間: {rec.schedule_info}")
+            print(f"    收集點總數: {len(rec.truck.points)} 個")
             print(f"    最近收集點: {rec.nearest_point.point_name} (距離 {distance_str})")
             print(f"    推薦進入點: {rec.enter_point.point_name}")
             print(f"    推薦離開點: {rec.exit_point.point_name}")
@@ -173,24 +177,36 @@ def interactive_setup() -> int:  # noqa: C901
         print(f"❌ API 錯誤: {e}")
         return 1
 
-    # Step 3: Select routes
+    # Step 3: Select route
     print("📋 步驟 3/4: 選擇要追蹤的路線")
     print("-" * 80)
-    selection = input("請輸入路線編號 (多選用逗號分隔，按 Enter 全選): ").strip()
+    print("💡 提示: 請選擇一條路線。如果同一輛車有早晚兩班，系統會自動追蹤兩個時段。")
+    selection = input("請輸入路線編號 (1-{}): ".format(len(recommendations))).strip()
 
-    if selection:
-        try:
-            indices = [int(s.strip()) - 1 for s in selection.split(",")]
-            selected_recs = [recommendations[i] for i in indices if 0 <= i < len(recommendations)]
-        except (ValueError, IndexError):
+    if not selection:
+        print("❌ 未選擇路線")
+        return 1
+
+    try:
+        index = int(selection) - 1
+        if not 0 <= index < len(recommendations):
             print("❌ 選擇無效")
             return 1
-    else:
-        selected_recs = recommendations
-
-    if not selected_recs:
-        print("❌ 沒有選擇任何路線")
+        selected_rec = recommendations[index]
+    except ValueError:
+        print("❌ 請輸入有效的數字")
         return 1
+
+    # Find all routes with the same car number (morning/afternoon/evening variants)
+    selected_car = selected_rec.truck.car_no
+    selected_recs = [rec for rec in recommendations if rec.truck.car_no == selected_car]
+
+    if len(selected_recs) > 1:
+        print(f"\n✅ 已選擇車號 {selected_car}，找到 {len(selected_recs)} 個時段:")
+        for rec in selected_recs:
+            print(f"   - {rec.truck.line_name} ({rec.schedule_info})")
+    else:
+        print(f"\n✅ 已選擇: {selected_rec.truck.line_name}")
 
     # Step 4: Advanced settings
     print("\n⚙️  步驟 4/4: 進階設定")
@@ -215,16 +231,13 @@ def interactive_setup() -> int:  # noqa: C901
     print("\n📝 生成配置文件...")
     print("-" * 80)
 
-    # For simplicity, use first selected route's enter/exit points
-    main_rec = selected_recs[0]
-
     config = {
         "system": {"log_level": "INFO", "cache_enabled": False, "cache_ttl": 60},
         "location": {"lat": lat, "lng": lng},
         "tracking": {
             "target_lines": [rec.truck.line_name for rec in selected_recs],
-            "enter_point": main_rec.enter_point.point_name,
-            "exit_point": main_rec.exit_point.point_name,
+            "enter_point": selected_rec.enter_point.point_name,
+            "exit_point": selected_rec.exit_point.point_name,
             "trigger_mode": trigger_mode,
             "approaching_threshold": threshold,
         },
@@ -257,8 +270,9 @@ def interactive_setup() -> int:  # noqa: C901
     print("=" * 80)
     print(f"\n📍 位置: ({lat:.6f}, {lng:.6f})")
     print(f"🚛 追蹤路線: {', '.join([rec.truck.line_name for rec in selected_recs])}")
-    print(f"📥 進入點: {main_rec.enter_point.point_name}")
-    print(f"📤 離開點: {main_rec.exit_point.point_name}")
+    print(f"🚗 車號: {selected_car}")
+    print(f"📥 進入點: {selected_rec.enter_point.point_name}")
+    print(f"📤 離開點: {selected_rec.exit_point.point_name}")
     print(f"⏰ 提前通知: {threshold} 站")
     print("\n💡 下一步: 執行 'python3 app.py' 啟動服務")
     print()

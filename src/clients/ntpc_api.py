@@ -1,7 +1,7 @@
 """New Taipei City Garbage Truck API Client"""
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import requests
 
@@ -40,13 +40,20 @@ class NTPCApiClient:
         self.retry_delay = retry_delay
         self.session = requests.Session()
 
-    def get_around_points(self, lat: float, lng: float) -> Optional[List[TruckLine]]:
+    def get_around_points(  # noqa: C901
+        self, lat: float, lng: float, time_filter: int = 0
+    ) -> Optional[List[TruckLine]]:
         """
         Query nearby garbage trucks
 
         Args:
             lat: Latitude of query location
             lng: Longitude of query location
+            time_filter: Time period filter
+                0: No limit (all routes)
+                1: Morning (06:00-11:59)
+                2: Afternoon (12:00-17:59)
+                3: Evening (18:00-23:59)
 
         Returns:
             List[TruckLine]: List of truck routes, None on failure
@@ -55,14 +62,17 @@ class NTPCApiClient:
             NTPCApiError: When all retries fail
         """
         url = f"{self.base_url}/GetAroundPoints"
-        payload = {"lat": lat, "lng": lng}
+        payload = {"lat": lat, "lng": lng, "time": time_filter}
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         last_error = None
 
         for attempt in range(self.retry_count):
             try:
-                logger.debug(f"Calling NTPC API (attempt {attempt + 1}/{self.retry_count}): " f"lat={lat}, lng={lng}")
+                logger.debug(
+                    f"Calling NTPC API (attempt {attempt + 1}/{self.retry_count}): "
+                    f"lat={lat}, lng={lng}, time={time_filter}"
+                )
 
                 response = self.session.post(url, data=payload, headers=headers, timeout=self.timeout)
 
@@ -71,7 +81,7 @@ class NTPCApiClient:
                 data = response.json()
 
                 if not isinstance(data, dict):
-                    raise NTPCApiError(f"API response format error: not a dictionary")
+                    raise NTPCApiError("API response format error: not a dictionary")
 
                 if "Line" not in data:
                     logger.warning("No 'Line' field in API response, possibly no trucks nearby")
