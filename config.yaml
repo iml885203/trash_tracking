@@ -1,56 +1,25 @@
-# Garbage Truck Tracking System - Configuration File
-
-# System settings
-system:
-  log_level: INFO           # Log level: DEBUG, INFO, WARNING, ERROR
-  cache_enabled: false      # Enable caching (future feature)
-  cache_ttl: 60            # Cache TTL (seconds)
-
-# Query location (your home coordinates)
-location:
-  lat: 25.018269
-  lng: 121.471703
-
-# Garbage truck tracking settings
-tracking:
-  # Specify target routes (empty array = track all routes)
-  # Example: ["District 1 Evening 1", "District 2 Evening 2"]
-  target_lines: []
-
-  # Entry point (light turns on when truck arrives)
-  # Must match PointName exactly as returned by API
-  enter_point: "Minsheng Rd. Sec. 2, No. 80"
-
-  # Exit point (light turns off when truck passes)
-  # Must match PointName exactly as returned by API
-  # Note: Exit point must be after entry point in route sequence
-  exit_point: "Chenggong Rd. No. 23"
-
-  # Trigger mode
-  # arriving: Trigger when truck is approaching entry point (advance notification)
-  # arrived: Trigger when truck has arrived at entry point (actual arrival)
-  trigger_mode: "arriving"
-
-  # Number of stops ahead for advance notification (only when trigger_mode=arriving)
-  # Example: 2 means trigger when truck is 2 stops before entry point
-  approaching_threshold: 2
-
-# API settings
 api:
-  # New Taipei City API settings
   ntpc:
-    base_url: "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI"
-    timeout: 10             # Request timeout (seconds)
-    retry_count: 3          # Number of retries
-    retry_delay: 2          # Retry delay (seconds)
-
-  # Flask server settings
+    base_url: https://crd-rubbish.epd.ntpc.gov.tw/WebAPI
+    retry_count: 3
+    retry_delay: 2
+    timeout: 10
   server:
-    host: "0.0.0.0"
-    port: 5000
     debug: false
-
-# Home Assistant integration settings (reference only, does not affect runtime)
-home_assistant:
-  scan_interval: 90         # HA polling interval (seconds)
-  light_entity_id: "light.notification_bulb"  # Light entity ID to control
+    host: 0.0.0.0
+    port: 5000
+location:
+  lat: 25.0140383
+  lng: 121.4701937
+system:
+  cache_enabled: false
+  cache_ttl: 60
+  log_level: INFO
+tracking:
+  approaching_threshold: 2
+  enter_point: 中山路一段206巷口
+  exit_point: 中山路一段206巷口
+  target_lines:
+  - A14路線下午
+  - A14路線晚上
+  trigger_mode: arriving

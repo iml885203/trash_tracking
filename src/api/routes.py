@@ -5,6 +5,7 @@ from datetime import datetime
 import pytz
 from flask import Flask, jsonify, request
 
+from src.api.setup import register_setup_routes
 from src.core.tracker import TruckTracker
 from src.utils.config import ConfigError, ConfigManager
 from src.utils.logger import logger, setup_logger
@@ -38,6 +39,9 @@ def create_app(config_path: str = "config.yaml") -> Flask:
         logger.info(f"Config: {config}")
 
         tracker = TruckTracker(config)
+
+        # Register setup wizard routes
+        register_setup_routes(app)
 
         logger.info("Flask application initialized successfully")
 

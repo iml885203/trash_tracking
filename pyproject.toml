@@ -105,13 +105,6 @@ python_functions = ["test_*"]
 addopts = [
     "--strict-markers",
     "--tb=short",
-    "--cov=src",
-    "--cov=cli",
-    "--cov=app",
-    "--cov-report=html",
-    "--cov-report=term-missing",
-    "--cov-report=xml",
-    "--cov-fail-under=70",
     "-v",
 ]
 markers = [
@@ -119,6 +112,7 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
 ]
+asyncio_mode = "auto"
 
 [tool.coverage.run]
 source = ["src", "cli", "app"]

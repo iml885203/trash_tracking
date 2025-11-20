@@ -417,27 +417,17 @@ def interactive_setup() -> int:
     return 0
 
 
-def _get_coordinates_from_args(args: argparse.Namespace) -> tuple[float, float] | None:
-    """Get coordinates from command line arguments"""
-    lat = args.lat
-    lng = args.lng
-
-    if args.address:
-        geocoder = Geocoder()
-        try:
-            print(f"\n🔍 正在查詢地址座標: {args.address}")
-            lat, lng = geocoder.address_to_coordinates(args.address)
-            print(f"✅ 座標: ({lat:.6f}, {lng:.6f})")
-        except GeocodingError as e:
-            print(f"\n❌ 地址查詢失敗: {e}", file=sys.stderr)
-            return None
-
-    if lat is None or lng is None:
-        print("\n❌ 錯誤: 請提供座標 (--lat --lng) 或地址 (--address)", file=sys.stderr)
-        print("或使用 --setup 進入互動式設定模式", file=sys.stderr)
+def _get_coordinates_from_address(address: str) -> tuple[float, float] | None:
+    """Get coordinates from address"""
+    geocoder = Geocoder()
+    try:
+        print(f"\n🔍 正在查詢地址座標: {address}")
+        lat, lng = geocoder.address_to_coordinates(address)
+        print(f"✅ 座標: ({lat:.6f}, {lng:.6f})")
+        return (lat, lng)
+    except GeocodingError as e:
+        print(f"\n❌ 地址查詢失敗: {e}", file=sys.stderr)
         return None
-
-    return (lat, lng)
 
 
 def _query_and_display_trucks(lat: float, lng: float, args: argparse.Namespace) -> int:
@@ -497,22 +487,15 @@ Examples:
   # Interactive setup mode
   %(prog)s --setup
 
-  # Query by coordinates
-  %(prog)s --lat 25.0199 --lng 121.4705
-
   # Query by address
   %(prog)s --address "新北市板橋區民生路二段80號"
 
   # Advanced options
-  %(prog)s --lat 25.0199 --lng 121.4705 --radius 1000
-  %(prog)s --lat 25.0199 --lng 121.4705 --next 5
-  %(prog)s --lat 25.0199 --lng 121.4705 --line "Area 1 Evening 1"
+  %(prog)s --address "新北市板橋區民生路二段80號" --radius 1000
+  %(prog)s --address "新北市板橋區民生路二段80號" --next 5
+  %(prog)s --address "新北市板橋區民生路二段80號" --line "Area 1 Evening 1"
         """,
     )
-
-    parser.add_argument("--lat", type=float, help="Latitude of query location (e.g., 25.0199)")
-
-    parser.add_argument("--lng", type=float, help="Longitude of query location (e.g., 121.4705)")
 
     parser.add_argument("--address", type=str, help='Address to query (e.g., "新北市板橋區民生路二段80號")')
 
@@ -543,7 +526,13 @@ Examples:
     if args.setup:
         return interactive_setup()
 
-    coordinates = _get_coordinates_from_args(args)
+    if not args.address:
+        print("\n❌ 錯誤: 請提供地址 (--address)", file=sys.stderr)
+        print("或使用 --setup 進入互動式設定模式", file=sys.stderr)
+        print("或使用 --suggest 自動建議配置", file=sys.stderr)
+        return 1
+
+    coordinates = _get_coordinates_from_address(args.address)
     if not coordinates:
         return 1
     lat, lng = coordinates
