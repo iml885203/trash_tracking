@@ -18,7 +18,7 @@ system:
 tracking:
   approaching_threshold: 2
   enter_point: 中山路一段206巷口
-  exit_point: 中山路一段206巷口
+  exit_point: 中山路一段280巷口
   target_lines:
   - A14路線下午
   - A14路線晚上
