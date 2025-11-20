@@ -9,21 +9,23 @@ api:
     host: 0.0.0.0
     port: 5000
 location:
-  lat: 25.0140383
-  lng: 121.4701937
+  lat: 25.0084129
+  lng: 121.4603453
 system:
   cache_enabled: false
   cache_ttl: 60
   log_level: INFO
 tracking:
   approaching_threshold: 2
-  enter_point: 中山路一段206巷口
-  exit_point: 中山路一段280巷口
+  enter_point: 中山路一段30號
+  exit_point: 中山路一段102號
   target_lines:
-  - A14路線下午
-  - A14路線晚上
-  - A09路線
-  - A28路線
-  - A12路線下午(2.5.6版)
   - A12路線晚上
+  - A12路線下午(2.5.6版)
+  - A05路線下午
+  - A05路線晚上
+  - B03路線下午
+  - B03路線晚上
+  - A02路線下午
+  - A02路線晚上
   trigger_mode: arriving

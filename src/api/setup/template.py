@@ -303,7 +303,7 @@ SETUP_WIZARD_HTML = """
             document.getElementById('loading').classList.add('active');
 
             try {
-                const response = await fetch('/api/setup/suggest', {
+                const response = await fetch('api/setup/suggest', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ address: address })
@@ -366,7 +366,7 @@ SETUP_WIZARD_HTML = """
             }
 
             try {
-                const response = await fetch('/api/setup/save', {
+                const response = await fetch('api/setup/save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(configData)

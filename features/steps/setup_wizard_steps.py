@@ -172,3 +172,32 @@ def step_routes_should_belong_to_district(context, district):
     rec = context.json_data.get("recommendation", {})
     route_names = rec.get("route_selection", {}).get("route_names", [])
     assert len(route_names) > 0, f"No routes found for {district}"
+
+
+@given("我在 Home Assistant Ingress 環境中")
+def step_in_ingress_environment(context):
+    """Setup for Ingress environment testing"""
+    # In Ingress environment, paths should be relative
+    context.ingress_mode = True
+
+
+@then("頁面的 API 呼叫應該在 Ingress 環境中正常運作")
+def step_api_calls_should_work_in_ingress(context):
+    """Verify API calls work in Ingress environment (uses relative paths)"""
+    html_content = context.html_content
+
+    # Verify relative paths are used (not absolute paths with leading /)
+    # This ensures compatibility with Home Assistant Ingress proxy
+    api_paths = ["api/setup/suggest", "api/setup/save"]
+
+    for path in api_paths:
+        # Check relative path exists
+        has_relative = f"fetch('{path}'" in html_content or f'fetch("{path}"' in html_content
+        assert has_relative, f"API path '{path}' should use relative path for Ingress compatibility"
+
+        # Check absolute path does NOT exist
+        absolute_path = f"/{path}"
+        has_absolute = f"fetch('{absolute_path}'" in html_content or f'fetch("{absolute_path}"' in html_content
+        assert (
+            not has_absolute
+        ), f"Found absolute path '{absolute_path}' which won't work in Ingress - should be '{path}'"
