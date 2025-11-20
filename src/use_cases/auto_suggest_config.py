@@ -1,6 +1,6 @@
 """Auto Suggest Configuration Use Case"""
 
-from typing import List, Tuple
+from typing import List
 
 from src.clients.ntpc_api import NTPCApiClient
 from src.use_cases.dtos import ConfigRecommendation, RouteSelection
@@ -114,15 +114,3 @@ class AutoSuggestConfigUseCase:
             threshold=2,  # Business rule: default 2 stops ahead
             trigger_mode="arriving",  # Business rule: notify before arrival
         )
-
-    def get_coordinates(self, address: str) -> Tuple[float, float]:
-        """
-        Helper: Get coordinates only (for display purposes)
-
-        Args:
-            address: Address to geocode
-
-        Returns:
-            tuple: (latitude, longitude)
-        """
-        return self.geocoder.address_to_coordinates(address)

@@ -249,13 +249,13 @@ def auto_suggest_config(address: str) -> int:
     use_case = AutoSuggestConfigUseCase(geocoder=Geocoder(), api_client=NTPCApiClient())
 
     try:
-        # Get coordinates for display
-        lat, lng = use_case.get_coordinates(address)
-        print(f"✅ 座標: ({lat:.6f}, {lng:.6f})\n")
-
-        # Execute Use Case (contains all business logic)
-        print("🚛 正在查詢附近的垃圾車路線...")
+        # Execute Use Case (contains all business logic including geocoding)
         recommendation = use_case.execute(address)
+
+        # Display coordinates after successful execution
+        print(f"✅ 座標: ({recommendation.latitude:.6f}, {recommendation.longitude:.6f})\n")
+
+        print("🚛 正在查詢附近的垃圾車路線...")
 
         # Presentation: Display results
         _display_config_recommendation(recommendation)
