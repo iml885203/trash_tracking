@@ -22,4 +22,8 @@ tracking:
   target_lines:
   - A14路線下午
   - A14路線晚上
+  - A09路線
+  - A28路線
+  - A12路線下午(2.5.6版)
+  - A12路線晚上
   trigger_mode: arriving
