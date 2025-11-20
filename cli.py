@@ -234,6 +234,124 @@ def _get_advanced_settings() -> int:
     return threshold
 
 
+def auto_suggest_config(address: str) -> int:  # noqa: C901
+    """Automatic configuration suggestion mode"""
+    print("\n" + "=" * 80)
+    print("🚛 垃圾車追蹤系統 - 自動建議設定")
+    print("=" * 80)
+    print()
+
+    geocoder = Geocoder()
+    print(f"📍 地址: {address}")
+    print("🔍 正在查詢座標...")
+
+    try:
+        lat, lng = geocoder.address_to_coordinates(address)
+        print(f"✅ 座標: ({lat:.6f}, {lng:.6f})\n")
+    except GeocodingError as e:
+        print(f"❌ 地址查詢失敗: {e}")
+        return 1
+
+    print("🚛 正在查詢附近的垃圾車路線...")
+    try:
+        client = NTPCApiClient()
+        trucks = client.get_around_points(lat, lng, time_filter=0)
+
+        if not trucks:
+            print("\n❌ 附近沒有找到垃圾車路線")
+            print("建議: 使用 --setup 進入互動式設定，或訪問官網: https://crd-rubbish.epd.ntpc.gov.tw/")
+            return 1
+
+        analyzer = RouteAnalyzer(lat, lng)
+        recommendations = analyzer.analyze_all_routes(trucks, span=2)
+
+        if not recommendations:
+            print("❌ 無法分析路線")
+            return 1
+
+        # Auto-select the nearest route
+        best_rec = recommendations[0]
+        selected_car = best_rec.truck.car_no
+        selected_recs = [rec for rec in recommendations if rec.truck.car_no == selected_car]
+
+        distance_m = best_rec.nearest_point.distance_meters
+        distance_str = f"{distance_m:.0f}m" if distance_m < 1000 else f"{distance_m/1000:.1f}km"
+
+        print(f"\n✅ 找到 {len(recommendations)} 條路線")
+        print(f"📌 建議路線: {best_rec.truck.line_name} (最近距離: {distance_str})")
+        print(f"🚗 車號: {selected_car}")
+
+        if len(selected_recs) > 1:
+            print(f"📅 該車輛共有 {len(selected_recs)} 個時段:")
+            for rec in selected_recs:
+                print(f"   - {rec.truck.line_name} ({rec.schedule_info})")
+        else:
+            print(f"📅 時間: {best_rec.schedule_info}")
+
+        print("\n📍 收集點資訊:")
+        print(f"   最近點: {best_rec.nearest_point.point_name} (距離 {distance_str})")
+        print(f"   進入點: {best_rec.enter_point.point_name}")
+        print(f"   離開點: {best_rec.exit_point.point_name}")
+
+        threshold = 2
+        trigger_mode = "arriving"
+
+        print("\n⚙️  通知設定:")
+        print(f"   提前 {threshold} 站通知")
+        print(f"   觸發模式: {trigger_mode}")
+
+        print("\n" + "=" * 80)
+        print("💡 建議配置")
+        print("=" * 80)
+
+        config = {
+            "system": {"log_level": "INFO", "cache_enabled": False, "cache_ttl": 60},
+            "location": {"lat": lat, "lng": lng},
+            "tracking": {
+                "target_lines": [rec.truck.line_name for rec in selected_recs],
+                "enter_point": best_rec.enter_point.point_name,
+                "exit_point": best_rec.exit_point.point_name,
+                "trigger_mode": trigger_mode,
+                "approaching_threshold": threshold,
+            },
+            "api": {
+                "ntpc": {
+                    "base_url": "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI",
+                    "timeout": 10,
+                    "retry_count": 3,
+                    "retry_delay": 2,
+                },
+                "server": {"host": "0.0.0.0", "port": 5000, "debug": False},
+            },
+        }
+
+        print("\n```yaml")
+        print(yaml.dump(config, allow_unicode=True, default_flow_style=False, sort_keys=False))
+        print("```")
+
+        save = input("\n是否儲存此配置到 config.yaml? (y/N): ").strip().lower()
+        if save == "y":
+            config_path = Path("config.yaml")
+            try:
+                with open(config_path, "w", encoding="utf-8") as f:
+                    yaml.dump(config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+                print(f"✅ 配置已保存到: {config_path}")
+                print("\n💡 下一步: 執行 'python3 app.py' 啟動服務")
+            except Exception as e:
+                print(f"❌ 保存配置失敗: {e}")
+                return 1
+        else:
+            print("\n💡 若要使用此配置，請:")
+            print("   1. 複製上方 YAML 內容到 config.yaml")
+            print("   2. 或執行 'python3 cli.py --setup' 進入互動式設定")
+
+        return 0
+
+    except NTPCApiError as e:
+        print(f"❌ API 錯誤: {e}")
+        return 1
+
+
 def interactive_setup() -> int:
     """Interactive setup mode for generating configuration"""
     print("\n" + "=" * 80)
@@ -386,14 +504,17 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Auto-suggest configuration (fastest)
+  %(prog)s --suggest "新北市板橋區民生路二段80號"
+
+  # Interactive setup mode
+  %(prog)s --setup
+
   # Query by coordinates
   %(prog)s --lat 25.0199 --lng 121.4705
 
   # Query by address
   %(prog)s --address "新北市板橋區民生路二段80號"
-
-  # Interactive setup mode
-  %(prog)s --setup
 
   # Advanced options
   %(prog)s --lat 25.0199 --lng 121.4705 --radius 1000
@@ -410,6 +531,10 @@ Examples:
 
     parser.add_argument("--setup", action="store_true", help="Interactive setup mode to generate config.yaml")
 
+    parser.add_argument(
+        "--suggest", type=str, metavar="ADDRESS", help='Auto-suggest config from address (e.g., "新北市板橋區民生路二段80號")'
+    )
+
     parser.add_argument("--radius", type=int, default=1000, help="Query radius in meters (default: 1000)")
 
     parser.add_argument(
@@ -424,6 +549,9 @@ Examples:
 
     log_level = "DEBUG" if args.debug else "INFO"
     setup_logger(log_level=log_level)
+
+    if args.suggest:
+        return auto_suggest_config(args.suggest)
 
     if args.setup:
         return interactive_setup()
