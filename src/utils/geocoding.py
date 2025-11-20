@@ -42,14 +42,40 @@ class Geocoder:
             # 方法 1: 使用國土測繪中心 API
             result = self._query_nlsc(cleaned_address, timeout)
             if result is not None and len(result) == 2:
+                logger.info("NLSC API 成功解析地址")
                 return result
 
             # 方法 2: 使用 OpenStreetMap Nominatim (備用)
             result = self._query_nominatim(cleaned_address, timeout)
             if result is not None and len(result) == 2:
+                logger.info("Nominatim API 成功解析地址")
                 return result
 
-            raise GeocodingError(f"無法找到地址的座標: {address}")
+            # 方法 3: 簡化地址重試 (移除巷弄號等詳細資訊)
+            simplified = self._simplify_address(cleaned_address)
+            if simplified != cleaned_address:
+                logger.info(f"嘗試簡化地址: {simplified}")
+
+                result = self._query_nominatim(simplified, timeout)
+                if result is not None and len(result) == 2:
+                    logger.warning("使用簡化地址找到座標，可能不夠精確")
+                    return result
+
+            # 方法 4: 使用 TW97 地址轉換服務
+            result = self._query_tgos(cleaned_address, timeout)
+            if result is not None and len(result) == 2:
+                logger.info("TGOS API 成功解析地址")
+                return result
+
+            # 提供詳細的錯誤訊息和建議
+            error_msg = f"無法找到地址的座標: {address}\n\n"
+            error_msg += "建議解決方法：\n"
+            error_msg += "1. 使用 Google Maps 查詢你的地址，右鍵點擊位置，複製座標\n"
+            error_msg += "2. 然後使用座標執行: python3 cli.py --lat 緯度 --lng 經度\n"
+            error_msg += f"3. 或嘗試簡化地址，例如: {simplified}\n"
+            error_msg += "4. 或使用互動式設定手動輸入座標: python3 cli.py --setup"
+
+            raise GeocodingError(error_msg)
 
         except GeocodingError:
             raise
@@ -78,6 +104,67 @@ class Geocoder:
                 address = "新北市" + address
 
         return address
+
+    def _simplify_address(self, address: str) -> str:
+        """
+        Simplify address by removing detailed info (alley, lane, number)
+
+        Args:
+            address: Full address
+
+        Returns:
+            str: Simplified address
+        """
+        # 移除巷弄號等詳細資訊，保留到路或街
+        import re
+
+        # 移除 "XX巷XX弄XX號"
+        simplified = re.sub(r"\d+巷.*", "", address)
+        # 移除 "XX弄XX號"
+        simplified = re.sub(r"\d+弄.*", "", simplified)
+        # 移除 "XX號.*"
+        simplified = re.sub(r"\d+號.*", "", simplified)
+
+        return simplified.strip()
+
+    def _query_tgos(self, address: str, timeout: int) -> Optional[Tuple[float, float]]:
+        """
+        Query TGOS (Taiwan Geographic Online Service) API
+
+        Args:
+            address: Address to query
+            timeout: Request timeout
+
+        Returns:
+            Optional[tuple]: (latitude, longitude) or None
+        """
+        try:
+            url = "https://addr.tgos.tw/addrapi/addr"
+            params: Dict[str, Any] = {"addr": address, "type": "json"}
+
+            response = requests.get(url, params=params, timeout=timeout)
+            response.raise_for_status()
+
+            data = response.json()
+
+            # TGOS API 返回格式檢查
+            if isinstance(data, dict) and "AddressList" in data:
+                addr_list = data.get("AddressList", [])
+                if addr_list and len(addr_list) > 0:
+                    first = addr_list[0]
+                    x = first.get("X")
+                    y = first.get("Y")
+
+                    if x and y:
+                        # TGOS 使用 TWD97，需要轉換
+                        lat, lng = self._twd97_to_wgs84(float(x), float(y))
+                        logger.info(f"TGOS API 查詢成功: {address} -> ({lat}, {lng})")
+                        return (lat, lng)
+
+        except Exception as e:
+            logger.debug(f"TGOS API 查詢失敗: {e}")
+
+        return None
 
     def _query_nlsc(self, address: str, timeout: int) -> Optional[Tuple[float, float]]:
         """
