@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 import yaml
-from flask import Blueprint, jsonify, render_template_string, request
+from flask import Blueprint, Response, jsonify, render_template_string, request
 
 from src.clients.ntpc_api import NTPCApiClient
 from src.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
@@ -25,14 +25,14 @@ def register_setup_routes(app):
 
 @setup_bp.route("/", methods=["GET"])
 @setup_bp.route("/setup", methods=["GET"])
-def setup_wizard() -> str:
+def setup_wizard() -> Response:
     """
     Setup wizard UI (Home Assistant Ingress entry point)
 
     Returns:
-        str: HTML page
+        Response: HTML page
     """
-    return render_template_string(SETUP_WIZARD_HTML)
+    return render_template_string(SETUP_WIZARD_HTML)  # type: ignore[return-value]
 
 
 @setup_bp.route("/api/setup/suggest", methods=["POST"])
@@ -134,13 +134,13 @@ def api_save_config() -> tuple:
             return jsonify({"error": "Configuration is required"}), 400
 
         # Determine config file path (Home Assistant Add-on uses /config/config.yaml)
-        config_path = os.getenv("CONFIG_PATH", "config.yaml")
+        config_path: str = os.getenv("CONFIG_PATH", "config.yaml")
         if os.path.exists("/config"):
             # Running in Home Assistant Add-on
             config_path = "/config/trash_tracking_config.yaml"
         else:
             # Running standalone
-            config_path = Path("config.yaml")
+            config_path = str(Path("config.yaml"))
 
         logger.info(f"Saving configuration to: {config_path}")
 
