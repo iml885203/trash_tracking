@@ -44,42 +44,48 @@ jobs:
 
     - name: Lint with flake8
       run: |
-        flake8 src tests cli.py app.py --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 src tests cli.py app.py --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+        flake8 src features cli.py app.py --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 src features cli.py app.py --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
     - name: Check code formatting with black
       run: |
-        black --check --diff src tests cli.py app.py
+        black --check --diff src features cli.py app.py
 
     - name: Sort imports check with isort
       run: |
-        isort --check-only --diff src tests cli.py app.py
+        isort --check-only --diff src features cli.py app.py
 
     - name: Type check with mypy
       run: |
         mypy src --ignore-missing-imports --no-strict-optional
       continue-on-error: true
 
-    - name: Run tests with pytest
+    - name: Start Flask API server in background
       run: |
-        pytest tests/ -v --cov=src --cov=cli --cov=app --cov-report=xml --cov-report=term-missing --cov-report=html
+        python app.py &
+        echo $! > flask_server.pid
+        sleep 5
+        # Verify server is running
+        curl -f http://localhost:5000/health || exit 1
 
-    - name: Upload test results
+    - name: Run BDD Feature Tests
+      run: |
+        python -m behave features/ -v --no-capture --junit --junit-directory reports/
+
+    - name: Stop Flask API server
+      if: always()
+      run: |
+        if [ -f flask_server.pid ]; then
+          kill $(cat flask_server.pid) || true
+          rm flask_server.pid
+        fi
+
+    - name: Upload BDD test results
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-${{ matrix.python-version }}
-        path: |
-          htmlcov/
-          coverage.xml
-          .coverage
-
-    - name: Upload coverage reports
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report-${{ matrix.python-version }}
-        path: htmlcov/
+        name: bdd-test-results-${{ matrix.python-version }}
+        path: reports/
 
   build-images:
     name: Build ${{ matrix.arch }} Image
