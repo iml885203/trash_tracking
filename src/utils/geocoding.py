@@ -20,7 +20,35 @@ class Geocoder:
     def __init__(self):
         self.base_url = "https://api.nlsc.gov.tw/other/TownVillagePointQuery"
 
-    def address_to_coordinates(self, address: str, timeout: int = 10) -> Tuple[float, float]:  # noqa: C901
+    def _try_simplified_addresses(self, address: str, timeout: int) -> Optional[Tuple[float, float]]:
+        """
+        Try progressively simplified addresses with Nominatim
+
+        Args:
+            address: Cleaned address
+            timeout: Request timeout
+
+        Returns:
+            Optional[tuple]: (latitude, longitude) or None
+        """
+        current_address = address
+        for attempt in range(4):
+            simplified = self._simplify_address(current_address)
+            if simplified == current_address:
+                break
+
+            logger.info(f"Trying simplified address (level {attempt + 1}): {simplified}")
+
+            result = self._query_nominatim(simplified, timeout)
+            if result is not None and len(result) == 2:
+                logger.warning(f"Found coordinates using simplified address: {simplified}")
+                return result
+
+            current_address = simplified
+
+        return None
+
+    def address_to_coordinates(self, address: str, timeout: int = 10) -> Tuple[float, float]:
         """
         Convert Taiwan address to GPS coordinates
 
@@ -47,26 +75,16 @@ class Geocoder:
                 logger.info("Nominatim API succeeded")
                 return result
 
-            current_address = cleaned_address
-            for attempt in range(4):
-                simplified = self._simplify_address(current_address)
-                if simplified == current_address:
-                    break
-
-                logger.info(f"Trying simplified address (level {attempt + 1}): {simplified}")
-
-                result = self._query_nominatim(simplified, timeout)
-                if result is not None and len(result) == 2:
-                    logger.warning(f"Found coordinates using simplified address: {simplified}")
-                    return result
-
-                current_address = simplified
+            result = self._try_simplified_addresses(cleaned_address, timeout)
+            if result is not None:
+                return result
 
             result = self._query_tgos(cleaned_address, timeout)
             if result is not None and len(result) == 2:
                 logger.info("TGOS API succeeded")
                 return result
 
+            simplified = self._simplify_address(cleaned_address)
             error_msg = f"無法找到地址的座標: {address}\n\n"
             error_msg += "建議解決方法：\n"
             error_msg += "1. 使用 Google Maps 查詢你的地址，右鍵點擊位置，複製座標\n"

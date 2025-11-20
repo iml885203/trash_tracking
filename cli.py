@@ -12,7 +12,7 @@ from src.models.point import Point
 from src.models.truck import TruckLine
 from src.utils.geocoding import Geocoder, GeocodingError
 from src.utils.logger import setup_logger
-from src.utils.route_analyzer import RouteAnalyzer
+from src.utils.route_analyzer import RouteAnalyzer, RouteRecommendation
 
 
 def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
@@ -98,28 +98,22 @@ def display_truck_info(truck: TruckLine, next_points: int = 10) -> None:
     print()
 
 
-def interactive_setup() -> int:  # noqa: C901
-    """Interactive setup mode for generating configuration"""
-    print("\n" + "=" * 80)
-    print("🚛 垃圾車追蹤系統 - 互動式設定工具")
-    print("=" * 80)
-    print()
-
-    geocoder = Geocoder()
-
-    # Step 1: Get location
+def _get_location_from_user() -> tuple[float, float] | None:
+    """Get location coordinates from user (Step 1)"""
     print("📍 步驟 1/4: 設定你的位置")
     print("-" * 80)
 
     address = input("請輸入你的地址 (例如: 新北市板橋區民生路二段80號): ").strip()
     if not address:
         print("❌ 地址不能空白")
-        return 1
+        return None
 
+    geocoder = Geocoder()
     print("\n🔍 正在查詢地址座標...")
     try:
         lat, lng = geocoder.address_to_coordinates(address)
         print(f"✅ 座標: ({lat:.6f}, {lng:.6f})")
+        return (lat, lng)
     except GeocodingError as e:
         print(f"❌ 地址查詢失敗: {e}")
         print("提示: 你可以手動輸入座標")
@@ -128,11 +122,14 @@ def interactive_setup() -> int:  # noqa: C901
         try:
             lat = float(lat_input)
             lng = float(lng_input)
+            return (lat, lng)
         except ValueError:
             print("❌ 座標格式錯誤")
-            return 1
+            return None
 
-    # Step 2: Query nearby routes
+
+def _query_and_display_routes(lat: float, lng: float) -> list[RouteRecommendation] | None:
+    """Query and display nearby routes (Step 2)"""
     print("\n🚛 步驟 2/4: 查詢附近的垃圾車路線")
     print("-" * 80)
     print("正在查詢所有時段的路線（早上、下午、晚上）...")
@@ -146,14 +143,14 @@ def interactive_setup() -> int:  # noqa: C901
             print("可能原因:")
             print("  1. 搜尋範圍內沒有垃圾車路線經過")
             print("  2. 或訪問官網查看完整時刻表: https://crd-rubbish.epd.ntpc.gov.tw/")
-            return 1
+            return None
 
         analyzer = RouteAnalyzer(lat, lng)
         recommendations = analyzer.analyze_all_routes(trucks, span=2)
 
         if not recommendations:
             print("❌ 無法分析路線")
-            return 1
+            return None
 
         print(f"\n✅ 找到 {len(recommendations)} 條路線:\n")
 
@@ -173,11 +170,17 @@ def interactive_setup() -> int:  # noqa: C901
             print(f"    推薦離開點: {rec.exit_point.point_name}")
             print()
 
+        return recommendations
+
     except NTPCApiError as e:
         print(f"❌ API 錯誤: {e}")
-        return 1
+        return None
 
-    # Step 3: Select route
+
+def _select_route(
+    recommendations: list[RouteRecommendation],
+) -> tuple[RouteRecommendation, list[RouteRecommendation]] | None:
+    """Select route and find same vehicle's other time periods (Step 3)"""
     print("📋 步驟 3/4: 選擇要追蹤的路線")
     print("-" * 80)
     print("💡 提示: 請選擇一條路線。如果同一輛車有早晚兩班，系統會自動追蹤兩個時段。")
@@ -185,19 +188,18 @@ def interactive_setup() -> int:  # noqa: C901
 
     if not selection:
         print("❌ 未選擇路線")
-        return 1
+        return None
 
     try:
         index = int(selection) - 1
         if not 0 <= index < len(recommendations):
             print("❌ 選擇無效")
-            return 1
+            return None
         selected_rec = recommendations[index]
     except ValueError:
         print("❌ 請輸入有效的數字")
-        return 1
+        return None
 
-    # Find all routes with the same car number (morning/afternoon/evening variants)
     selected_car = selected_rec.truck.car_no
     selected_recs = [rec for rec in recommendations if rec.truck.car_no == selected_car]
 
@@ -208,7 +210,11 @@ def interactive_setup() -> int:  # noqa: C901
     else:
         print(f"\n✅ 已選擇: {selected_rec.truck.line_name}")
 
-    # Step 4: Advanced settings
+    return (selected_rec, selected_recs)
+
+
+def _get_advanced_settings() -> int:
+    """Get advanced settings from user (Step 4)"""
     print("\n⚙️  步驟 4/4: 進階設定")
     print("-" * 80)
 
@@ -225,7 +231,33 @@ def interactive_setup() -> int:  # noqa: C901
     else:
         threshold = 2
 
+    return threshold
+
+
+def interactive_setup() -> int:
+    """Interactive setup mode for generating configuration"""
+    print("\n" + "=" * 80)
+    print("🚛 垃圾車追蹤系統 - 互動式設定工具")
+    print("=" * 80)
+    print()
+
+    location = _get_location_from_user()
+    if not location:
+        return 1
+    lat, lng = location
+
+    recommendations = _query_and_display_routes(lat, lng)
+    if not recommendations:
+        return 1
+
+    route_selection = _select_route(recommendations)
+    if not route_selection:
+        return 1
+    selected_rec, selected_recs = route_selection
+
+    threshold = _get_advanced_settings()
     trigger_mode = "arriving" if threshold > 0 else "arrived"
+    selected_car = selected_rec.truck.car_no
 
     # Generate config
     print("\n📝 生成配置文件...")
@@ -280,7 +312,74 @@ def interactive_setup() -> int:  # noqa: C901
     return 0
 
 
-def main():  # noqa: C901
+def _get_coordinates_from_args(args: argparse.Namespace) -> tuple[float, float] | None:
+    """Get coordinates from command line arguments"""
+    lat = args.lat
+    lng = args.lng
+
+    if args.address:
+        geocoder = Geocoder()
+        try:
+            print(f"\n🔍 正在查詢地址座標: {args.address}")
+            lat, lng = geocoder.address_to_coordinates(args.address)
+            print(f"✅ 座標: ({lat:.6f}, {lng:.6f})")
+        except GeocodingError as e:
+            print(f"\n❌ 地址查詢失敗: {e}", file=sys.stderr)
+            return None
+
+    if lat is None or lng is None:
+        print("\n❌ 錯誤: 請提供座標 (--lat --lng) 或地址 (--address)", file=sys.stderr)
+        print("或使用 --setup 進入互動式設定模式", file=sys.stderr)
+        return None
+
+    return (lat, lng)
+
+
+def _query_and_display_trucks(lat: float, lng: float, args: argparse.Namespace) -> int:
+    """Query and display truck information"""
+    try:
+        client = NTPCApiClient()
+
+        print(f"\n🔍 Query Location: ({lat}, {lng})")
+        print(f"📏 Query Radius: {args.radius} meters")
+
+        trucks = client.get_around_points(lat, lng)
+
+        if not trucks:
+            print("\n❌ No garbage trucks found in query range")
+            return 0
+
+        if args.line:
+            trucks = [t for t in trucks if t.line_name == args.line]
+            if not trucks:
+                print(f"\n❌ Route not found: {args.line}")
+                return 1
+
+        print(f"\n✅ Found {len(trucks)} garbage truck(s)")
+
+        for truck in trucks:
+            display_truck_info(truck, args.next)
+
+        return 0
+
+    except NTPCApiError as e:
+        print(f"\n❌ API Error: {e}", file=sys.stderr)
+        return 1
+
+    except KeyboardInterrupt:
+        print("\n\n⚠️  Query cancelled")
+        return 130
+
+    except Exception as e:
+        print(f"\n❌ Error occurred: {e}", file=sys.stderr)
+        if args.debug:
+            import traceback
+
+            traceback.print_exc()
+        return 1
+
+
+def main() -> int:
     """Main program"""
     parser = argparse.ArgumentParser(
         description="Query New Taipei City garbage truck real-time information",
@@ -326,71 +425,15 @@ Examples:
     log_level = "DEBUG" if args.debug else "INFO"
     setup_logger(log_level=log_level)
 
-    # Interactive setup mode
     if args.setup:
         return interactive_setup()
 
-    # Determine lat/lng
-    lat = args.lat
-    lng = args.lng
-
-    # If address is provided, convert to coordinates
-    if args.address:
-        geocoder = Geocoder()
-        try:
-            print(f"\n🔍 正在查詢地址座標: {args.address}")
-            lat, lng = geocoder.address_to_coordinates(args.address)
-            print(f"✅ 座標: ({lat:.6f}, {lng:.6f})")
-        except GeocodingError as e:
-            print(f"\n❌ 地址查詢失敗: {e}", file=sys.stderr)
-            return 1
-
-    # Validate coordinates
-    if lat is None or lng is None:
-        print("\n❌ 錯誤: 請提供座標 (--lat --lng) 或地址 (--address)", file=sys.stderr)
-        print("或使用 --setup 進入互動式設定模式", file=sys.stderr)
+    coordinates = _get_coordinates_from_args(args)
+    if not coordinates:
         return 1
+    lat, lng = coordinates
 
-    try:
-        client = NTPCApiClient()
-
-        print(f"\n🔍 Query Location: ({lat}, {lng})")
-        print(f"📏 Query Radius: {args.radius} meters")
-
-        trucks = client.get_around_points(lat, lng)
-
-        if not trucks:
-            print("\n❌ No garbage trucks found in query range")
-            return 0
-
-        if args.line:
-            trucks = [t for t in trucks if t.line_name == args.line]
-            if not trucks:
-                print(f"\n❌ Route not found: {args.line}")
-                return 1
-
-        print(f"\n✅ Found {len(trucks)} garbage truck(s)")
-
-        for truck in trucks:
-            display_truck_info(truck, args.next)
-
-        return 0
-
-    except NTPCApiError as e:
-        print(f"\n❌ API Error: {e}", file=sys.stderr)
-        return 1
-
-    except KeyboardInterrupt:
-        print("\n\n⚠️  Query cancelled")
-        return 130
-
-    except Exception as e:
-        print(f"\n❌ Error occurred: {e}", file=sys.stderr)
-        if args.debug:
-            import traceback
-
-            traceback.print_exc()
-        return 1
+    return _query_and_display_trucks(lat, lng, args)
 
 
 if __name__ == "__main__":
