@@ -20,9 +20,13 @@ COPY src/ /app/src/
 COPY app.py /app/
 COPY cli.py /app/
 COPY requirements.txt /app/
+COPY run /app/
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Make run script executable
+RUN chmod a+x /app/run
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
@@ -32,11 +36,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
 ENV PYTHONUNBUFFERED=1
 ENV TZ=Asia/Taipei
 
-# Default command - use gunicorn for production
-CMD ["gunicorn", "app:app", \
-     "--bind", "0.0.0.0:5000", \
-     "--workers", "2", \
-     "--timeout", "120", \
-     "--access-logfile", "-", \
-     "--error-logfile", "-", \
-     "--log-level", "info"]
+# Default command - use run script for Home Assistant Add-on
+CMD ["/app/run"]
