@@ -1,7 +1,17 @@
 """Collection Point Data Model"""
 
 from dataclasses import dataclass
+from datetime import datetime, timedelta
+from enum import Enum
 from typing import Optional
+
+
+class PointStatus(Enum):
+    """Collection point status"""
+
+    PASSED = "passed"
+    ARRIVING = "arriving"
+    SCHEDULED = "scheduled"
 
 
 @dataclass
@@ -85,6 +95,57 @@ class Point:
             bool: True if in range
         """
         return self.in_scope == "Y"
+
+    def get_status(self) -> PointStatus:
+        """
+        Domain Logic: Determine point status
+
+        Returns:
+            PointStatus: Current status of the point
+        """
+        if self.has_passed():
+            return PointStatus.PASSED
+        elif self.arrival:
+            return PointStatus.ARRIVING
+        else:
+            return PointStatus.SCHEDULED
+
+    def get_estimated_arrival(self, truck_delay_minutes: int) -> Optional[datetime]:
+        """
+        Domain Logic: Calculate estimated arrival time
+
+        Args:
+            truck_delay_minutes: Current truck delay in minutes
+
+        Returns:
+            Optional[datetime]: Estimated arrival time, None if no schedule
+        """
+        if not self.point_time:
+            return None
+
+        try:
+            scheduled_time = datetime.strptime(self.point_time, "%H:%M")
+            estimated_time = scheduled_time + timedelta(minutes=truck_delay_minutes)
+            return estimated_time
+        except ValueError:
+            return None
+
+    def get_delay_description(self, truck_delay_minutes: int) -> str:
+        """
+        Domain Logic: Get human-readable delay description
+
+        Args:
+            truck_delay_minutes: Current truck delay in minutes
+
+        Returns:
+            str: Delay description (e.g., "5min late", "on time", "3min early")
+        """
+        if truck_delay_minutes > 0:
+            return f"{truck_delay_minutes}min late"
+        elif truck_delay_minutes < 0:
+            return f"{abs(truck_delay_minutes)}min early"
+        else:
+            return "on time"
 
     def __str__(self) -> str:
         """Return string representation of collection point"""

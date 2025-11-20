@@ -8,8 +8,10 @@ from pathlib import Path
 import yaml
 
 from src.clients.ntpc_api import NTPCApiClient, NTPCApiError
-from src.models.point import Point
+from src.models.point import Point, PointStatus
 from src.models.truck import TruckLine
+from src.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
+from src.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
 from src.utils.geocoding import Geocoder, GeocodingError
 from src.utils.logger import setup_logger
 from src.utils.route_analyzer import RouteAnalyzer, RouteRecommendation
@@ -17,7 +19,9 @@ from src.utils.route_analyzer import RouteAnalyzer, RouteRecommendation
 
 def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
     """
-    Format collection point information
+    Presentation Layer: Format collection point information
+
+    Uses Domain logic from Point model for status and time calculations.
 
     Args:
         point: Collection point data
@@ -27,27 +31,20 @@ def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:
     Returns:
         str: Formatted string
     """
-    if point.has_passed():
+    # Use Domain logic
+    point_status = point.get_status()
+    estimated = point.get_estimated_arrival(truck_diff)
+
+    # Presentation logic only
+    if point_status == PointStatus.PASSED:
         status = f"✅ {point.arrival}"
-    elif point.arrival:
+    elif point_status == PointStatus.ARRIVING:
         status = f"⏰ {point.arrival}"
     else:
-        if point.point_time and truck_diff != 0:
-            from datetime import datetime, timedelta
-
-            try:
-                scheduled_time = datetime.strptime(point.point_time, "%H:%M")
-                estimated_time = scheduled_time + timedelta(minutes=truck_diff)
-                estimated_str = estimated_time.strftime("%H:%M")
-
-                if truck_diff > 0:
-                    status = f"⏳ Scheduled {point.point_time} (Est. {estimated_str}, {truck_diff}min late)"
-                elif truck_diff < 0:
-                    status = f"⏳ Scheduled {point.point_time} (Est. {estimated_str}, {abs(truck_diff)}min early)"
-                else:
-                    status = f"⏳ Scheduled {point.point_time}"
-            except ValueError:
-                status = f"⏳ Scheduled {point.point_time}"
+        if estimated and truck_diff != 0:
+            estimated_str = estimated.strftime("%H:%M")
+            delay_desc = point.get_delay_description(truck_diff)
+            status = f"⏳ Scheduled {point.point_time} (Est. {estimated_str}, {delay_desc})"
         elif point.point_time:
             status = f"⏳ Scheduled {point.point_time}"
         else:
@@ -234,112 +231,39 @@ def _get_advanced_settings() -> int:
     return threshold
 
 
-def auto_suggest_config(address: str) -> int:  # noqa: C901
-    """Automatic configuration suggestion mode"""
+def auto_suggest_config(address: str) -> int:
+    """
+    Presentation Layer: Automatic configuration suggestion mode
+
+    This is now a thin UI layer that delegates business logic to the Use Case.
+    """
     print("\n" + "=" * 80)
     print("🚛 垃圾車追蹤系統 - 自動建議設定")
     print("=" * 80)
     print()
 
-    geocoder = Geocoder()
     print(f"📍 地址: {address}")
     print("🔍 正在查詢座標...")
 
+    # Initialize Use Case
+    use_case = AutoSuggestConfigUseCase(geocoder=Geocoder(), api_client=NTPCApiClient())
+
     try:
-        lat, lng = geocoder.address_to_coordinates(address)
+        # Get coordinates for display
+        lat, lng = use_case.get_coordinates(address)
         print(f"✅ 座標: ({lat:.6f}, {lng:.6f})\n")
-    except GeocodingError as e:
-        print(f"❌ 地址查詢失敗: {e}")
-        return 1
 
-    print("🚛 正在查詢附近的垃圾車路線...")
-    try:
-        client = NTPCApiClient()
-        trucks = client.get_around_points(lat, lng, time_filter=0)
+        # Execute Use Case (contains all business logic)
+        print("🚛 正在查詢附近的垃圾車路線...")
+        recommendation = use_case.execute(address)
 
-        if not trucks:
-            print("\n❌ 附近沒有找到垃圾車路線")
-            print("建議: 使用 --setup 進入互動式設定，或訪問官網: https://crd-rubbish.epd.ntpc.gov.tw/")
-            return 1
+        # Presentation: Display results
+        _display_config_recommendation(recommendation)
 
-        analyzer = RouteAnalyzer(lat, lng)
-        recommendations = analyzer.analyze_all_routes(trucks, span=2)
-
-        if not recommendations:
-            print("❌ 無法分析路線")
-            return 1
-
-        # Auto-select the nearest route
-        best_rec = recommendations[0]
-        selected_car = best_rec.truck.car_no
-        selected_recs = [rec for rec in recommendations if rec.truck.car_no == selected_car]
-
-        distance_m = best_rec.nearest_point.distance_meters
-        distance_str = f"{distance_m:.0f}m" if distance_m < 1000 else f"{distance_m/1000:.1f}km"
-
-        print(f"\n✅ 找到 {len(recommendations)} 條路線")
-        print(f"📌 建議路線: {best_rec.truck.line_name} (最近距離: {distance_str})")
-        print(f"🚗 車號: {selected_car}")
-
-        if len(selected_recs) > 1:
-            print(f"📅 該車輛共有 {len(selected_recs)} 個時段:")
-            for rec in selected_recs:
-                print(f"   - {rec.truck.line_name} ({rec.schedule_info})")
-        else:
-            print(f"📅 時間: {best_rec.schedule_info}")
-
-        print("\n📍 收集點資訊:")
-        print(f"   最近點: {best_rec.nearest_point.point_name} (距離 {distance_str})")
-        print(f"   進入點: {best_rec.enter_point.point_name}")
-        print(f"   離開點: {best_rec.exit_point.point_name}")
-
-        threshold = 2
-        trigger_mode = "arriving"
-
-        print("\n⚙️  通知設定:")
-        print(f"   提前 {threshold} 站通知")
-        print(f"   觸發模式: {trigger_mode}")
-
-        print("\n" + "=" * 80)
-        print("💡 建議配置")
-        print("=" * 80)
-
-        config = {
-            "system": {"log_level": "INFO", "cache_enabled": False, "cache_ttl": 60},
-            "location": {"lat": lat, "lng": lng},
-            "tracking": {
-                "target_lines": [rec.truck.line_name for rec in selected_recs],
-                "enter_point": best_rec.enter_point.point_name,
-                "exit_point": best_rec.exit_point.point_name,
-                "trigger_mode": trigger_mode,
-                "approaching_threshold": threshold,
-            },
-            "api": {
-                "ntpc": {
-                    "base_url": "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI",
-                    "timeout": 10,
-                    "retry_count": 3,
-                    "retry_delay": 2,
-                },
-                "server": {"host": "0.0.0.0", "port": 5000, "debug": False},
-            },
-        }
-
-        print("\n```yaml")
-        print(yaml.dump(config, allow_unicode=True, default_flow_style=False, sort_keys=False))
-        print("```")
-
-        save = input("\n是否儲存此配置到 config.yaml? (y/N): ").strip().lower()
-        if save == "y":
-            config_path = Path("config.yaml")
-            try:
-                with open(config_path, "w", encoding="utf-8") as f:
-                    yaml.dump(config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
-                print(f"✅ 配置已保存到: {config_path}")
-                print("\n💡 下一步: 執行 'python3 app.py' 啟動服務")
-            except Exception as e:
-                print(f"❌ 保存配置失敗: {e}")
-                return 1
+        # UI Interaction: Ask user to save
+        if _ask_user_to_save_config():
+            _save_config_file(recommendation.to_dict())
+            print("\n💡 下一步: 執行 'python3 app.py' 啟動服務")
         else:
             print("\n💡 若要使用此配置，請:")
             print("   1. 複製上方 YAML 內容到 config.yaml")
@@ -347,9 +271,72 @@ def auto_suggest_config(address: str) -> int:  # noqa: C901
 
         return 0
 
+    except GeocodingError as e:
+        print(f"❌ 地址查詢失敗: {e}")
+        return 1
+    except NoRoutesFoundError:
+        print("\n❌ 附近沒有找到垃圾車路線")
+        print("建議: 使用 --setup 進入互動式設定，或訪問官網: https://crd-rubbish.epd.ntpc.gov.tw/")
+        return 1
+    except RouteAnalysisError:
+        print("❌ 無法分析路線")
+        return 1
     except NTPCApiError as e:
         print(f"❌ API 錯誤: {e}")
         return 1
+
+
+def _display_config_recommendation(recommendation) -> None:
+    """Presentation: Display configuration recommendation"""
+    best_rec = recommendation.route_selection.best_route
+    selected_recs = recommendation.route_selection.all_routes
+
+    distance_m = best_rec.nearest_point.distance_meters
+    distance_str = f"{distance_m:.0f}m" if distance_m < 1000 else f"{distance_m/1000:.1f}km"
+
+    print(f"\n✅ 建議路線: {best_rec.truck.line_name} (最近距離: {distance_str})")
+    print(f"🚗 車號: {recommendation.route_selection.vehicle_number}")
+
+    if len(selected_recs) > 1:
+        print(f"📅 該車輛共有 {len(selected_recs)} 個時段:")
+        for rec in selected_recs:
+            print(f"   - {rec.truck.line_name} ({rec.schedule_info})")
+    else:
+        print(f"📅 時間: {best_rec.schedule_info}")
+
+    print("\n📍 收集點資訊:")
+    print(f"   最近點: {best_rec.nearest_point.point_name} (距離 {distance_str})")
+    print(f"   進入點: {best_rec.enter_point.point_name}")
+    print(f"   離開點: {best_rec.exit_point.point_name}")
+
+    print("\n⚙️  通知設定:")
+    print(f"   提前 {recommendation.threshold} 站通知")
+    print(f"   觸發模式: {recommendation.trigger_mode}")
+
+    print("\n" + "=" * 80)
+    print("💡 建議配置")
+    print("=" * 80)
+
+    print("\n```yaml")
+    print(yaml.dump(recommendation.to_dict(), allow_unicode=True, default_flow_style=False, sort_keys=False))
+    print("```")
+
+
+def _ask_user_to_save_config() -> bool:
+    """UI Interaction: Ask if user wants to save config"""
+    save = input("\n是否儲存此配置到 config.yaml? (y/N): ").strip().lower()
+    return save == "y"
+
+
+def _save_config_file(config: dict) -> None:
+    """Infrastructure: Save configuration to file"""
+    config_path = Path("config.yaml")
+    try:
+        with open(config_path, "w", encoding="utf-8") as f:
+            yaml.dump(config, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+        print(f"✅ 配置已保存到: {config_path}")
+    except Exception as e:
+        raise Exception(f"保存配置失敗: {e}")
 
 
 def interactive_setup() -> int:
