@@ -7,7 +7,7 @@ name = "trash-tracking-addon"
 version = "2025.11.6"
 description = "Home Assistant Add-on for New Taipei City Garbage Truck Tracking"
 authors = [
-    {name = "iml885203", email = "iml885203@gmail.com"}
+    {name = "Logan", email = "iml885203@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.11"
