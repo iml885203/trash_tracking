@@ -484,8 +484,10 @@ chore(addon): add addon package configuration
 
 ### Phase 4: 遷移 CLI
 
-#### ✅ Task 4.1: 移動 CLI 到 apps/cli
+#### ✅ Task 4.1: 移動 CLI 到 apps/cli ✔️ COMPLETED
 **描述:** 移動 CLI 工具
+**完成時間:** 2025-11-23
+**Commit:** c95e2f1
 
 **操作:**
 ```bash
@@ -519,8 +521,10 @@ refactor(cli): move CLI to apps/cli and use core package
 
 ---
 
-#### ✅ Task 4.2: 創建 CLI pyproject.toml
+#### ✅ Task 4.2: 創建 CLI pyproject.toml ✔️ COMPLETED
 **描述:** CLI 的依賴管理
+**完成時間:** 2025-11-23
+**Commit:** d76dac8
 
 **操作:**
 ```toml
