@@ -6,11 +6,11 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, Response, jsonify, render_template_string, request
 
-from src.clients.ntpc_api import NTPCApiClient
+from trash_tracking_core.clients.ntpc_api import NTPCApiClient
 from src.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
 from src.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
-from src.utils.geocoding import Geocoder, GeocodingError
-from src.utils.logger import logger
+from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
+from trash_tracking_core.utils.logger import logger
 
 from .template import SETUP_WIZARD_HTML
 

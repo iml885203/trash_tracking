@@ -3,8 +3,8 @@
 import sys
 
 from src.api.routes import create_app
-from src.utils.config import ConfigError, ConfigManager
-from src.utils.logger import logger
+from trash_tracking_core.utils.config import ConfigError, ConfigManager
+from trash_tracking_core.utils.logger import logger
 
 # Create Flask app for WSGI servers (gunicorn, etc.)
 try:

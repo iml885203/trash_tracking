@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from src.utils.route_analyzer import RouteRecommendation
+from trash_tracking_core.utils.route_analyzer import RouteRecommendation
 
 
 @dataclass

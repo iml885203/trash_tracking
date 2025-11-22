@@ -2,11 +2,11 @@
 
 from typing import List
 
-from src.clients.ntpc_api import NTPCApiClient
+from trash_tracking_core.clients.ntpc_api import NTPCApiClient
 from src.use_cases.dtos import ConfigRecommendation, RouteSelection
 from src.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
-from src.utils.geocoding import Geocoder
-from src.utils.route_analyzer import RouteAnalyzer, RouteRecommendation
+from trash_tracking_core.utils.geocoding import Geocoder
+from trash_tracking_core.utils.route_analyzer import RouteAnalyzer, RouteRecommendation
 
 
 class AutoSuggestConfigUseCase:

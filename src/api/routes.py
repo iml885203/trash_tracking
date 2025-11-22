@@ -6,9 +6,9 @@ import pytz
 from flask import Flask, jsonify, request
 
 from src.api.setup import register_setup_routes
-from src.core.tracker import TruckTracker
-from src.utils.config import ConfigError, ConfigManager
-from src.utils.logger import logger, setup_logger
+from trash_tracking_core.core.tracker import TruckTracker
+from trash_tracking_core.utils.config import ConfigError, ConfigManager
+from trash_tracking_core.utils.logger import logger, setup_logger
 
 app = Flask(__name__)
 tracker: TruckTracker = None
