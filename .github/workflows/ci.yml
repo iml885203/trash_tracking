@@ -77,8 +77,8 @@ jobs:
 
     - name: Run BDD Feature Tests
       run: |
-        # Skip tests that require live API (garbage trucks may not be running)
-        python -m behave features/ -v --no-capture --junit --junit-directory reports/ --tags=~@requires_live_api
+        # Use mock API for reliable testing (set USE_MOCK_API=false to use real API)
+        USE_MOCK_API=true python -m behave features/ -v --no-capture --junit --junit-directory reports/
 
     - name: Stop Flask API server
       if: always()
