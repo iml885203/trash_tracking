@@ -72,8 +72,10 @@ chore: create monorepo directory structure
 
 ---
 
-#### ✅ Task 1.2: 建立核心套件配置
+#### ✅ Task 1.2: 建立核心套件配置 ✔️ COMPLETED
 **描述:** 創建 core package 的 pyproject.toml 和基本文件
+**完成時間:** 2025-11-23
+**Commit:** e87719c
 
 **操作:**
 ```bash
