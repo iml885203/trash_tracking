@@ -13,13 +13,13 @@ from trash_tracking_core.core import (
 )
 from trash_tracking_core.models import Point, PointStatus, TruckLine
 from trash_tracking_core.utils import (
-    AddressGeocoder,
     CollectionPointRecommendation,
     ConfigError,
     ConfigManager,
+    Geocoder,
     GeocodingError,
-    GeocodingProvider,
     RouteAnalyzer,
+    RouteRecommendation,
     logger,
 )
 
@@ -43,9 +43,9 @@ __all__ = [
     "ConfigManager",
     "ConfigError",
     "logger",
-    "AddressGeocoder",
+    "Geocoder",
     "GeocodingError",
-    "GeocodingProvider",
     "RouteAnalyzer",
+    "RouteRecommendation",
     "CollectionPointRecommendation",
 ]
