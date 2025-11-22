@@ -58,8 +58,8 @@ def setup_mocks(context):
     ntpc_patch.start()
     context.mock_patches.append(ntpc_patch)
 
-    # Mock Geocoder.geocode
-    def mock_geocode(self, address):
+    # Mock Geocoder.address_to_coordinates
+    def mock_address_to_coordinates(self, address, timeout=10):
         """Return mock coordinates for known addresses"""
         if address in MOCK_ADDRESSES:
             return MOCK_ADDRESSES[address]
@@ -73,8 +73,8 @@ def setup_mocks(context):
         return MOCK_ADDRESSES["新北市板橋區中山路一段161號"]
 
     geocoder_patch = patch(
-        "trash_tracking_core.utils.geocoding.Geocoder.geocode",
-        mock_geocode,
+        "trash_tracking_core.utils.geocoding.Geocoder.address_to_coordinates",
+        mock_address_to_coordinates,
     )
     geocoder_patch.start()
     context.mock_patches.append(geocoder_patch)
