@@ -2,7 +2,7 @@
 
 import sys
 
-from src.api.routes import create_app
+from addon.api.routes import create_app
 from trash_tracking_core.utils.config import ConfigError, ConfigManager
 from trash_tracking_core.utils.logger import logger
 
