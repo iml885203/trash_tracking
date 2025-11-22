@@ -5,20 +5,16 @@ import argparse
 import sys
 from pathlib import Path
 
+import _setup_path  # noqa: F401 - Sets up sys.path for addon imports
 import yaml
-
-# Add addon directory to path
-addon_path = Path(__file__).parent.parent / "addon"
-sys.path.insert(0, str(addon_path))
-
+from addon.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
+from addon.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
 from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from trash_tracking_core.models.point import Point, PointStatus
 from trash_tracking_core.models.truck import TruckLine
 from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
 from trash_tracking_core.utils.logger import setup_logger
 from trash_tracking_core.utils.route_analyzer import RouteAnalyzer, RouteRecommendation
-from addon.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
-from addon.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
 
 
 def format_point_info(point: Point, index: int, truck_diff: int = 0) -> str:

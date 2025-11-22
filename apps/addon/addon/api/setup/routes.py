@@ -4,11 +4,10 @@ import os
 from pathlib import Path
 
 import yaml
-from flask import Blueprint, Response, jsonify, render_template_string, request
-
-from trash_tracking_core.clients.ntpc_api import NTPCApiClient
 from addon.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
 from addon.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
+from flask import Blueprint, Response, jsonify, render_template_string, request
+from trash_tracking_core.clients.ntpc_api import NTPCApiClient
 from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
 from trash_tracking_core.utils.logger import logger
 

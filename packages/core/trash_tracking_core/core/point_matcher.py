@@ -1,6 +1,6 @@
 """Collection Point Matcher"""
 
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from trash_tracking_core.models.point import Point
 from trash_tracking_core.models.truck import TruckLine

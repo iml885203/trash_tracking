@@ -2,9 +2,9 @@
 
 from typing import List
 
-from trash_tracking_core.clients.ntpc_api import NTPCApiClient
 from addon.use_cases.dtos import ConfigRecommendation, RouteSelection
 from addon.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
+from trash_tracking_core.clients.ntpc_api import NTPCApiClient
 from trash_tracking_core.utils.geocoding import Geocoder
 from trash_tracking_core.utils.route_analyzer import RouteAnalyzer, RouteRecommendation
 

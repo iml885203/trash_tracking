@@ -4,10 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
-    BinarySensorEntity,
-)
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -30,9 +27,7 @@ async def async_setup_entry(
     async_add_entities([TrashTrackingBinarySensor(coordinator, entry)])
 
 
-class TrashTrackingBinarySensor(
-    CoordinatorEntity[TrashTrackingCoordinator], BinarySensorEntity
-):
+class TrashTrackingBinarySensor(CoordinatorEntity[TrashTrackingCoordinator], BinarySensorEntity):
     """Representation of a Trash Tracking binary sensor."""
 
     _attr_device_class = BinarySensorDeviceClass.PRESENCE

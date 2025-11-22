@@ -1,10 +1,9 @@
 """Configuration Management Module"""
 
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import yaml
-
 from trash_tracking_core.utils.logger import logger
 
 
@@ -62,7 +61,7 @@ class ConfigManager:
         except Exception as e:
             raise ConfigError(f"Cannot read config file: {e}")
 
-    def _validate_config(self) -> None:
+    def _validate_config(self) -> None:  # noqa: C901
         """
         Validate required config fields
 

@@ -1,15 +1,12 @@
 """Sensor platform for Trash Tracking integration."""
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
-import logging
 from typing import Any
 
-from homeassistant.components.sensor import (
-    SensorEntity,
-    SensorEntityDescription,
-)
+from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -61,10 +58,7 @@ async def async_setup_entry(
     """Set up Trash Tracking sensors."""
     coordinator: TrashTrackingCoordinator = hass.data[DOMAIN][entry.entry_id]
 
-    entities = [
-        TrashTrackingSensor(coordinator, description, entry)
-        for description in SENSORS
-    ]
+    entities = [TrashTrackingSensor(coordinator, description, entry) for description in SENSORS]
 
     async_add_entities(entities)
 

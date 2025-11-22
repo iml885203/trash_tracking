@@ -99,8 +99,6 @@ class TruckLine:
         Returns:
             dict: Truck data dictionary
         """
-        current_point = self.get_current_point()
-
         result = {
             "line_name": self.line_name,
             "line_id": self.line_id,

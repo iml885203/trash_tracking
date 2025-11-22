@@ -39,29 +39,34 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        # Install core package in editable mode
+        pip install -e packages/core/
+        # Install addon dependencies
+        pip install -e apps/addon/
+        # Install dev dependencies
         pip install -r requirements-dev.txt
 
     - name: Lint with flake8
       run: |
-        flake8 src features cli.py app.py --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 src features cli.py app.py --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+        flake8 packages/core/trash_tracking_core apps/addon/addon apps/cli features --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 packages/core/trash_tracking_core apps/addon/addon apps/cli features --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
     - name: Check code formatting with black
       run: |
-        black --check --diff src features cli.py app.py
+        black --check --diff packages/core/trash_tracking_core apps/addon/addon apps/cli features
 
     - name: Sort imports check with isort
       run: |
-        isort --check-only --diff src features cli.py app.py
+        isort --check-only --diff packages/core/trash_tracking_core apps/addon/addon apps/cli features
 
     - name: Type check with mypy
       run: |
-        mypy src --ignore-missing-imports --no-strict-optional
+        mypy packages/core/trash_tracking_core --ignore-missing-imports --no-strict-optional
       continue-on-error: true
 
     - name: Start Flask API server in background
       run: |
+        cd apps/addon
         python app.py &
         echo $! > flask_server.pid
         sleep 5
@@ -75,9 +80,9 @@ jobs:
     - name: Stop Flask API server
       if: always()
       run: |
-        if [ -f flask_server.pid ]; then
-          kill $(cat flask_server.pid) || true
-          rm flask_server.pid
+        if [ -f apps/addon/flask_server.pid ]; then
+          kill $(cat apps/addon/flask_server.pid) || true
+          rm apps/addon/flask_server.pid
         fi
 
     - name: Upload BDD test results
@@ -152,9 +157,9 @@ jobs:
             --build-arg BUILD_FROM=${{ matrix.base_image }} \
             --tag ghcr.io/${REPO_OWNER}/${{ matrix.arch }}-trash-tracking:${{ steps.version.outputs.version }} \
             --tag ghcr.io/${REPO_OWNER}/${{ matrix.arch }}-trash-tracking:latest \
-            --file Dockerfile \
+            --file apps/addon/Dockerfile \
             --push \
-            .
+            apps/addon
           echo "✓ Built and pushed ${{ matrix.arch }}"
 
   update-addon-repo:

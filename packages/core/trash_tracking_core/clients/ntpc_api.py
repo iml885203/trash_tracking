@@ -4,7 +4,6 @@ import time
 from typing import List, Optional
 
 import requests
-
 from trash_tracking_core.models.truck import TruckLine
 from trash_tracking_core.utils.logger import logger
 

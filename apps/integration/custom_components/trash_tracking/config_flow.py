@@ -4,21 +4,15 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import _setup_path  # noqa: F401 - Sets up sys.path for addon imports
 import voluptuous as vol
+from addon.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
+from addon.use_cases.exceptions import NoRoutesFoundError
 from homeassistant import config_entries
-from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
-
-# Add parent directory to import addon use_cases
-import sys
-from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent / "addon"))
-
 from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
-from addon.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
-from addon.use_cases.exceptions import NoRoutesFoundError, RouteAnalysisError
 
 from .const import (
     CONF_ADDRESS,
@@ -55,9 +49,7 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._route_recommendations: list[Any] | None = None
         self._selected_route: Any | None = None
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step - address input."""
         errors: dict[str, str] = {}
 
@@ -71,9 +63,7 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 use_case = AutoSuggestConfigUseCase(geocoder, api_client)
 
                 # Execute use case in executor (blocking I/O)
-                config_recommendation = await self.hass.async_add_executor_job(
-                    use_case.execute, address
-                )
+                config_recommendation = await self.hass.async_add_executor_job(use_case.execute, address)
 
                 # Store results
                 self._address = address
@@ -81,9 +71,7 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._longitude = config_recommendation.longitude
                 self._route_recommendations = config_recommendation.route_selection.all_routes
 
-                _LOGGER.debug(
-                    f"Found {len(self._route_recommendations)} routes for address: {address}"
-                )
+                _LOGGER.debug(f"Found {len(self._route_recommendations)} routes for address: {address}")
 
                 # Move to route selection step
                 return await self.async_step_route()
@@ -111,16 +99,13 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_route(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_route(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the route selection step."""
         if user_input is not None:
             # Find selected route
             selected_route_name = user_input[CONF_ROUTE_SELECTION]
             self._selected_route = next(
-                (r for r in self._route_recommendations if r.truck.line_name == selected_route_name),
-                None
+                (r for r in self._route_recommendations if r.truck.line_name == selected_route_name), None
             )
 
             if self._selected_route:
@@ -128,19 +113,13 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return await self.async_step_points()
 
         # Build route options (route name as both key and label)
-        route_options = {
-            route.truck.line_name: route.truck.line_name
-            for route in self._route_recommendations
-        }
+        route_options = {route.truck.line_name: route.truck.line_name for route in self._route_recommendations}
 
         data_schema = vol.Schema(
             {
                 vol.Required(CONF_ROUTE_SELECTION): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=[
-                            selector.SelectOptionDict(value=k, label=v)
-                            for k, v in route_options.items()
-                        ],
+                        options=[selector.SelectOptionDict(value=k, label=v) for k, v in route_options.items()],
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
@@ -152,9 +131,7 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=data_schema,
         )
 
-    async def async_step_points(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
+    async def async_step_points(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the collection points configuration step."""
         if user_input is not None:
             # Create entry
@@ -169,9 +146,7 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_ROUTE_SELECTION: self._selected_route.truck.line_name,
                     CONF_ENTER_POINT: user_input[CONF_ENTER_POINT],
                     CONF_EXIT_POINT: user_input[CONF_EXIT_POINT],
-                    CONF_TRIGGER_MODE: user_input.get(
-                        CONF_TRIGGER_MODE, DEFAULT_TRIGGER_MODE
-                    ),
+                    CONF_TRIGGER_MODE: user_input.get(CONF_TRIGGER_MODE, DEFAULT_TRIGGER_MODE),
                     CONF_APPROACHING_THRESHOLD: user_input.get(
                         CONF_APPROACHING_THRESHOLD, DEFAULT_APPROACHING_THRESHOLD
                     ),
@@ -192,35 +167,23 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             {
                 vol.Required(CONF_ENTER_POINT, default=default_enter): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=[
-                            selector.SelectOptionDict(value=k, label=v)
-                            for k, v in point_options.items()
-                        ],
+                        options=[selector.SelectOptionDict(value=k, label=v) for k, v in point_options.items()],
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
                 vol.Required(CONF_EXIT_POINT, default=default_exit): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=[
-                            selector.SelectOptionDict(value=k, label=v)
-                            for k, v in point_options.items()
-                        ],
+                        options=[selector.SelectOptionDict(value=k, label=v) for k, v in point_options.items()],
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
-                vol.Required(
-                    CONF_TRIGGER_MODE, default=DEFAULT_TRIGGER_MODE
-                ): selector.SelectSelector(
+                vol.Required(CONF_TRIGGER_MODE, default=DEFAULT_TRIGGER_MODE): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=[
                             selector.SelectOptionDict(
-                                value=TRIGGER_MODE_ARRIVING,
-                                label="Arriving (early notification)"
+                                value=TRIGGER_MODE_ARRIVING, label="Arriving (early notification)"
                             ),
-                            selector.SelectOptionDict(
-                                value=TRIGGER_MODE_ARRIVED,
-                                label="Arrived (actual arrival)"
-                            ),
+                            selector.SelectOptionDict(value=TRIGGER_MODE_ARRIVED, label="Arrived (actual arrival)"),
                         ],
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )

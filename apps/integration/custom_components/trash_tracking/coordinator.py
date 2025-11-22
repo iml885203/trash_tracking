@@ -1,21 +1,14 @@
 """DataUpdateCoordinator for Trash Tracking integration."""
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-
-from trash_tracking_core import (
-    ConfigManager,
-    NTPCApiClient,
-    NTPCApiError,
-    PointMatcher,
-    StateManager,
-)
+from trash_tracking_core import NTPCApiClient, NTPCApiError, PointMatcher, StateManager
 
 from .const import (
     CONF_APPROACHING_THRESHOLD,
@@ -86,24 +79,16 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
             if not truck_lines:
                 _LOGGER.debug("No truck data returned from API")
                 if not self._state_manager.is_idle():
-                    self._state_manager.update_state(
-                        new_state="idle", reason="No trucks nearby"
-                    )
+                    self._state_manager.update_state(new_state="idle", reason="No trucks nearby")
                 return self._state_manager.get_status_response()
 
             # Filter for target route
-            target_lines = [
-                line for line in truck_lines if line.line_name == self._target_line
-            ]
+            target_lines = [line for line in truck_lines if line.line_name == self._target_line]
 
             if not target_lines:
-                _LOGGER.debug(
-                    "Target route %s not found in nearby trucks", self._target_line
-                )
+                _LOGGER.debug("Target route %s not found in nearby trucks", self._target_line)
                 if not self._state_manager.is_idle():
-                    self._state_manager.update_state(
-                        new_state="idle", reason="Tracked route not nearby"
-                    )
+                    self._state_manager.update_state(new_state="idle", reason="Tracked route not nearby")
                 return self._state_manager.get_status_response()
 
             # Check if route matches entry/exit points
