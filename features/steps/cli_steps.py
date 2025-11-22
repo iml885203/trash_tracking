@@ -1,5 +1,6 @@
 """Step definitions for CLI query features"""
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -20,11 +21,17 @@ def step_cli_installed(context):
 @when('我使用地址 "{address}" 查詢垃圾車')
 def step_query_by_address(context, address):
     """Query garbage trucks by address"""
+    env = os.environ.copy()
+    # Pass USE_MOCK_API environment variable to subprocess
+    if hasattr(context, "use_mocks") and context.use_mocks:
+        env["USE_MOCK_API"] = "true"
+
     result = subprocess.run(
         [sys.executable, str(context.cli_path), "--address", address],
         capture_output=True,
         text=True,
         timeout=30,
+        env=env,
     )
     context.result = result
     context.stdout = result.stdout
@@ -35,11 +42,16 @@ def step_query_by_address(context, address):
 @when('我使用地址 "{address}" 和半徑 "{radius}" 公尺查詢')
 def step_query_with_radius(context, address, radius):
     """Query with custom radius"""
+    env = os.environ.copy()
+    if hasattr(context, "use_mocks") and context.use_mocks:
+        env["USE_MOCK_API"] = "true"
+
     result = subprocess.run(
         [sys.executable, str(context.cli_path), "--address", address, "--radius", radius],
         capture_output=True,
         text=True,
         timeout=30,
+        env=env,
     )
     context.result = result
     context.stdout = result.stdout
@@ -55,11 +67,16 @@ def step_know_route_exists(context, line_name):
 @when('我使用地址 "{address}" 過濾路線 "{line_name}"')
 def step_query_with_line_filter(context, address, line_name):
     """Query with line filter"""
+    env = os.environ.copy()
+    if hasattr(context, "use_mocks") and context.use_mocks:
+        env["USE_MOCK_API"] = "true"
+
     result = subprocess.run(
         [sys.executable, str(context.cli_path), "--address", address, "--line", line_name],
         capture_output=True,
         text=True,
         timeout=30,
+        env=env,
     )
     context.result = result
     context.stdout = result.stdout
@@ -69,11 +86,16 @@ def step_query_with_line_filter(context, address, line_name):
 @when('我使用無效地址 "{address}" 查詢垃圾車')
 def step_query_invalid_address(context, address):
     """Query with invalid address"""
+    env = os.environ.copy()
+    if hasattr(context, "use_mocks") and context.use_mocks:
+        env["USE_MOCK_API"] = "true"
+
     result = subprocess.run(
         [sys.executable, str(context.cli_path), "--address", address],
         capture_output=True,
         text=True,
         timeout=30,
+        env=env,
     )
     context.result = result
     context.stdout = result.stdout

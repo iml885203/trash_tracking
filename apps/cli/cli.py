@@ -133,7 +133,9 @@ def _query_and_display_routes(lat: float, lng: float) -> list[RouteRecommendatio
 
     try:
         client = NTPCApiClient()
-        trucks = client.get_around_points(lat, lng, time_filter=0)
+        # Use Monday (week=1) to ensure routes are returned even during off-hours
+        # Monday typically has full service (Sunday=0 and Wednesday=3 may have limited service)
+        trucks = client.get_around_points(lat, lng, time_filter=0, week=1)
 
         if not trucks:
             print("\n❌ 附近沒有找到垃圾車路線")
@@ -438,7 +440,8 @@ def _query_and_display_trucks(lat: float, lng: float, args: argparse.Namespace) 
         print(f"\n🔍 Query Location: ({lat}, {lng})")
         print(f"📏 Query Radius: {args.radius} meters")
 
-        trucks = client.get_around_points(lat, lng)
+        # Use Monday (week=1) to show routes even during off-hours
+        trucks = client.get_around_points(lat, lng, week=1)
 
         if not trucks:
             print("\n❌ No garbage trucks found in query range")

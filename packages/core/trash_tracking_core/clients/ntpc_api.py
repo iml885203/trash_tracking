@@ -40,7 +40,7 @@ class NTPCApiClient:
         self.session = requests.Session()
 
     def get_around_points(  # noqa: C901
-        self, lat: float, lng: float, time_filter: int = 0
+        self, lat: float, lng: float, time_filter: int = 0, week: Optional[int] = None
     ) -> Optional[List[TruckLine]]:
         """
         Query nearby garbage trucks
@@ -53,6 +53,9 @@ class NTPCApiClient:
                 1: Morning (06:00-11:59)
                 2: Afternoon (12:00-17:59)
                 3: Evening (18:00-23:59)
+            week: Day of week filter (0=Sunday, 1=Monday, ..., 6=Saturday)
+                None: Use current day (default)
+                Note: Sunday (0) and Wednesday (3) may have limited service
 
         Returns:
             List[TruckLine]: List of truck routes, None on failure
@@ -62,6 +65,11 @@ class NTPCApiClient:
         """
         url = f"{self.base_url}/GetAroundPoints"
         payload = {"lat": lat, "lng": lng, "time": time_filter}
+
+        # Add week parameter if specified
+        if week is not None:
+            payload["week"] = week
+
         headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
         last_error = None
