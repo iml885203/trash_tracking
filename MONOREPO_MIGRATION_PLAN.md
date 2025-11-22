@@ -553,8 +553,10 @@ chore(cli): add CLI package configuration
 
 ### Phase 5: 清理舊結構
 
-#### 🔴 Task 5.1: 刪除舊的 src/ 目錄
+#### ✅ Task 5.1: 刪除舊的 src/ 目錄 ✔️ COMPLETED
 **描述:** 移除已遷移到 core package 的程式碼
+**完成時間:** 2025-11-23
+**Commit:** 981d663
 
 **操作:**
 ```bash
@@ -594,8 +596,10 @@ chore: remove migrated code from src/
 
 ---
 
-#### ✅ Task 5.2: 更新根目錄 README
+#### ✅ Task 5.2: 更新根目錄 README ✔️ COMPLETED
 **描述:** 更新文件說明新的 monorepo 結構
+**完成時間:** 2025-11-23
+**Commit:** c098a10
 
 **操作:**
 - 更新 `README.md` 說明新架構
