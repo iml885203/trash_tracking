@@ -7,7 +7,7 @@ from pathlib import Path
 from behave import given, then, when
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent
-CLI_PATH = PROJECT_ROOT / "cli.py"
+CLI_PATH = PROJECT_ROOT / "apps" / "cli" / "cli.py"
 
 
 @given("CLI 工具已經安裝")
