@@ -334,8 +334,10 @@ chore: make core package installable in editable mode
 
 ### Phase 3: 遷移 Add-on（漸進式）
 
-#### ⚠️ Task 3.1: 創建 apps/addon 結構
+#### ✅ Task 3.1: 創建 apps/addon 結構 ✔️ COMPLETED
 **描述:** 建立 Add-on 的新位置，但先不移動程式碼
+**完成時間:** 2025-11-23
+**Commit:** a00877d
 
 **操作:**
 ```bash
@@ -363,8 +365,10 @@ chore: create addon app structure
 
 ---
 
-#### 🔴 Task 3.2: 更新 Add-on 使用核心套件
+#### ✅ Task 3.2: 更新 Add-on 使用核心套件 ✔️ COMPLETED
 **描述:** 修改 Add-on 的 imports 使用 trash_tracking_core
+**完成時間:** 2025-11-23
+**Commit:** b262438
 
 **操作:**
 ```python
@@ -403,8 +407,10 @@ refactor(addon): migrate addon to use core package
 
 ---
 
-#### ⚠️ Task 3.3: 移動 Add-on 檔案到 apps/addon
+#### ✅ Task 3.3: 移動 Add-on 檔案到 apps/addon ✔️ COMPLETED
 **描述:** 將 Add-on 相關檔案移動到新位置
+**完成時間:** 2025-11-23
+**Commit:** e6db773
 
 **操作:**
 ```bash
@@ -443,8 +449,10 @@ refactor(addon): move addon files to apps/addon
 
 ---
 
-#### ✅ Task 3.4: 創建 Add-on pyproject.toml
+#### ✅ Task 3.4: 創建 Add-on pyproject.toml ✔️ COMPLETED
 **描述:** 為 Add-on 應用程式添加依賴管理
+**完成時間:** 2025-11-23
+**Commit:** 4cb5b7e
 
 **操作:**
 ```toml
