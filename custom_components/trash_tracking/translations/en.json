@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Trash Tracking",
+        "description": "Connect to Trash Tracking Add-on API",
+        "data": {
+          "api_url": "API URL",
+          "scan_interval": "Scan Interval (seconds)"
+        },
+        "data_description": {
+          "api_url": "Trash Tracking Add-on API address (e.g., http://localhost:5000)",
+          "scan_interval": "How often to update data (recommended: 90 seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Add-on API. Please check that the Add-on is running and the URL is correct.",
+      "unknown": "Unexpected error occurred. Please check the logs."
+    },
+    "abort": {
+      "already_configured": "This API URL is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configuration Options",
+        "description": "Adjust advanced settings for Trash Tracking",
+        "data": {
+          "scan_interval": "Scan Interval (seconds)"
+        }
+      }
+    }
+  }
+}

@@ -58,7 +58,7 @@ Truck passing exit point → API status: idle → HA automation → 🌑 Light O
 
 5. **Setup Home Assistant Integration**
    - Refer to the **Documentation** tab in the Add-on
-   - Or see [Complete User Guide](trash_tracking_addon/DOCS.md)
+   - Or see [Complete User Guide](https://github.com/iml885203/homeassistant-addons/blob/master/trash-tracking/DOCS.md)
 
 #### How to Find Collection Point Names?
 
@@ -75,9 +75,9 @@ docker exec -it addon_*_trash_tracking python3 cli.py --lat YOUR_LAT --lng YOUR_
 
 #### 📖 Detailed Documentation
 
-- 📘 [Complete User Guide](trash_tracking_addon/DOCS.md) - Configuration examples, troubleshooting
-- 📗 [Add-on Overview](trash_tracking_addon/README.md) - Add-on features
-- 📙 [Quick Start Guide](QUICK_START_ADDON.md) - Publishing and installation
+- 📘 [Complete User Guide](https://github.com/iml885203/homeassistant-addons/blob/master/trash-tracking/DOCS.md) - Configuration examples, troubleshooting
+- 📗 [Add-on Overview](https://github.com/iml885203/homeassistant-addons/blob/master/trash-tracking/README.md) - Add-on features
+- 📙 [Add-on Repository](https://github.com/iml885203/homeassistant-addons) - Installation and updates
 
 ---
 
@@ -201,7 +201,7 @@ automation:
           entity_id: light.notification_bulb
 ```
 
-More examples: [trash_tracking_addon/DOCS.md](trash_tracking_addon/DOCS.md)
+More examples: [Add-on Documentation](https://github.com/iml885203/homeassistant-addons/blob/master/trash-tracking/DOCS.md)
 
 ---
 
@@ -426,9 +426,10 @@ trash_tracking/
 │   └── models/                 # Data models
 │       ├── point.py           # Collection point model
 │       └── truck.py           # Garbage truck model
+├── custom_components/          # Home Assistant Integration
+│   └── trash_tracking/         # Integration package
 ├── tests/                      # Test suite
 ├── docs/                       # Documentation
-├── trash_tracking_addon/       # Home Assistant Add-on package
 ├── app.py                      # Flask application entry point
 ├── cli.py                      # CLI tool
 ├── config.yaml                 # Configuration file example
@@ -486,9 +487,9 @@ Detailed CI/CD Setup: [docs/CI_CD_SETUP.md](docs/CI_CD_SETUP.md)
 ## 📚 Documentation
 
 ### User Documentation
-- 📘 [Complete User Guide](trash_tracking_addon/DOCS.md) - **Recommended Reading**
-- 📗 [Add-on Overview](trash_tracking_addon/README.md)
-- 📙 [Quick Start Guide](QUICK_START_ADDON.md)
+- 📘 [Complete Add-on User Guide](https://github.com/iml885203/homeassistant-addons/blob/master/trash-tracking/DOCS.md) - **Recommended for Add-on Users**
+- 📗 [Add-on Overview](https://github.com/iml885203/homeassistant-addons/blob/master/trash-tracking/README.md)
+- 📙 [Integration Guide](custom_components/trash_tracking/README.md) - **For Integration Users**
 - 📕 [Installation & Publishing Guide](docs/ADD_ON_INSTALLATION.md)
 
 ### Developer Documentation

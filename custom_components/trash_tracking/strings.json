@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "設定垃圾車追蹤",
+        "description": "連接到垃圾車追蹤 Add-on 的 API",
+        "data": {
+          "api_url": "API 網址",
+          "scan_interval": "掃描間隔 (秒)"
+        },
+        "data_description": {
+          "api_url": "垃圾車追蹤 Add-on 的 API 位址 (例如: http://localhost:5000)",
+          "scan_interval": "多久更新一次資料 (建議 90 秒)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "無法連接到 Add-on API,請確認 Add-on 已啟動且網址正確",
+      "unknown": "發生未知錯誤,請查看日誌"
+    },
+    "abort": {
+      "already_configured": "此 API 網址已經設定過了"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "設定選項",
+        "description": "調整垃圾車追蹤的進階設定",
+        "data": {
+          "scan_interval": "掃描間隔 (秒)"
+        }
+      }
+    }
+  }
+}
