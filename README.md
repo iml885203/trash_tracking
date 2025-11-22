@@ -91,6 +91,7 @@ git clone https://github.com/iml885203/trash_tracking.git
 cd trash_tracking
 
 # 2. Edit configuration
+cd apps/addon/
 cp config.example.yaml config.yaml
 # Edit config.yaml with your coordinates and collection points
 
@@ -132,10 +133,12 @@ cd trash_tracking
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 
-# 3. Install dependencies
+# 3. Install core package and dependencies
+pip install -e packages/core/
 pip install -r requirements.txt
 
 # 4. Edit configuration
+cd apps/addon/
 cp config.example.yaml config.yaml
 # Edit config.yaml
 
@@ -212,20 +215,26 @@ Quick queries for nearby garbage trucks in real-time.
 ### Basic Usage
 
 ```bash
+# Navigate to CLI directory
+cd apps/cli/
+
+# Query trucks by address (auto-suggest config)
+python3 cli.py --suggest "新北市板橋區民生路二段80號"
+
 # Query trucks near specified coordinates
-python3 cli.py --lat 25.018269 --lng 121.471703
+python3 cli.py --address "新北市板橋區民生路二段80號"
 
 # Specify query radius
-python3 cli.py --lat 25.018269 --lng 121.471703 --radius 1500
+python3 cli.py --address "新北市板橋區民生路二段80號" --radius 1500
 
 # Show only next 5 collection points
-python3 cli.py --lat 25.018269 --lng 121.471703 --next 5
+python3 cli.py --address "新北市板橋區民生路二段80號" --next 5
 
 # Filter specific route
-python3 cli.py --lat 25.018269 --lng 121.471703 --line "C08 Afternoon Route"
+python3 cli.py --address "新北市板橋區民生路二段80號" --line "C08 Afternoon Route"
 
 # Show debug messages
-python3 cli.py --lat 25.018269 --lng 121.471703 --debug
+python3 cli.py --address "新北市板橋區民生路二段80號" --debug
 ```
 
 ### Output Example
@@ -412,31 +421,38 @@ approaching_threshold: 0  # This parameter is ignored
 
 ## 🏗️ Project Architecture
 
+This project uses a **monorepo structure** to separate core logic from applications:
+
 ```
 trash_tracking/
-├── src/                        # Core source code
-│   ├── api/                    # API related
-│   │   ├── client.py          # NTPC API client
-│   │   └── routes.py          # Flask API routes
-│   ├── core/                   # Core logic
-│   │   ├── config.py          # Configuration management
-│   │   ├── logger.py          # Logging system
-│   │   ├── point_matcher.py  # Collection point matching logic
-│   │   └── state_manager.py  # State management
-│   └── models/                 # Data models
-│       ├── point.py           # Collection point model
-│       └── truck.py           # Garbage truck model
-├── custom_components/          # Home Assistant Integration
-│   └── trash_tracking/         # Integration package
+├── packages/                   # Shared packages
+│   └── core/                   # Core logic package
+│       └── trash_tracking_core/
+│           ├── clients/        # API clients (NTPC API)
+│           ├── models/         # Data models (Point, TruckLine)
+│           ├── core/           # Core logic (Tracker, StateMgr)
+│           └── utils/          # Utilities (Config, Geocoding)
+├── apps/                       # Applications
+│   ├── addon/                  # Home Assistant Add-on
+│   │   ├── addon/              # Add-on specific code
+│   │   │   ├── api/            # Flask API routes
+│   │   │   └── use_cases/      # Setup wizard logic
+│   │   ├── app.py              # Flask entry point
+│   │   ├── Dockerfile          # Add-on Docker image
+│   │   └── pyproject.toml      # Add-on dependencies
+│   ├── cli/                    # CLI tool
+│   │   ├── cli.py              # CLI implementation
+│   │   └── pyproject.toml      # CLI dependencies
+│   └── integration/            # (Future) HA Integration
 ├── tests/                      # Test suite
-├── docs/                       # Documentation
-├── app.py                      # Flask application entry point
-├── cli.py                      # CLI tool
-├── config.yaml                 # Configuration file example
-├── requirements.txt            # Python dependencies
-├── Dockerfile                  # Docker image
-└── docker-compose.yml          # Docker Compose configuration
+└── docs/                       # Documentation
 ```
+
+**Benefits of Monorepo**:
+- 🔄 **Shared Core Logic**: All apps use the same `trash-tracking-core` package
+- 🎯 **Independent Apps**: Each app has its own dependencies and configuration
+- 🧪 **Easier Testing**: Test core logic once, reuse across apps
+- 📦 **Better Organization**: Clear separation of concerns
 
 Complete architecture: [docs/architecture.md](docs/architecture.md)
 
@@ -519,19 +535,40 @@ Pull requests and issues are welcome!
 git clone https://github.com/iml885203/trash_tracking.git
 cd trash_tracking
 
+# Install core package in editable mode
+pip install -e packages/core/
+
 # Install development dependencies
 pip install -r requirements-dev.txt
 
-# Install pre-commit hooks
+# Install pre-commit hooks (if available)
 pre-commit install
 
 # Run tests
 pytest
 
 # Run code checks
-flake8 src/ tests/
-black --check src/ tests/
-mypy src/
+flake8 packages/core/trash_tracking_core/ apps/
+black --check packages/core/trash_tracking_core/ apps/
+mypy packages/core/trash_tracking_core/
+```
+
+### Monorepo Development Workflow
+
+```bash
+# Work on core logic
+cd packages/core/
+# Make changes to trash_tracking_core/
+
+# Work on Add-on
+cd apps/addon/
+python app.py  # Run Add-on locally
+
+# Work on CLI
+cd apps/cli/
+python cli.py --help  # Test CLI
+
+# All apps automatically use updated core package (editable install)
 ```
 
 ---
