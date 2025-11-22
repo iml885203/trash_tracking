@@ -625,8 +625,10 @@ docs: update README for monorepo structure
 
 ### Phase 6: 創建 Integration（新功能）
 
-#### ✅ Task 6.1: 創建 Integration 基礎結構
+#### ✅ Task 6.1: 創建 Integration 基礎結構 ✔️ COMPLETED
 **描述:** 建立 Integration 應用程式框架
+**完成時間:** 2025-11-23
+**Commit:** 83cad96
 
 **操作:**
 ```bash
@@ -653,8 +655,10 @@ feat(integration): create integration app structure
 
 ---
 
-#### ⚠️ Task 6.2: 實作 Integration Config Flow
+#### ✅ Task 6.2: 實作 Integration Config Flow ✔️ COMPLETED
 **描述:** 實作多步驟設定流程
+**完成時間:** 2025-11-23
+**Commit:** 948a387
 
 **操作:**
 - 創建 `config_flow.py`
@@ -679,8 +683,10 @@ feat(integration): implement multi-step config flow
 
 ---
 
-#### ⚠️ Task 6.3: 實作 Integration Coordinator
+#### ✅ Task 6.3: 實作 Integration Coordinator ✔️ COMPLETED
 **描述:** 實作資料更新協調器
+**完成時間:** 2025-11-23
+**Commit:** 5ec53ff
 
 **操作:**
 - 創建 `coordinator.py`
@@ -704,8 +710,10 @@ feat(integration): implement data update coordinator
 
 ---
 
-#### ⚠️ Task 6.4: 實作 Integration Sensors
+#### ✅ Task 6.4: 實作 Integration Sensors ✔️ COMPLETED
 **描述:** 實作感測器實體
+**完成時間:** 2025-11-23
+**Commit:** 51fbf51
 
 **操作:**
 - 創建 `sensor.py`, `binary_sensor.py`
