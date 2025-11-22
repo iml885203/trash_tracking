@@ -112,8 +112,10 @@ chore: add core package configuration
 
 ### Phase 2: 複製核心邏輯（保持並存）
 
-#### ⚠️ Task 2.1: 複製 models 到核心套件
+#### ✅ Task 2.1: 複製 models 到核心套件 ✔️ COMPLETED
 **描述:** 複製（不移動）models 到 core package
+**完成時間:** 2025-11-23
+**Commit:** 4076562
 
 **操作:**
 ```bash
@@ -148,8 +150,10 @@ refactor: copy models to core package
 
 ---
 
-#### ⚠️ Task 2.2: 複製 clients 到核心套件
+#### ✅ Task 2.2: 複製 clients 到核心套件 ✔️ COMPLETED
 **描述:** 複製（不移動）API clients
+**完成時間:** 2025-11-23
+**Commit:** dcdc634
 
 **操作:**
 ```bash
@@ -183,8 +187,10 @@ refactor: copy clients to core package
 
 ---
 
-#### ⚠️ Task 2.3: 複製 core logic 到核心套件
+#### ✅ Task 2.3: 複製 core logic 到核心套件 ✔️ COMPLETED
 **描述:** 複製追蹤邏輯
+**完成時間:** 2025-11-23
+**Commit:** 797f837
 
 **操作:**
 ```bash
@@ -218,8 +224,10 @@ refactor: copy core logic to core package
 
 ---
 
-#### ⚠️ Task 2.4: 複製 utils 到核心套件
+#### ✅ Task 2.4: 複製 utils 到核心套件 ✔️ COMPLETED
 **描述:** 複製工具函式
+**完成時間:** 2025-11-23
+**Commit:** 3282cd5
 
 **操作:**
 ```bash
@@ -253,8 +261,10 @@ refactor: copy utils to core package
 
 ---
 
-#### ✅ Task 2.5: 更新核心套件的 __init__.py
+#### ✅ Task 2.5: 更新核心套件的 __init__.py ✔️ COMPLETED
 **描述:** 導出公共 API
+**完成時間:** 2025-11-23
+**Commit:** ce1d790
 
 **操作:**
 ```python
@@ -288,8 +298,10 @@ feat: add public API exports for core package
 
 ---
 
-#### ✅ Task 2.6: 安裝核心套件為可編輯模式
+#### ✅ Task 2.6: 安裝核心套件為可編輯模式 ✔️ COMPLETED
 **描述:** 讓核心套件可以被其他應用程式使用
+**完成時間:** 2025-11-23
+**Commit:** b07a021
 
 **操作:**
 ```bash
