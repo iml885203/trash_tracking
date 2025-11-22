@@ -49,8 +49,8 @@ class AutoSuggestConfigUseCase:
         # Step 1: Geocode address
         lat, lng = self.geocoder.address_to_coordinates(address)
 
-        # Step 2: Query routes (all time periods)
-        trucks = self.api_client.get_around_points(lat, lng, time_filter=0)
+        # Step 2: Query routes (all time periods, use Monday for consistent results)
+        trucks = self.api_client.get_around_points(lat, lng, time_filter=0, week=1)
         if not trucks:
             raise NoRoutesFoundError("No garbage truck routes found near this location")
 
