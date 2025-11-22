@@ -1,0 +1,50 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up Trash Tracking",
+        "description": "Enter your address to find nearby garbage truck routes",
+        "data": {
+          "address": "Address"
+        }
+      },
+      "route": {
+        "title": "Select Route",
+        "description": "Choose the garbage truck route you want to track",
+        "data": {
+          "route_selection": "Route"
+        }
+      },
+      "points": {
+        "title": "Configure Collection Points",
+        "description": "Select entry and exit collection points",
+        "data": {
+          "enter_point": "Entry Point (light turns on)",
+          "exit_point": "Exit Point (light turns off)",
+          "trigger_mode": "Trigger Mode",
+          "approaching_threshold": "Approaching Threshold (stops ahead)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to API",
+      "invalid_address": "Invalid address or cannot geocode",
+      "no_routes_found": "No garbage truck routes found near this address",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This route is already configured"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure Trash Tracking",
+        "data": {
+          "trigger_mode": "Trigger Mode",
+          "approaching_threshold": "Approaching Threshold (stops ahead)"
+        }
+      }
+    }
+  }
+}

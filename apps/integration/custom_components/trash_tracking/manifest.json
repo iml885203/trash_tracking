@@ -1,0 +1,12 @@
+{
+  "domain": "trash_tracking",
+  "name": "Trash Tracking",
+  "codeowners": ["@iml885203"],
+  "config_flow": true,
+  "documentation": "https://github.com/iml885203/trash_tracking",
+  "integration_type": "device",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/iml885203/trash_tracking/issues",
+  "requirements": ["trash-tracking-core"],
+  "version": "2025.11.6"
+}
