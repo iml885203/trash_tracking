@@ -67,6 +67,8 @@ jobs:
     - name: Start Flask API server in background
       run: |
         cd apps/addon
+        # Create test config from example
+        cp config.example.yaml config.yaml
         python app.py &
         echo $! > flask_server.pid
         sleep 5
