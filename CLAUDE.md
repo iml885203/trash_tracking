@@ -116,6 +116,49 @@ python cli.py --lat 25.018269 --lng 121.471703
 python cli.py --suggest "新北市板橋區民生路二段80號"
 ```
 
+### Creating a New Release
+
+This project uses Calendar Versioning (CalVer: YYYY.MM.MICRO) and automated releases via GitHub Actions.
+
+**Steps to release a new version:**
+
+1. **Update version numbers**:
+   - `custom_components/trash_tracking/manifest.json` - update `version` field
+   - `pyproject.toml` - update `version` field
+
+2. **Update CHANGELOG.md**:
+   - Add new section for the version
+   - Document all changes under appropriate categories (Added, Changed, Fixed, etc.)
+   - Follow [Keep a Changelog](https://keepachangelog.com/) format
+
+3. **Commit changes**:
+   ```bash
+   git add custom_components/trash_tracking/manifest.json pyproject.toml CHANGELOG.md
+   git commit -m "chore: bump version to YYYY.MM.MICRO"
+   git push origin master
+   ```
+
+4. **Create and push tag**:
+   ```bash
+   git tag vYYYY.MM.MICRO
+   git push origin vYYYY.MM.MICRO
+   ```
+
+5. **Automated workflow** (`.github/workflows/release.yml`):
+   - Automatically creates GitHub Release
+   - Packages integration as `trash_tracking.zip`
+   - Uploads ZIP to release assets
+   - Extracts changelog content for release notes
+
+**Version numbering examples:**
+- `2025.11.7` - 7th release in November 2025
+- `2025.12.1` - 1st release in December 2025
+- `2026.1.10` - 10th release in January 2026
+
+**After release:**
+- Users on HACS will be notified of updates
+- Manual installers can download ZIP from GitHub Releases
+
 ## Architecture & Design Patterns
 
 ### State Machine
