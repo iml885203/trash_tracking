@@ -29,6 +29,7 @@ from .const import (
 )
 from .trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from .trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
+from .trash_tracking_core.utils.route_analyzer import RouteAnalyzer
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -65,13 +66,22 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 if not routes:
                     errors["base"] = "no_routes_found"
                 else:
-                    # Store results
-                    self._address = address
-                    self._latitude = lat
-                    self._longitude = lng
-                    self._route_recommendations = routes
+                    # Step 3: Analyze routes and generate recommendations
+                    analyzer = RouteAnalyzer(lat, lng)
+                    recommendations = await self.hass.async_add_executor_job(analyzer.analyze_routes, routes)
 
-                    _LOGGER.debug(f"Found {len(self._route_recommendations)} routes for address: {address}")
+                    if not recommendations:
+                        errors["base"] = "no_routes_found"
+                    else:
+                        # Store results
+                        self._address = address
+                        self._latitude = lat
+                        self._longitude = lng
+                        self._route_recommendations = recommendations
+
+                        _LOGGER.debug(
+                            f"Found {len(self._route_recommendations)} route recommendations for address: {address}"
+                        )
 
                     # Move to route selection step
                     return await self.async_step_route()
