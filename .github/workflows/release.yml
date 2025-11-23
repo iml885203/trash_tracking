@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create distribution package
+        run: |
+          cd custom_components
+          zip -r ../trash_tracking.zip trash_tracking/ -x "*.pyc" "*__pycache__*"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            # Release v${{ steps.get_version.outputs.VERSION }}
+
+            See [CHANGELOG.md](https://github.com/iml885203/trash_tracking/blob/master/CHANGELOG.md) for detailed changes.
+
+            ---
+
+            ## Installation
+
+            ### Via HACS (Recommended)
+            1. Open HACS → Integrations
+            2. Search for "Trash Tracking"
+            3. Click Download
+            4. Restart Home Assistant
+
+            ### Manual Installation
+            1. Download `trash_tracking.zip` from assets below
+            2. Extract to `<config>/custom_components/trash_tracking/`
+            3. Restart Home Assistant
+            4. Add integration via UI: Settings → Devices & Services → Add Integration → Trash Tracking
+          draft: false
+          prerelease: false
+          files: trash_tracking.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

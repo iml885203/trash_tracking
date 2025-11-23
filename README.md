@@ -1,7 +1,7 @@
 # 🚛 Trash Tracking - Home Assistant Integration
 
 [![GitHub release](https://img.shields.io/github/v/release/iml885203/trash_tracking)](https://github.com/iml885203/trash_tracking/releases)
-[![License](https://img.shields.io/github/license/iml885203/trash_tracking)](LICENSE)
+[![License](https://img.shields.io/github/license/iml885203/trash_tracking)](https://github.com/iml885203/trash_tracking/blob/master/LICENSE)
 [![CI](https://github.com/iml885203/trash_tracking/actions/workflows/ci.yml/badge.svg)](https://github.com/iml885203/trash_tracking/actions)
 [![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
