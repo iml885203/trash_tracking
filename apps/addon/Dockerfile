@@ -15,18 +15,23 @@ RUN apk add --no-cache \
 # Set working directory
 WORKDIR /app
 
-# Copy application files
-COPY src/ /app/src/
-COPY app.py /app/
-COPY cli.py /app/
-COPY requirements.txt /app/
-COPY run /app/
+# Install core package first
+COPY packages/core /tmp/core
+RUN cd /tmp/core && pip3 install --no-cache-dir .
 
-# Install Python dependencies
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Copy addon application files
+COPY apps/addon/addon/ /app/addon/
+COPY apps/addon/app.py /app/
+COPY apps/addon/pyproject.toml /app/
 
-# Make run script executable
-RUN chmod a+x /app/run
+# Install addon package and its dependencies
+RUN pip3 install --no-cache-dir .
+
+# Create run script
+RUN echo '#!/usr/bin/env bashio' > /app/run && \
+    echo 'cd /app' >> /app/run && \
+    echo 'python3 app.py' >> /app/run && \
+    chmod a+x /app/run
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \

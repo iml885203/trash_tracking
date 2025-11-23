@@ -162,7 +162,7 @@ jobs:
             --tag ghcr.io/${REPO_OWNER}/${{ matrix.arch }}-trash-tracking:latest \
             --file apps/addon/Dockerfile \
             --push \
-            apps/addon
+            .
           echo "✓ Built and pushed ${{ matrix.arch }}"
 
   update-addon-repo:
