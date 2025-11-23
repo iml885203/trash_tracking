@@ -1,0 +1,22 @@
+name: Hassfest
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  schedule:
+    # Run weekly on Monday at 8:00 AM
+    - cron: "0 8 * * 1"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate with Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Hassfest
+        uses: home-assistant/actions/hassfest@master
