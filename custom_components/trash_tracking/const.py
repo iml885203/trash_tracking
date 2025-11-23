@@ -16,11 +16,15 @@ CONF_ENTER_POINT = "enter_point"
 CONF_EXIT_POINT = "exit_point"
 CONF_TRIGGER_MODE = "trigger_mode"
 CONF_APPROACHING_THRESHOLD = "approaching_threshold"
+CONF_SCHEDULE_WEEKDAYS = "schedule_weekdays"
+CONF_SCHEDULE_TIME_START = "schedule_time_start"
+CONF_SCHEDULE_TIME_END = "schedule_time_end"
 
 # Default values
 DEFAULT_TRIGGER_MODE = "arriving"
 DEFAULT_APPROACHING_THRESHOLD = 2
 DEFAULT_SCAN_INTERVAL = 90  # seconds
+SCHEDULE_BUFFER_MINUTES = 30  # Buffer time before/after scheduled time
 
 # Trigger modes
 TRIGGER_MODE_ARRIVING = "arriving"

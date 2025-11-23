@@ -17,6 +17,9 @@ from .const import (
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_ROUTE_SELECTION,
+    CONF_SCHEDULE_TIME_END,
+    CONF_SCHEDULE_TIME_START,
+    CONF_SCHEDULE_WEEKDAYS,
     CONF_TRIGGER_MODE,
     DEFAULT_APPROACHING_THRESHOLD,
     DEFAULT_TRIGGER_MODE,
@@ -32,6 +35,46 @@ from .trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
 from .trash_tracking_core.utils.route_analyzer import RouteAnalyzer
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _extract_schedule_from_route(route_recommendation: Any) -> dict[str, Any]:
+    """
+    Extract schedule information from route recommendation.
+
+    Args:
+        route_recommendation: Route recommendation object
+
+    Returns:
+        dict: Schedule information with keys:
+            - weekdays: list[int] - List of weekday numbers (0=Sunday, 1-6=Monday-Saturday)
+            - time_start: str - Earliest collection time (HH:MM format)
+            - time_end: str - Latest collection time (HH:MM format)
+    """
+    points = route_recommendation.truck.points
+
+    # Collect all weekdays from all points
+    all_weekdays = set()
+    for point in points:
+        weekdays = point.get_weekdays()
+        all_weekdays.update(weekdays)
+
+    # Find earliest and latest collection times
+    times = [point.point_time for point in points if point.point_time]
+
+    schedule = {
+        "weekdays": sorted(list(all_weekdays)) if all_weekdays else [],
+        "time_start": min(times) if times else None,
+        "time_end": max(times) if times else None,
+    }
+
+    _LOGGER.debug(
+        "Extracted schedule: weekdays=%s, time_start=%s, time_end=%s",
+        schedule["weekdays"],
+        schedule["time_start"],
+        schedule["time_end"],
+    )
+
+    return schedule
 
 
 class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -142,6 +185,9 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_points(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the collection points configuration step."""
         if user_input is not None:
+            # Extract schedule information from selected route
+            schedule = _extract_schedule_from_route(self._selected_route)
+
             # Create entry
             title = f"{self._selected_route.truck.line_name}"
 
@@ -158,6 +204,9 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_APPROACHING_THRESHOLD: user_input.get(
                         CONF_APPROACHING_THRESHOLD, DEFAULT_APPROACHING_THRESHOLD
                     ),
+                    CONF_SCHEDULE_WEEKDAYS: schedule["weekdays"],
+                    CONF_SCHEDULE_TIME_START: schedule["time_start"],
+                    CONF_SCHEDULE_TIME_END: schedule["time_end"],
                 },
             )
 

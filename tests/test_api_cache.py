@@ -63,7 +63,7 @@ def test_cache_key_coordinate_rounding():
     assert key1 == key2
 
 
-@patch('trash_tracking_core.clients.ntpc_api.requests.Session')
+@patch("trash_tracking_core.clients.ntpc_api.requests.Session")
 def test_cache_hit_avoids_api_call(mock_session, sample_api_response):
     """Test that cache hit avoids making API call"""
     # Clear cache first
@@ -90,7 +90,7 @@ def test_cache_hit_avoids_api_call(mock_session, sample_api_response):
     assert result1[0].line_name == result2[0].line_name
 
 
-@patch('trash_tracking_core.clients.ntpc_api.requests.Session')
+@patch("trash_tracking_core.clients.ntpc_api.requests.Session")
 def test_cache_disabled_makes_api_calls(mock_session, sample_api_response):
     """Test that disabled cache always makes API calls"""
     # Clear cache first
@@ -163,7 +163,7 @@ def test_clear_cache():
     assert NTPCApiClient._get_from_cache(cache_key) is None
 
 
-@patch('trash_tracking_core.clients.ntpc_api.requests.Session')
+@patch("trash_tracking_core.clients.ntpc_api.requests.Session")
 def test_cache_shared_across_instances(mock_session, sample_api_response):
     """Test that cache is shared across different client instances"""
     # Clear cache first

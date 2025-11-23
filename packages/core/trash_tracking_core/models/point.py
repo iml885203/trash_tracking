@@ -147,6 +147,40 @@ class Point:
         else:
             return "on time"
 
+    def get_weekdays(self) -> list[int]:
+        """
+        Parse point_weekknd field to get list of weekdays
+
+        The API uses the following format:
+        - "1,3,5" means Monday, Wednesday, Friday
+        - "0" or "7" means Sunday
+        - "1" = Monday, "2" = Tuesday, ..., "6" = Saturday
+
+        Returns:
+            list[int]: List of weekday numbers (0=Sunday, 1=Monday, ..., 6=Saturday)
+                      Empty list if parsing fails
+        """
+        if not self.point_weekknd:
+            return []
+
+        try:
+            weekdays = []
+            parts = self.point_weekknd.split(",")
+
+            for part in parts:
+                day = int(part.strip())
+                # API format: 0 or 7 = Sunday, 1 = Monday, ..., 6 = Saturday
+                # Convert to consistent format: 0 = Sunday, 1-6 = Monday-Saturday
+                if day == 7:
+                    day = 0
+                weekdays.append(day)
+
+            return sorted(set(weekdays))  # Remove duplicates and sort
+
+        except (ValueError, AttributeError):
+            # If parsing fails, return empty list
+            return []
+
     def __str__(self) -> str:
         """Return string representation of collection point"""
         status = "Arrived" if self.has_passed() else "Not arrived"

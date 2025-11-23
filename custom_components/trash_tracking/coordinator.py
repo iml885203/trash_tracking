@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -16,9 +16,13 @@ from .const import (
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_ROUTE_SELECTION,
+    CONF_SCHEDULE_TIME_END,
+    CONF_SCHEDULE_TIME_START,
+    CONF_SCHEDULE_WEEKDAYS,
     CONF_TRIGGER_MODE,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
+    SCHEDULE_BUFFER_MINUTES,
 )
 from .trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from .trash_tracking_core.core.point_matcher import PointMatcher
@@ -52,6 +56,11 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
         self._trigger_mode = entry.data[CONF_TRIGGER_MODE]
         self._approaching_threshold = entry.data[CONF_APPROACHING_THRESHOLD]
 
+        # Extract schedule information (may be None for old configs)
+        self._schedule_weekdays = entry.data.get(CONF_SCHEDULE_WEEKDAYS, [])
+        self._schedule_time_start = entry.data.get(CONF_SCHEDULE_TIME_START)
+        self._schedule_time_end = entry.data.get(CONF_SCHEDULE_TIME_END)
+
         # Create point matcher
         self._point_matcher = PointMatcher(
             enter_point_name=self._enter_point_name,
@@ -67,8 +76,79 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
             self._exit_point_name,
         )
 
-    async def _async_update_data(self) -> dict[str, Any]:
+    def _should_update_now(self) -> bool:
+        """
+        Check if we should update now based on schedule.
+
+        Returns:
+            bool: True if should update, False otherwise
+        """
+        # If no schedule info (old configs), always update for backward compatibility
+        if not self._schedule_weekdays:
+            return True
+
+        now = datetime.now()
+
+        # Check weekday
+        # Python: 0=Monday, 6=Sunday
+        # API: 0=Sunday, 1=Monday, ..., 6=Saturday
+        # Convert Python weekday to API format
+        python_weekday = now.weekday()  # 0-6 (Mon-Sun)
+        api_weekday = python_weekday + 1 if python_weekday < 6 else 0  # Convert to API format
+
+        if api_weekday not in self._schedule_weekdays:
+            _LOGGER.debug(
+                "Today (%s, weekday=%d) not in schedule %s, skipping API call",
+                now.strftime("%A"),
+                api_weekday,
+                self._schedule_weekdays,
+            )
+            return False
+
+        # Check time range (with buffer)
+        if self._schedule_time_start and self._schedule_time_end:
+            try:
+                start_time = datetime.strptime(self._schedule_time_start, "%H:%M").time()
+                end_time = datetime.strptime(self._schedule_time_end, "%H:%M").time()
+
+                # Add buffer
+                start_with_buffer = (
+                    datetime.combine(now.date(), start_time) - timedelta(minutes=SCHEDULE_BUFFER_MINUTES)
+                ).time()
+                end_with_buffer = (
+                    datetime.combine(now.date(), end_time) + timedelta(minutes=SCHEDULE_BUFFER_MINUTES)
+                ).time()
+
+                current_time = now.time()
+
+                # Check if current time is within range
+                if not (start_with_buffer <= current_time <= end_with_buffer):
+                    _LOGGER.debug(
+                        "Current time %s not in schedule range %s-%s (with %d min buffer), skipping API call",
+                        current_time.strftime("%H:%M"),
+                        start_with_buffer.strftime("%H:%M"),
+                        end_with_buffer.strftime("%H:%M"),
+                        SCHEDULE_BUFFER_MINUTES,
+                    )
+                    return False
+
+            except ValueError as e:
+                _LOGGER.warning("Failed to parse schedule times: %s, will update anyway", e)
+                return True
+
+        # Within schedule, should update
+        _LOGGER.debug("Within schedule, proceeding with API call")
+        return True
+
+    async def _async_update_data(self) -> dict[str, Any]:  # noqa: C901
         """Fetch data from API."""
+        # Check if we should update based on schedule
+        if not self._should_update_now():
+            # Outside scheduled time, return idle state without API call
+            if not self._state_manager.is_idle():
+                self._state_manager.update_state(new_state="idle", reason="Outside scheduled operating hours")
+            return self._state_manager.get_status_response()
+
         try:
             # Fetch truck data from API (blocking I/O, run in executor)
             truck_lines = await self.hass.async_add_executor_job(
