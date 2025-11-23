@@ -76,57 +76,53 @@ This document describes the technical architecture, module design, data flow, an
 ### 2.1 Project Structure
 
 ```
-trash_light/
-├── app.py                      # Flask application entry point
-├── config.yaml                 # User configuration file
-├── requirements.txt            # Python dependencies
-├── Dockerfile                  # Docker containerization config
-├── .env.example                # Environment variables template
-├── README.md                   # Project documentation
+trash_tracking/
+├── packages/core/                     # Shared core package
+│   └── trash_tracking_core/
+│       ├── clients/                   # API clients
+│       │   └── ntpc_api.py           # NTPC API client
+│       ├── models/                    # Data models
+│       │   ├── point.py              # Collection point model
+│       │   └── truck.py              # Truck line model
+│       ├── core/                      # Business logic
+│       │   ├── tracker.py            # Truck tracking logic
+│       │   ├── state_manager.py      # State management
+│       │   └── point_matcher.py      # Point matching logic
+│       └── utils/                     # Utilities
+│           ├── config.py             # Configuration management
+│           ├── geocoding.py          # Geocoding service
+│           └── logger.py             # Logging utilities
 │
-├── src/                        # Source code directory
-│   ├── __init__.py
-│   │
-│   ├── api/                    # API layer
-│   │   ├── __init__.py
-│   │   └── routes.py           # Flask route definitions
-│   │
-│   ├── core/                   # Core business logic
-│   │   ├── __init__.py
-│   │   ├── tracker.py          # Garbage truck tracker
-│   │   ├── state_manager.py   # State manager
-│   │   └── point_matcher.py   # Collection point matcher
-│   │
-│   ├── clients/                # External service clients
-│   │   ├── __init__.py
-│   │   └── ntpc_api.py         # New Taipei City API client
-│   │
-│   ├── utils/                  # Utility modules
-│   │   ├── __init__.py
-│   │   ├── config.py           # Configuration management
-│   │   ├── logger.py           # Logging configuration
-│   │   └── cache.py            # Caching mechanism
-│   │
-│   └── models/                 # Data models
-│       ├── __init__.py
-│       ├── truck.py            # Garbage truck data model
-│       └── point.py            # Collection point data model
+├── apps/addon/                        # Home Assistant Add-on
+│   ├── app.py                        # Flask entry point
+│   ├── config.yaml                   # User configuration
+│   ├── Dockerfile                    # Docker config
+│   └── addon/
+│       ├── api/                      # API layer
+│       │   └── routes.py            # Flask routes
+│       └── use_cases/                # Setup wizard logic
 │
-├── tests/                      # Test code
-│   ├── __init__.py
-│   ├── test_tracker.py
-│   ├── test_api.py
-│   └── test_point_matcher.py
+├── apps/cli/                          # CLI tool
+│   └── cli.py                        # CLI entry point
 │
-└── docs/                       # Documentation
-    ├── requirements.md         # Requirements specification
-    ├── api-specification.md   # API specification
-    └── architecture.md         # Architecture design (this document)
+├── custom_components/                 # Home Assistant Integration
+│   └── trash_tracking/
+│       ├── __init__.py               # Component initialization
+│       ├── config_flow.py            # UI config flow
+│       ├── coordinator.py            # Data coordinator
+│       ├── sensor.py                 # Sensor entities
+│       ├── manifest.json             # Integration manifest
+│       └── trash_tracking_core/      # Embedded core package
+│
+├── features/                          # BDD tests (Behave)
+├── tests/                             # Unit tests (pytest)
+├── requirements.txt                   # Dependencies
+└── README.md                          # Documentation
 ```
 
 ### 2.2 Core Module Descriptions
 
-#### 2.2.1 API Layer (`src/api/routes.py`)
+#### 2.2.1 API Layer (`addon/api/routes.py`)
 
 **Responsibility**: Handle HTTP requests and responses
 
@@ -149,7 +145,7 @@ def health_check():
     return jsonify({"status": "ok"})
 ```
 
-#### 2.2.2 Truck Tracker (`src/core/tracker.py`)
+#### 2.2.2 Truck Tracker (`trash_tracking_core/core/tracker.py`)
 
 **Responsibility**: Coordinate modules and implement main tracking logic
 
@@ -196,7 +192,7 @@ class TruckTracker:
         return self.state_manager.get_status_response()
 ```
 
-#### 2.2.3 State Manager (`src/core/state_manager.py`)
+#### 2.2.3 State Manager (`trash_tracking_core/core/state_manager.py`)
 
 **Responsibility**: Manage system state (idle ↔ nearby)
 
@@ -239,7 +235,7 @@ class StateManager:
         }
 ```
 
-#### 2.2.4 Point Matcher (`src/core/point_matcher.py`)
+#### 2.2.4 Point Matcher (`trash_tracking_core/core/point_matcher.py`)
 
 **Responsibility**: Determine if truck has reached entry/exit collection points
 
@@ -312,7 +308,7 @@ class PointMatcher:
         return exit_point['Arrival'] != ""
 ```
 
-#### 2.2.5 NTPC API Client (`src/clients/ntpc_api.py`)
+#### 2.2.5 NTPC API Client (`trash_tracking_core/clients/ntpc_api.py`)
 
 **Responsibility**: Encapsulate New Taipei City API call logic
 
