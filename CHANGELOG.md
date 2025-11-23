@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.8] - 2025-11-23
+
+### Added
+- **GitHub Actions**: Hassfest validation workflow (required for HACS)
+- **GitHub Actions**: HACS Action validation workflow
+- **CI/CD**: Automated validation on push, PR, and scheduled runs
+
+### Changed
+- **HACS Compliance**: All validation workflows now passing
+- **Documentation**: Updated release process in CLAUDE.md
+
 ## [2025.11.7] - 2025-11-23
 
 ### Added
@@ -33,4 +44,5 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
+[2025.11.8]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.8
 [2025.11.7]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.7
