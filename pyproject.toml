@@ -22,12 +22,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "Flask>=3.0.3",
-    "Werkzeug>=3.0.3",
     "requests>=2.32.3",
     "PyYAML>=6.0.2",
     "pytz>=2024.1",
-    "pydantic>=2.9.2",
 ]
 
 [project.optional-dependencies]
@@ -115,7 +112,7 @@ markers = [
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-source = ["src", "cli", "app"]
+source = ["packages/core/trash_tracking_core", "custom_components/trash_tracking", "apps/cli"]
 omit = [
     "*/tests/*",
     "*/venv/*",
