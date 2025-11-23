@@ -54,7 +54,7 @@ class RouteAnalyzer:
         Returns:
             float: Distance in meters
         """
-        R = 6371000  # Earth radius in meters
+        earth_radius_m = 6371000  # Earth radius in meters
 
         lat1 = math.radians(self.user_lat)
         lat2 = math.radians(point_lat)
@@ -64,7 +64,7 @@ class RouteAnalyzer:
         a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlng / 2) ** 2
         c = 2 * math.asin(math.sqrt(a))
 
-        return R * c
+        return earth_radius_m * c
 
     def find_nearest_point(self, truck: TruckLine) -> Optional[CollectionPointRecommendation]:
         """
@@ -202,6 +202,6 @@ class RouteAnalyzer:
         # Sort by nearest point distance
         recommendations.sort(key=lambda r: r.nearest_point.distance_meters)
 
-        logger.info(f"分析了 {len(trucks)} 條路線，產生 {len(recommendations)} 個推薦")
+        logger.info("分析了 %s 條路線，產生 {len(recommendations)} 個推薦", len(trucks))
 
         return recommendations

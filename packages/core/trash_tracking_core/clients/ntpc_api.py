@@ -15,8 +15,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class NTPCApiError(Exception):
     """New Taipei City API Error"""
 
-    pass
-
 
 class NTPCApiClient:
     """New Taipei City Garbage Truck API Client"""
@@ -81,8 +79,12 @@ class NTPCApiClient:
         for attempt in range(self.retry_count):
             try:
                 logger.debug(
-                    f"Calling NTPC API (attempt {attempt + 1}/{self.retry_count}): "
-                    f"lat={lat}, lng={lng}, time={time_filter}"
+                    "Calling NTPC API (attempt %d/%d): lat=%s, lng=%s, time=%s",
+                    attempt + 1,
+                    self.retry_count,
+                    lat,
+                    lng,
+                    time_filter,
                 )
 
                 response = self.session.post(url, data=payload, headers=headers, timeout=self.timeout, verify=False)
@@ -104,42 +106,46 @@ class NTPCApiClient:
                         truck_line = TruckLine.from_dict(line_data)
                         lines.append(truck_line)
                     except Exception as e:
-                        logger.warning(f"Failed to parse route data: {e}")
+                        logger.warning("Failed to parse route data: %s", e)
                         continue
 
                 logger.info(
-                    f"Successfully queried NTPC API: found {len(lines)} route(s) "
-                    f"(TimeStamp: {data.get('TimeStamp')})"
+                    "Successfully queried NTPC API: found %d route(s) (TimeStamp: %s)",
+                    len(lines),
+                    data.get("TimeStamp"),
                 )
 
                 return lines
 
             except requests.exceptions.Timeout:
                 last_error = "Request timeout"
-                logger.warning(f"API request timeout (attempt {attempt + 1}/{self.retry_count})")
+                logger.warning("API request timeout (attempt %d/%d)", attempt + 1, self.retry_count)
 
             except requests.exceptions.HTTPError as e:
                 last_error = f"HTTP error: {e.response.status_code}"
                 logger.warning(
-                    f"API returned error status {e.response.status_code} " f"(attempt {attempt + 1}/{self.retry_count})"
+                    "API returned error status %s (attempt %d/%d)",
+                    e.response.status_code,
+                    attempt + 1,
+                    self.retry_count,
                 )
 
             except requests.exceptions.RequestException as e:
                 last_error = f"Network error: {str(e)}"
-                logger.warning(f"API request failed: {e} " f"(attempt {attempt + 1}/{self.retry_count})")
+                logger.warning("API request failed: %s (attempt %d/%d)", e, attempt + 1, self.retry_count)
 
             except ValueError as e:
                 last_error = f"JSON parse error: {str(e)}"
-                logger.error(f"API response cannot be parsed as JSON: {e}")
+                logger.error("API response cannot be parsed as JSON: %s", e)
                 break
 
             except Exception as e:
                 last_error = f"Unknown error: {str(e)}"
-                logger.error(f"Unexpected error in API request: {e}")
+                logger.error("Unexpected error in API request: %s", e)
                 break
 
             if attempt < self.retry_count - 1:
-                logger.info(f"Waiting {self.retry_delay} seconds before retry...")
+                logger.info("Waiting %d seconds before retry...", self.retry_delay)
                 time.sleep(self.retry_delay)
 
         error_msg = f"NTPC API request failed after {self.retry_count} retries: {last_error}"
