@@ -3,7 +3,6 @@
   "content_in_root": false,
   "filename": "trash_tracking",
   "render_readme": true,
-  "homeassistant": "2024.1.0",
-  "zip_release": false,
-  "hide_default_branch": false
+  "country": ["TW"],
+  "homeassistant": "2024.4.1"
 }
