@@ -8,7 +8,6 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from trash_tracking_core import NTPCApiClient, NTPCApiError, PointMatcher, StateManager
 
 from .const import (
     CONF_APPROACHING_THRESHOLD,
@@ -21,6 +20,9 @@ from .const import (
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
 )
+from .trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
+from .trash_tracking_core.core.point_matcher import PointMatcher
+from .trash_tracking_core.core.state_manager import StateManager
 
 _LOGGER = logging.getLogger(__name__)
 

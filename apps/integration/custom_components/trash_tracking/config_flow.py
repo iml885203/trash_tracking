@@ -4,15 +4,10 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-import _setup_path  # noqa: F401 - Sets up sys.path for addon imports
 import voluptuous as vol
-from addon.use_cases.auto_suggest_config import AutoSuggestConfigUseCase
-from addon.use_cases.exceptions import NoRoutesFoundError
 from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
-from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
-from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
 
 from .const import (
     CONF_ADDRESS,
@@ -32,6 +27,8 @@ from .const import (
     TRIGGER_MODE_ARRIVED,
     TRIGGER_MODE_ARRIVING,
 )
+from .trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
+from .trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -57,29 +54,30 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             address = user_input[CONF_ADDRESS]
 
             try:
-                # Step 1: Geocode address and find routes
+                # Step 1: Geocode address
                 geocoder = Geocoder()
+                lat, lng = await self.hass.async_add_executor_job(geocoder.address_to_coordinates, address)
+
+                # Step 2: Find nearby routes (use week=1 for Monday)
                 api_client = NTPCApiClient()
-                use_case = AutoSuggestConfigUseCase(geocoder, api_client)
+                routes = await self.hass.async_add_executor_job(api_client.get_around_points, lat, lng, 0, 1)
 
-                # Execute use case in executor (blocking I/O)
-                config_recommendation = await self.hass.async_add_executor_job(use_case.execute, address)
+                if not routes:
+                    errors["base"] = "no_routes_found"
+                else:
+                    # Store results
+                    self._address = address
+                    self._latitude = lat
+                    self._longitude = lng
+                    self._route_recommendations = routes
 
-                # Store results
-                self._address = address
-                self._latitude = config_recommendation.latitude
-                self._longitude = config_recommendation.longitude
-                self._route_recommendations = config_recommendation.route_selection.all_routes
+                    _LOGGER.debug(f"Found {len(self._route_recommendations)} routes for address: {address}")
 
-                _LOGGER.debug(f"Found {len(self._route_recommendations)} routes for address: {address}")
-
-                # Move to route selection step
-                return await self.async_step_route()
+                    # Move to route selection step
+                    return await self.async_step_route()
 
             except GeocodingError:
                 errors["base"] = "invalid_address"
-            except NoRoutesFoundError:
-                errors["base"] = "no_routes_found"
             except NTPCApiError:
                 errors["base"] = "cannot_connect"
             except Exception as err:  # pylint: disable=broad-except
