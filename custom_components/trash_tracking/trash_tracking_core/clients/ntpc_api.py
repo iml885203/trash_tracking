@@ -6,8 +6,9 @@ from typing import Dict, List, Optional, Tuple
 
 import requests
 import urllib3
-from trash_tracking_core.models.truck import TruckLine
-from trash_tracking_core.utils.logger import logger
+
+from ..models.truck import TruckLine
+from ..utils.logger import logger
 
 # Disable SSL warnings for NTPC API (their certificate has issues)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
