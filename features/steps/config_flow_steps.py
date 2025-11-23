@@ -5,6 +5,14 @@ from pathlib import Path
 
 from behave import given, then, when
 
+# IMPORTANT: Force import from custom_components instead of packages/core
+# We need to remove any existing trash_tracking_core from sys.modules first
+# to ensure we test the embedded version (not the pip-installed one)
+import sys
+for key in list(sys.modules.keys()):
+    if key.startswith('trash_tracking_core'):
+        del sys.modules[key]
+
 # Add trash_tracking_core to path
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "custom_components" / "trash_tracking"))
@@ -12,6 +20,17 @@ sys.path.insert(0, str(project_root / "custom_components" / "trash_tracking"))
 from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError  # noqa: E402
 from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError  # noqa: E402
 from trash_tracking_core.utils.route_analyzer import RouteAnalyzer  # noqa: E402
+
+# DEBUG: Verify we're using the embedded version
+import trash_tracking_core
+expected_path = str(project_root / "custom_components" / "trash_tracking" / "trash_tracking_core")
+actual_path = str(Path(trash_tracking_core.__file__).parent)
+assert actual_path == expected_path, (
+    f"ERROR: Loading wrong trash_tracking_core!\n"
+    f"Expected: {expected_path}\n"
+    f"Actual: {actual_path}\n"
+    f"This test must use the embedded version in custom_components"
+)
 
 
 # ============================================================================
