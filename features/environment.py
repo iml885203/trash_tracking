@@ -21,6 +21,15 @@ def before_all(context):
 
 def before_scenario(context, scenario):
     """Setup before each scenario"""
+    # Check if scenario uses real API
+    if "real_api" in scenario.effective_tags:
+        # Disable mocks for this scenario
+        context.use_mocks = False
+        if hasattr(context, "mock_patches"):
+            for mock_patch in context.mock_patches:
+                mock_patch.stop()
+            context.mock_patches = []
+
     # Check if API is needed for this scenario
     if "API" in scenario.feature.name or "設定精靈" in scenario.feature.name:
         try:

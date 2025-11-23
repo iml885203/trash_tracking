@@ -68,7 +68,7 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 else:
                     # Step 3: Analyze routes and generate recommendations
                     analyzer = RouteAnalyzer(lat, lng)
-                    recommendations = await self.hass.async_add_executor_job(analyzer.analyze_routes, routes)
+                    recommendations = await self.hass.async_add_executor_job(analyzer.analyze_all_routes, routes)
 
                     if not recommendations:
                         errors["base"] = "no_routes_found"
