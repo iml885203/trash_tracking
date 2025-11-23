@@ -1,38 +1,40 @@
+# language: zh-TW
 @real_api
-Feature: Integration Config Flow
-  As a Home Assistant user
-  I want to set up the Trash Tracking integration
-  So that I can receive notifications when the garbage truck is nearby
+功能: 設定垃圾車到家通知
+  作為一個 Home Assistant 使用者
+  我想要設定垃圾車接近時自動通知我
+  以便我不會錯過倒垃圾的時間
 
-  Background:
-    Given the trash_tracking_core modules are available
+  背景:
+    假設 垃圾車追蹤整合已經安裝
 
-  Scenario: Successfully configure integration with valid address
-    Given I have the address "新北市板橋區民生路二段80號"
-    When I geocode the address
-    Then the coordinates should be near latitude 25.018 and longitude 121.471
-    When I fetch nearby routes for those coordinates
-    Then I should get at least 1 route
-    When I analyze the routes
-    Then I should get route recommendations
-    And each recommendation should have a truck
-    And each recommendation should have an enter_point
-    And each recommendation should have an exit_point
-    And each recommendation should have a nearest_point
+  場景: 第一次設定我家的垃圾車通知
+    假設 我住在 "新北市板橋區民生路二段80號"
+    當 我在設定頁面輸入我家地址
+    那麼 系統應該找到我家的位置座標
+    當 系統查詢我家附近的垃圾車路線
+    那麼 應該至少找到 1 條路線
+    當 系統分析這些路線並產生推薦
+    那麼 我應該看到路線推薦清單
+    而且 每個推薦都應該包含垃圾車資訊
+    而且 每個推薦都應該有進入點（垃圾車接近時提醒）
+    而且 每個推薦都應該有離開點（垃圾車離開後停止提醒）
+    而且 每個推薦都應該有最近的收集點
 
-  Scenario: Geocoding fails with invalid address
-    Given I have the address "InvalidAddress123XYZ"
-    When I attempt to geocode the address
-    Then geocoding should fail with an error
+  場景: 輸入的地址找不到
+    假設 我不小心輸入了錯誤的地址 "InvalidAddress123XYZ"
+    當 我嘗試送出地址進行設定
+    那麼 地址轉換應該失敗
 
-  Scenario: No routes found for remote location
-    Given I have coordinates latitude 23.0 and longitude 120.0
-    When I fetch nearby routes for those coordinates
-    Then I should get 0 routes
+  場景: 我住的地方太偏遠沒有垃圾車路線
+    假設 我住在偏遠地區（座標 緯度 23.0 經度 120.0）
+    當 系統查詢附近的垃圾車路線
+    那麼 應該找到 0 條路線
+    而且 系統應該告訴我這個區域目前沒有垃圾車路線資料
 
-  Scenario: Route recommendation includes collection points
-    Given I have the address "新北市板橋區文化路一段188號"
-    When I complete the full config flow
-    Then the selected route should have collection points
-    And the enter_point should be in the collection points list
-    And the exit_point should be in the collection points list
+  場景: 確認選擇的路線有經過我家附近
+    假設 我住在 "新北市板橋區文化路一段188號"
+    當 我完成整個設定流程
+    那麼 系統推薦的路線應該有收集點清單
+    而且 進入點應該在這條路線的收集點清單中
+    而且 離開點應該在這條路線的收集點清單中

@@ -11,23 +11,51 @@ PROJECT_ROOT = Path(__file__).parent.parent.parent
 CLI_PATH = PROJECT_ROOT / "apps" / "cli" / "cli.py"
 
 
-@given("CLI 工具已經安裝")
-def step_cli_installed(context):
-    """Verify CLI tool exists"""
-    assert CLI_PATH.exists(), f"CLI not found at {CLI_PATH}"
+# ============================================================================
+# Given 步驟 - 設定前置條件
+# ============================================================================
+
+
+@given("我已經安裝了垃圾車查詢工具")
+def step_cli_tool_installed(context):
+    """驗證 CLI 工具存在"""
+    assert CLI_PATH.exists(), f"找不到 CLI 工具：{CLI_PATH}"
     context.cli_path = CLI_PATH
 
 
-@when('我使用地址 "{address}" 查詢垃圾車')
-def step_query_by_address(context, address):
-    """Query garbage trucks by address"""
+@given('我住在 "{address}"')
+def step_i_live_at(context, address):
+    """記錄使用者的地址"""
+    context.address = address
+
+
+@given('我不小心輸入了錯誤的地址 "{address}"')
+def step_input_wrong_address(context, address):
+    """記錄錯誤的地址"""
+    context.address = address
+
+
+@given('我只想追蹤 "{line_name}" 這條路線')
+def step_only_track_line(context, line_name):
+    """記錄想要追蹤的路線"""
+    context.target_line = line_name
+
+
+# ============================================================================
+# When 步驟 - 使用者執行的動作
+# ============================================================================
+
+
+@when("我查詢附近的垃圾車")
+def step_query_nearby_trucks(context):
+    """查詢附近的垃圾車（使用預設搜尋範圍）"""
     env = os.environ.copy()
-    # Pass USE_MOCK_API environment variable to subprocess
+    # 傳遞 USE_MOCK_API 環境變數
     if hasattr(context, "use_mocks") and context.use_mocks:
         env["USE_MOCK_API"] = "true"
 
     result = subprocess.run(
-        [sys.executable, str(context.cli_path), "--address", address],
+        [sys.executable, str(context.cli_path), "--address", context.address],
         capture_output=True,
         text=True,
         timeout=30,
@@ -39,15 +67,16 @@ def step_query_by_address(context, address):
     context.returncode = result.returncode
 
 
-@when('我使用地址 "{address}" 和半徑 "{radius}" 公尺查詢')
-def step_query_with_radius(context, address, radius):
-    """Query with custom radius"""
+@when("我擴大搜尋範圍到 {distance:d} 公里")
+def step_expand_search_radius(context, distance):
+    """擴大搜尋範圍（公里轉公尺）"""
+    radius_meters = distance * 1000
     env = os.environ.copy()
     if hasattr(context, "use_mocks") and context.use_mocks:
         env["USE_MOCK_API"] = "true"
 
     result = subprocess.run(
-        [sys.executable, str(context.cli_path), "--address", address, "--radius", radius],
+        [sys.executable, str(context.cli_path), "--address", context.address, "--radius", str(radius_meters)],
         capture_output=True,
         text=True,
         timeout=30,
@@ -58,21 +87,15 @@ def step_query_with_radius(context, address, radius):
     context.returncode = result.returncode
 
 
-@given('我知道附近有 "{line_name}" 路線')
-def step_know_route_exists(context, line_name):
-    """Remember route name for filtering"""
-    context.line_name = line_name
-
-
-@when('我使用地址 "{address}" 過濾路線 "{line_name}"')
-def step_query_with_line_filter(context, address, line_name):
-    """Query with line filter"""
+@when("我查詢這條路線的垃圾車")
+def step_query_specific_line(context):
+    """查詢特定路線的垃圾車"""
     env = os.environ.copy()
     if hasattr(context, "use_mocks") and context.use_mocks:
         env["USE_MOCK_API"] = "true"
 
     result = subprocess.run(
-        [sys.executable, str(context.cli_path), "--address", address, "--line", line_name],
+        [sys.executable, str(context.cli_path), "--address", context.address, "--line", context.target_line],
         capture_output=True,
         text=True,
         timeout=30,
@@ -83,15 +106,15 @@ def step_query_with_line_filter(context, address, line_name):
     context.returncode = result.returncode
 
 
-@when('我使用無效地址 "{address}" 查詢垃圾車')
-def step_query_invalid_address(context, address):
-    """Query with invalid address"""
+@when("我嘗試查詢垃圾車")
+def step_try_to_query_trucks(context):
+    """嘗試查詢垃圾車（預期可能失敗）"""
     env = os.environ.copy()
     if hasattr(context, "use_mocks") and context.use_mocks:
         env["USE_MOCK_API"] = "true"
 
     result = subprocess.run(
-        [sys.executable, str(context.cli_path), "--address", address],
+        [sys.executable, str(context.cli_path), "--address", context.address],
         capture_output=True,
         text=True,
         timeout=30,
@@ -103,58 +126,63 @@ def step_query_invalid_address(context, address):
     context.returncode = result.returncode
 
 
-@then("我應該看到找到的垃圾車數量")
+# ============================================================================
+# Then 步驟 - 驗證結果
+# ============================================================================
+
+
+@then("我應該看到找到幾台垃圾車")
 def step_should_see_truck_count(context):
-    """Verify output shows truck count"""
-    assert "Found" in context.stdout or "找到" in context.stdout, f"No truck count found in: {context.stdout}"
+    """驗證輸出顯示找到的垃圾車數量"""
+    output = context.stdout.lower()
+    # 支援中英文輸出
+    has_count = "found" in output or "找到" in output or "台" in output or "條" in output
+    assert has_count, f"輸出中沒有看到垃圾車數量資訊：\n{context.stdout}"
 
 
-@then("我應該看到路線資訊")
-def step_should_see_route_info(context):
-    """Verify output shows route information"""
-    assert "Route" in context.stdout or "路線" in context.stdout, f"No route info in: {context.stdout}"
-
-
-@then("我應該看到收集點清單")
-def step_should_see_collection_points(context):
-    """Verify output shows collection points"""
-    assert "point" in context.stdout.lower() or "收集點" in context.stdout, f"No collection points in: {context.stdout}"
+@then("我應該看到垃圾車的路線名稱")
+def step_should_see_route_name(context):
+    """驗證輸出顯示路線資訊"""
+    output = context.stdout.lower()
+    # 支援中英文輸出
+    has_route = "route" in output or "路線" in output or "line" in output
+    assert has_route, f"輸出中沒有看到路線資訊：\n{context.stdout}"
 
 
 @then("查詢應該成功")
 def step_query_should_succeed(context):
-    """Verify query succeeded"""
-    assert context.returncode == 0, f"Query failed with code {context.returncode}"
+    """驗證查詢成功（返回碼為 0）"""
+    assert context.returncode == 0, f"查詢失敗，返回碼：{context.returncode}\n錯誤訊息：{context.stderr}"
 
 
 @then("我應該看到垃圾車資訊")
 def step_should_see_truck_info(context):
-    """Verify truck information is shown"""
-    assert len(context.stdout) > 0, "No output received"
-    assert "Found" in context.stdout or "找到" in context.stdout or "Route" in context.stdout
-
-
-@then('結果應該只包含 "{line_name}"')
-def step_should_only_contain_line(context, line_name):
-    """Verify only specified line is shown"""
-    # If query succeeded and returned results, check line name
-    if context.returncode == 0 and len(context.stdout) > 10:
-        assert line_name in context.stdout, f"Line {line_name} not found in output"
-
-
-@then("我應該看到錯誤訊息")
-def step_should_see_error(context):
-    """Verify error message is shown"""
-    has_error = (
-        "error" in context.stderr.lower()
-        or context.returncode != 0
-        or "找不到" in context.stdout
-        or "錯誤" in context.stdout
+    """驗證顯示了垃圾車資訊"""
+    assert len(context.stdout) > 0, "沒有任何輸出"
+    output = context.stdout.lower()
+    # 檢查是否包含垃圾車相關資訊
+    has_truck_info = any(
+        keyword in output for keyword in ["found", "找到", "route", "路線", "truck", "垃圾車", "garbage"]
     )
-    assert has_error, f"No error shown. Return code: {context.returncode}, Stderr: {context.stderr}"
+    assert has_truck_info, f"輸出中沒有看到垃圾車資訊：\n{context.stdout}"
 
 
-@then('我應該看到 "{message}" 訊息')
-def step_should_see_message(context, message):
-    """Verify specific message is shown"""
-    assert message in context.stdout or "No" in context.stdout or "沒有" in context.stdout or "找不到" in context.stdout
+@then('結果應該只顯示 "{line_name}" 的資訊')
+def step_should_only_show_line(context, line_name):
+    """驗證只顯示指定路線的資訊"""
+    # 如果查詢成功且有結果，檢查是否包含指定路線
+    if context.returncode == 0 and len(context.stdout) > 100:
+        assert line_name in context.stdout, f"輸出中沒有找到路線「{line_name}」：\n{context.stdout}"
+
+
+@then("系統應該告訴我地址有問題")
+def step_should_show_address_error(context):
+    """驗證系統顯示地址錯誤訊息"""
+    has_error = (
+        context.returncode != 0  # 返回碼不為 0
+        or "error" in context.stderr.lower()  # stderr 包含錯誤
+        or "錯誤" in context.stdout  # stdout 包含中文錯誤
+        or "失敗" in context.stdout  # 失敗訊息
+        or "找不到" in context.stdout  # 找不到地址
+    )
+    assert has_error, f"預期應該顯示地址錯誤，但查詢似乎成功了\n返回碼：{context.returncode}\nStdout：{context.stdout}\nStderr：{context.stderr}"

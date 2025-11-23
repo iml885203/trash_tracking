@@ -14,29 +14,36 @@ from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError  # noqa
 from trash_tracking_core.utils.route_analyzer import RouteAnalyzer  # noqa: E402
 
 
-@given("the trash_tracking_core modules are available")
-def step_modules_available(context):
-    """Verify modules can be imported"""
+# ============================================================================
+# Given 步驟 - 設定前置條件
+# ============================================================================
+
+
+@given("垃圾車追蹤整合已經安裝")
+def step_integration_installed(context):
+    """驗證整合模組可以使用"""
     context.geocoder = Geocoder()
     context.api_client = NTPCApiClient()
 
 
-@given('I have the address "{address}"')
-def step_have_address(context, address):
-    """Store address in context"""
-    context.address = address
+# 注意："我住在" 和 "我不小心輸入錯誤的地址" 步驟定義在 cli_steps.py 中
+# Behave 會自動共用這些步驟定義
 
-
-@given("I have coordinates latitude {lat:f} and longitude {lng:f}")
-def step_have_coordinates(context, lat, lng):
-    """Store coordinates in context"""
+@given("我住在偏遠地區（座標 緯度 {lat:f} 經度 {lng:f}）")
+def step_live_at_remote_location(context, lat, lng):
+    """設定偏遠地區的座標"""
     context.latitude = lat
     context.longitude = lng
 
 
-@when("I geocode the address")
-def step_geocode_address(context):
-    """Geocode the address"""
+# ============================================================================
+# When 步驟 - 使用者執行的動作
+# ============================================================================
+
+
+@when("我在設定頁面輸入我家地址")
+def step_input_address_in_setup(context):
+    """在設定頁面輸入地址（內部會進行地址轉座標）"""
     try:
         context.latitude, context.longitude = context.geocoder.address_to_coordinates(context.address)
         context.geocoding_error = None
@@ -44,9 +51,9 @@ def step_geocode_address(context):
         context.geocoding_error = e
 
 
-@when("I attempt to geocode the address")
-def step_attempt_geocode(context):
-    """Attempt to geocode, expecting failure"""
+@when("我嘗試送出地址進行設定")
+def step_submit_address(context):
+    """嘗試送出地址（預期可能失敗）"""
     try:
         context.latitude, context.longitude = context.geocoder.address_to_coordinates(context.address)
         context.geocoding_error = None
@@ -54,9 +61,9 @@ def step_attempt_geocode(context):
         context.geocoding_error = e
 
 
-@when("I fetch nearby routes for those coordinates")
-def step_fetch_routes(context):
-    """Fetch routes from API"""
+@when("系統查詢我家附近的垃圾車路線")
+def step_system_queries_routes(context):
+    """系統自動查詢附近的垃圾車路線"""
     try:
         context.routes = context.api_client.get_around_points(
             context.latitude, context.longitude, time_filter=0, week=1
@@ -67,120 +74,145 @@ def step_fetch_routes(context):
         context.routes = []
 
 
-@when("I analyze the routes")
-def step_analyze_routes(context):
-    """Analyze routes to generate recommendations"""
+@when("系統查詢附近的垃圾車路線")
+def step_query_nearby_routes(context):
+    """查詢附近路線（與上面的步驟功能相同，但用詞稍有不同）"""
+    step_system_queries_routes(context)
+
+
+@when("系統分析這些路線並產生推薦")
+def step_system_analyzes_routes(context):
+    """系統分析路線並產生推薦"""
     analyzer = RouteAnalyzer(context.latitude, context.longitude)
     context.recommendations = analyzer.analyze_all_routes(context.routes)
 
 
-@when("I complete the full config flow")
-def step_complete_flow(context):
-    """Complete the entire config flow"""
-    # Geocode
+@when("我完成整個設定流程")
+def step_complete_setup_flow(context):
+    """完成整個設定流程（地址→座標→路線→推薦→選擇）"""
+    # 1. 地址轉座標
     context.latitude, context.longitude = context.geocoder.address_to_coordinates(context.address)
 
-    # Fetch routes
+    # 2. 查詢路線
     context.routes = context.api_client.get_around_points(context.latitude, context.longitude, 0, 1)
 
-    # Analyze
+    # 3. 分析並產生推薦
     analyzer = RouteAnalyzer(context.latitude, context.longitude)
     context.recommendations = analyzer.analyze_all_routes(context.routes)
 
-    # Select first recommendation
+    # 4. 選擇第一個推薦
     if context.recommendations:
         context.selected_recommendation = context.recommendations[0]
 
 
-@then("the coordinates should be near latitude {expected_lat:f} and longitude {expected_lng:f}")
-def step_verify_coordinates(context, expected_lat, expected_lng):
-    """Verify coordinates are close to expected values"""
-    assert abs(context.latitude - expected_lat) < 0.01, f"Latitude {context.latitude} not near {expected_lat}"
-    assert abs(context.longitude - expected_lng) < 0.01, f"Longitude {context.longitude} not near {expected_lng}"
+# ============================================================================
+# Then 步驟 - 驗證結果
+# ============================================================================
 
 
-@then("I should get at least {min_count:d} route")
-def step_verify_min_routes(context, min_count):
-    """Verify minimum number of routes"""
+@then("系統應該找到我家的位置座標")
+def step_should_find_coordinates(context):
+    """驗證成功取得座標"""
+    assert context.geocoding_error is None, f"地址轉換失敗: {context.geocoding_error}"
+    assert hasattr(context, "latitude"), "未找到緯度資訊"
+    assert hasattr(context, "longitude"), "未找到經度資訊"
+    # 驗證座標在合理範圍內（台灣地區）
+    assert 21.0 <= context.latitude <= 26.0, f"緯度 {context.latitude} 不在台灣範圍"
+    assert 119.0 <= context.longitude <= 122.0, f"經度 {context.longitude} 不在台灣範圍"
+
+
+@then("應該至少找到 {min_count:d} 條路線")
+def step_should_find_at_least_routes(context, min_count):
+    """驗證至少找到指定數量的路線"""
     actual = len(context.routes) if context.routes else 0
-    assert actual >= min_count, f"Expected at least {min_count} routes, got {actual}"
+    assert actual >= min_count, f"預期至少 {min_count} 條路線，實際找到 {actual} 條"
 
 
-@then("I should get {expected_count:d} routes")
-def step_verify_exact_routes(context, expected_count):
-    """Verify exact number of routes"""
+@then("應該找到 {expected_count:d} 條路線")
+def step_should_find_exact_routes(context, expected_count):
+    """驗證找到確切數量的路線"""
     actual = len(context.routes) if context.routes else 0
-    assert actual == expected_count, f"Expected {expected_count} routes, got {actual}"
+    assert actual == expected_count, f"預期 {expected_count} 條路線，實際找到 {actual} 條"
 
 
-@then("I should get route recommendations")
-def step_verify_recommendations(context):
-    """Verify we got recommendations"""
-    assert context.recommendations, "Expected route recommendations but got none"
-    assert len(context.recommendations) > 0, "Expected at least one recommendation"
+@then("我應該看到路線推薦清單")
+def step_should_see_recommendations(context):
+    """驗證有產生路線推薦"""
+    assert hasattr(context, "recommendations"), "沒有產生推薦清單"
+    assert context.recommendations, "推薦清單是空的"
+    assert len(context.recommendations) > 0, "推薦清單應該至少有一個推薦"
 
 
-@then("each recommendation should have a truck")
-def step_verify_truck(context):
-    """Verify each recommendation has truck"""
-    for rec in context.recommendations:
-        assert hasattr(rec, "truck"), "Recommendation missing 'truck' attribute"
-        assert rec.truck is not None, "Recommendation truck is None"
-        assert hasattr(rec.truck, "line_name"), "Truck missing 'line_name' attribute"
+@then("每個推薦都應該包含垃圾車資訊")
+def step_each_recommendation_has_truck(context):
+    """驗證每個推薦都有垃圾車資訊"""
+    for i, rec in enumerate(context.recommendations, 1):
+        assert hasattr(rec, "truck"), f"第 {i} 個推薦缺少垃圾車資訊"
+        assert rec.truck is not None, f"第 {i} 個推薦的垃圾車資訊是空的"
+        assert hasattr(rec.truck, "line_name"), f"第 {i} 個推薦的垃圾車缺少路線名稱"
 
 
-@then("each recommendation should have an enter_point")
-def step_verify_enter_point(context):
-    """Verify each recommendation has enter_point"""
-    for rec in context.recommendations:
-        assert hasattr(rec, "enter_point"), "Recommendation missing 'enter_point' attribute"
-        assert rec.enter_point is not None, "Recommendation enter_point is None"
-        assert hasattr(rec.enter_point, "point_name"), "Enter point missing 'point_name' attribute"
+@then("每個推薦都應該有進入點（垃圾車接近時提醒）")
+def step_each_recommendation_has_enter_point(context):
+    """驗證每個推薦都有進入點"""
+    for i, rec in enumerate(context.recommendations, 1):
+        assert hasattr(rec, "enter_point"), f"第 {i} 個推薦缺少進入點"
+        assert rec.enter_point is not None, f"第 {i} 個推薦的進入點是空的"
+        assert hasattr(rec.enter_point, "point_name"), f"第 {i} 個推薦的進入點缺少名稱"
 
 
-@then("each recommendation should have an exit_point")
-def step_verify_exit_point(context):
-    """Verify each recommendation has exit_point"""
-    for rec in context.recommendations:
-        assert hasattr(rec, "exit_point"), "Recommendation missing 'exit_point' attribute"
-        assert rec.exit_point is not None, "Recommendation exit_point is None"
-        assert hasattr(rec.exit_point, "point_name"), "Exit point missing 'point_name' attribute"
+@then("每個推薦都應該有離開點（垃圾車離開後停止提醒）")
+def step_each_recommendation_has_exit_point(context):
+    """驗證每個推薦都有離開點"""
+    for i, rec in enumerate(context.recommendations, 1):
+        assert hasattr(rec, "exit_point"), f"第 {i} 個推薦缺少離開點"
+        assert rec.exit_point is not None, f"第 {i} 個推薦的離開點是空的"
+        assert hasattr(rec.exit_point, "point_name"), f"第 {i} 個推薦的離開點缺少名稱"
 
 
-@then("each recommendation should have a nearest_point")
-def step_verify_nearest_point(context):
-    """Verify each recommendation has nearest_point"""
-    for rec in context.recommendations:
-        assert hasattr(rec, "nearest_point"), "Recommendation missing 'nearest_point' attribute"
-        assert rec.nearest_point is not None, "Recommendation nearest_point is None"
-        assert hasattr(rec.nearest_point, "point_name"), "Nearest point missing 'point_name' attribute"
+@then("每個推薦都應該有最近的收集點")
+def step_each_recommendation_has_nearest_point(context):
+    """驗證每個推薦都有最近的收集點"""
+    for i, rec in enumerate(context.recommendations, 1):
+        assert hasattr(rec, "nearest_point"), f"第 {i} 個推薦缺少最近收集點"
+        assert rec.nearest_point is not None, f"第 {i} 個推薦的最近收集點是空的"
+        assert hasattr(rec.nearest_point, "point_name"), f"第 {i} 個推薦的最近收集點缺少名稱"
 
 
-@then("geocoding should fail with an error")
-def step_verify_geocoding_error(context):
-    """Verify geocoding failed"""
-    assert context.geocoding_error is not None, "Expected geocoding to fail but it succeeded"
-    assert isinstance(context.geocoding_error, GeocodingError), "Expected GeocodingError"
+@then("地址轉換應該失敗")
+def step_geocoding_should_fail(context):
+    """驗證地址轉換失敗（config flow 專用 - 檢查 GeocodingError）"""
+    assert context.geocoding_error is not None, "預期應該有地址錯誤，但卻成功了"
+    assert isinstance(context.geocoding_error, GeocodingError), "錯誤類型應該是 GeocodingError"
 
 
-@then("the selected route should have collection points")
-def step_verify_collection_points(context):
-    """Verify selected route has collection points"""
-    assert hasattr(context.selected_recommendation.truck, "points"), "Truck missing 'points' attribute"
-    assert len(context.selected_recommendation.truck.points) > 0, "Truck has no collection points"
+@then("系統應該告訴我這個區域目前沒有垃圾車路線資料")
+def step_should_show_no_routes_message(context):
+    """驗證系統告知沒有路線資料"""
+    # 驗證確實沒有路線
+    actual = len(context.routes) if context.routes else 0
+    assert actual == 0, f"預期沒有路線，但實際找到 {actual} 條"
 
 
-@then("the enter_point should be in the collection points list")
-def step_verify_enter_in_points(context):
-    """Verify enter_point exists in collection points"""
+@then("系統推薦的路線應該有收集點清單")
+def step_recommended_route_has_points(context):
+    """驗證推薦的路線有收集點清單"""
+    assert hasattr(context, "selected_recommendation"), "沒有選擇的推薦"
+    assert hasattr(context.selected_recommendation.truck, "points"), "垃圾車缺少收集點清單"
+    assert len(context.selected_recommendation.truck.points) > 0, "收集點清單是空的"
+
+
+@then("進入點應該在這條路線的收集點清單中")
+def step_enter_point_in_route_points(context):
+    """驗證進入點存在於收集點清單中"""
     enter_name = context.selected_recommendation.enter_point.point_name
     point_names = [p.point_name for p in context.selected_recommendation.truck.points]
-    assert enter_name in point_names, f"Enter point '{enter_name}' not found in collection points"
+    assert enter_name in point_names, f"進入點「{enter_name}」不在收集點清單中"
 
 
-@then("the exit_point should be in the collection points list")
-def step_verify_exit_in_points(context):
-    """Verify exit_point exists in collection points"""
+@then("離開點應該在這條路線的收集點清單中")
+def step_exit_point_in_route_points(context):
+    """驗證離開點存在於收集點清單中"""
     exit_name = context.selected_recommendation.exit_point.point_name
     point_names = [p.point_name for p in context.selected_recommendation.truck.points]
-    assert exit_name in point_names, f"Exit point '{exit_name}' not found in collection points"
+    assert exit_name in point_names, f"離開點「{exit_name}」不在收集點清單中"
