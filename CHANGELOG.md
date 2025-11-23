@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.11-beta.1] - 2025-11-24
+
+### Fixed
+- **Critical**: Schedule-based polling now correctly detects collection days
+- Fixed PointWeekKnd interpretation (waste types, not weekdays)
+- Config flow now queries API 7 times to determine actual collection days
+
+### Changed
+- _extract_schedule_from_route() now actively determines collection days via API
+- Config flow shows correct weekdays in debug log after this fix
+
+### Known Issues
+- **Beta**: Requires re-adding integration to apply schedule detection
+- Existing integrations will continue to poll API every 2 minutes until re-added
+
+### Notes
+This is a beta release for testing the schedule detection fix.
+Please test and report any issues before stable release.
+
 ## [2025.11.10] - 2025-11-23
 
 ### Fixed
@@ -67,6 +86,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
+[2025.11.11-beta.1]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11-beta.1
 [2025.11.10]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.10
 [2025.11.9]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.9
 [2025.11.8]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.8
