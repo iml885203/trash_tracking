@@ -43,15 +43,6 @@ test-results.xml
 .dmypy.json
 dmypy.json
 
-# SonarQube
-.scannerwork/
-
-# Security reports
-bandit-report.json
-safety-report.json
-pip-audit-report.json
-pylint-report.txt
-
 # Environment variables
 .env
 .env.local
