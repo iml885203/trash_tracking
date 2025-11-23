@@ -79,19 +79,36 @@ This script:
 
 ### Running Tests
 
+This project uses a **two-layer testing strategy**:
+
+1. **BDD Integration Tests** (Behave) - User-focused scenarios protecting main workflows
+2. **Unit Tests** (pytest) - Module-level tests ensuring component functionality
+
 ```bash
 # Activate venv first
 source .venv/bin/activate
 
-# Run all unit tests (pytest)
-pytest
+# Run BDD integration tests (user scenarios)
+behave                              # All BDD scenarios
+behave features/config_flow.feature # Specific feature
+
+# Run unit tests (module tests)
+pytest                              # All unit tests
+pytest tests/models/                # Model tests only
+pytest tests/core/test_state_manager.py -v  # Specific module
 
 # Run with coverage
 pytest --cov=packages/core/trash_tracking_core --cov-report=html
 
-# Run specific test
-pytest tests/test_point_matcher.py -v
+# Run all tests (BDD + Unit)
+behave && pytest
 ```
+
+**Test Organization:**
+- `features/` - BDD scenarios (integration tests from user perspective)
+- `tests/models/` - Point and TruckLine model tests
+- `tests/clients/` - NTPC API client tests (including caching)
+- `tests/core/` - PointMatcher, StateManager, Tracker tests
 
 ### Code Quality
 
@@ -198,8 +215,87 @@ Implementation: `packages/core/trash_tracking_core/utils/geocoding.py`
 
 ## Testing Strategy
 
-- **Unit tests** (`tests/`): Test individual modules with pytest, mock external APIs
-- Coverage reports are uploaded to Codecov
+This project uses a **two-layer testing approach** to ensure both user experience and code quality:
+
+### Layer 1: BDD Integration Tests (User Perspective)
+**Tool**: Behave (Gherkin syntax)
+**Location**: `features/`
+**Purpose**: Protect main user workflows from regressions
+
+BDD tests are written from the user's perspective and cover critical end-to-end scenarios:
+- **Config Flow**: Setting up garbage truck notifications (address input, route selection, point configuration)
+- **CLI Queries**: Searching for nearby trucks, handling invalid addresses
+
+**Example scenario** (`features/config_flow.feature`):
+```gherkin
+Scenario: 第一次設定我家的垃圾車通知
+  假設 我住在 "新北市板橋區民生路二段80號"
+  當 我在設定頁面輸入我家地址
+  那麼 系統應該找到我家的位置座標
+  而且 應該至少找到 1 條路線
+```
+
+**Benefits**:
+- Tests actual user workflows
+- Catches integration issues
+- Serves as living documentation
+- Easy for non-technical stakeholders to understand
+
+### Layer 2: Unit Tests (Module Perspective)
+**Tool**: pytest
+**Location**: `tests/`
+**Purpose**: Ensure individual components work correctly
+
+Unit tests are organized by module and test isolated functionality:
+
+```
+tests/
+├── models/          # Data model tests (Point, TruckLine)
+├── clients/         # API client tests (NTPCApiClient, caching)
+└── core/            # Business logic tests (PointMatcher, StateManager)
+```
+
+**Test coverage** (111 unit tests total):
+- `tests/models/test_point.py` (30 tests): Point creation, status, weekday parsing, estimated arrival
+- `tests/models/test_truck.py` (18 tests): TruckLine creation, point finding, upcoming points
+- `tests/clients/test_ntpc_api.py` (18 tests): API calls, error handling, cache behavior
+- `tests/core/test_point_matcher.py` (18 tests): Point matching logic, trigger modes
+- `tests/core/test_state_manager.py` (27 tests): State transitions, timezone handling
+
+**Benefits**:
+- Fast execution (no external dependencies)
+- Pinpoint exact failure locations
+- Enable confident refactoring
+- High code coverage (>80%)
+
+### Testing Philosophy
+
+**BDD tests** answer: "Does the system work for users?"
+**Unit tests** answer: "Does each component work correctly?"
+
+This two-layer approach provides:
+1. **Confidence in releases**: BDD tests ensure user workflows don't break
+2. **Maintainability**: Unit tests make refactoring safe
+3. **Fast feedback**: Unit tests run quickly during development
+4. **Documentation**: BDD scenarios document expected behavior
+
+### Running Tests
+
+```bash
+# Run all tests (recommended before commit)
+behave && pytest
+
+# BDD only (integration tests)
+behave
+
+# Unit tests only
+pytest
+
+# With coverage
+pytest --cov=packages/core/trash_tracking_core --cov-report=html
+```
+
+Coverage reports are uploaded to Codecov in CI.
 
 ## CI/CD
 
