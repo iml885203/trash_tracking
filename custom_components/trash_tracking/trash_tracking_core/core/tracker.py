@@ -3,11 +3,11 @@
 from typing import Any, Dict, List
 
 from ..clients.ntpc_api import NTPCApiClient, NTPCApiError
+from ..core.point_matcher import PointMatcher
+from ..core.state_manager import StateManager
 from ..models.truck import TruckLine
 from ..utils.config import ConfigManager
 from ..utils.logger import logger
-from .point_matcher import PointMatcher
-from .state_manager import StateManager
 
 
 class TruckTracker:
@@ -38,7 +38,7 @@ class TruckTracker:
             approaching_threshold=config.approaching_threshold,
         )
 
-        logger.info(f"TruckTracker initialized: {config}")
+        logger.info("TruckTracker initialized: %s", config)
 
     def get_current_status(self) -> Dict[str, Any]:
         """
@@ -62,7 +62,7 @@ class TruckTracker:
             target_lines = self._filter_target_lines(truck_lines)
 
             if not target_lines:
-                logger.info(f"Found {len(truck_lines)} route(s), but none match tracking criteria")
+                logger.info("Found %d route(s), but none match tracking criteria", len(truck_lines))
                 if not self.state_manager.is_idle():
                     self.state_manager.update_state(new_state="idle", reason="Tracked routes not nearby")
                 return self.state_manager.get_status_response()
@@ -85,13 +85,13 @@ class TruckTracker:
             return self.state_manager.get_status_response()
 
         except NTPCApiError as e:
-            logger.error(f"NTPC API request failed: {e}")
+            logger.error("NTPC API request failed: %s", e)
             response = self.state_manager.get_status_response()
             response["error"] = str(e)
             return response
 
         except Exception as e:
-            logger.error(f"Unexpected error in tracker: {e}", exc_info=True)
+            logger.error("Unexpected error in tracker: %s", e, exc_info=True)
             self.state_manager.reset()
             response = self.state_manager.get_status_response()
             response["error"] = f"System error: {str(e)}"
@@ -110,12 +110,12 @@ class TruckTracker:
         target_line_names = self.config.target_lines
 
         if not target_line_names:
-            logger.debug(f"No target routes specified, tracking all {len(truck_lines)} route(s)")
+            logger.debug("No target routes specified, tracking all %d route(s)", len(truck_lines))
             return truck_lines
 
         filtered = [line for line in truck_lines if line.line_name in target_line_names]
 
-        logger.debug(f"Filtering routes: {len(target_line_names)} specified, " f"{len(filtered)} found")
+        logger.debug("Filtering routes: %d specified, %d found", len(target_line_names), len(filtered))
 
         return filtered
 

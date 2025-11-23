@@ -73,11 +73,11 @@ class PointMatcher:
         exit_point = truck_line.find_point(self.exit_point_name)
 
         if not enter_point:
-            logger.debug(f"Enter point not found in route {truck_line.line_name}: " f"{self.enter_point_name}")
+            logger.debug("Enter point not found in route %s: %s", truck_line.line_name, self.enter_point_name)
             return MatchResult(should_trigger=False)
 
         if not exit_point:
-            logger.debug(f"Exit point not found in route {truck_line.line_name}: " f"{self.exit_point_name}")
+            logger.debug("Exit point not found in route %s: %s", truck_line.line_name, self.exit_point_name)
             return MatchResult(should_trigger=False)
 
         if exit_point.point_rank <= enter_point.point_rank:
@@ -106,7 +106,7 @@ class PointMatcher:
 
         if self._should_trigger_exit(truck_line, exit_point):
             reason = f"Truck has passed exit point: {self.exit_point_name}"
-            logger.info(f"✅ Trigger exit state: {truck_line.line_name} - " f"exit point arrival={exit_point.arrival}")
+            logger.info("✅ Trigger exit state: %s - exit point arrival=%s", truck_line.line_name, exit_point.arrival)
             return MatchResult(
                 should_trigger=True,
                 new_state="idle",

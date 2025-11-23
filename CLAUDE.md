@@ -56,6 +56,25 @@ pip install -r requirements-dev.txt
 pre-commit install
 ```
 
+## Syncing Core Package
+
+**IMPORTANT**: The `trash_tracking_core` package exists in two locations:
+- `packages/core/trash_tracking_core/` - Source of truth (with absolute imports)
+- `custom_components/trash_tracking/trash_tracking_core/` - Embedded copy for Home Assistant (with relative imports)
+
+After making changes to the core package, **always run the sync script**:
+
+```bash
+python3 scripts/sync_core.py
+```
+
+This script:
+1. Copies all files from packages/core/ to custom_components/
+2. Converts absolute imports to relative imports automatically
+3. Ensures both versions stay in sync
+
+**Never edit `custom_components/trash_tracking/trash_tracking_core/` directly!** Always edit `packages/core/` and sync.
+
 ## Common Commands
 
 ### Running Tests

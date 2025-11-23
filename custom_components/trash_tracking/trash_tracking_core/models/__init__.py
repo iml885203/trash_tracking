@@ -1,6 +1,6 @@
 """Data models for trash tracking"""
 
-from .point import Point, PointStatus
-from .truck import TruckLine
+from ..models.point import Point, PointStatus
+from ..models.truck import TruckLine
 
 __all__ = ["Point", "PointStatus", "TruckLine"]

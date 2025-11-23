@@ -5,13 +5,11 @@ from typing import Any, Dict, List
 
 import yaml
 
-from .logger import logger
+from ..utils.logger import logger
 
 
 class ConfigError(Exception):
     """Configuration file error"""
-
-    pass
 
 
 class ConfigManager:
@@ -54,7 +52,7 @@ class ConfigManager:
             if not isinstance(config, dict):
                 raise ConfigError("Config file must contain a dictionary")
 
-            logger.info(f"Config file loaded successfully: {self.config_path}")
+            logger.info("Config file loaded successfully: %s", self.config_path)
             return config
 
         except yaml.YAMLError as e:

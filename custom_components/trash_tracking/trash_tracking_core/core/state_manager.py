@@ -36,7 +36,7 @@ class StateManager:
         self.reason = "System initialized"
         self.timezone = pytz.timezone(timezone)
 
-        logger.info(f"StateManager initialized: state={self.current_state.value}")
+        logger.info("StateManager initialized: state=%s", self.current_state.value)
 
     def update_state(
         self,
@@ -59,15 +59,15 @@ class StateManager:
         try:
             new_state_enum = TruckState(new_state)
         except ValueError:
-            logger.error(f"Invalid state value: {new_state}")
+            logger.error("Invalid state value: %s", new_state)
             return
 
         state_changed = self.current_state != new_state_enum
 
         if state_changed:
-            logger.info(f"🔄 State changed: {self.current_state.value} → {new_state_enum.value} " f"({reason})")
+            logger.info("🔄 State changed: %s → %s (%s)", self.current_state.value, new_state_enum.value, reason)
         else:
-            logger.debug(f"State maintained: {self.current_state.value}")
+            logger.debug("State maintained: %s", self.current_state.value)
 
         self.current_state = new_state_enum
         self.reason = reason
@@ -87,7 +87,6 @@ class StateManager:
         Returns:
             dict: Status response data
         """
-        from typing import Any, Dict
 
         response: Dict[str, Any] = {
             "status": self.current_state.value,

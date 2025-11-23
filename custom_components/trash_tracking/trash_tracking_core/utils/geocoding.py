@@ -5,13 +5,11 @@ from typing import Any, Dict, Optional, Tuple
 
 import requests
 
-from .logger import logger
+from ..utils.logger import logger
 
 
 class GeocodingError(Exception):
     """Geocoding error"""
-
-    pass
 
 
 class Geocoder:
@@ -37,11 +35,11 @@ class Geocoder:
             if simplified == current_address:
                 break
 
-            logger.info(f"Trying simplified address (level {attempt + 1}): {simplified}")
+            logger.info("Trying simplified address (level %s): {simplified}", attempt + 1)
 
             result = self._query_nominatim(simplified, timeout)
             if result is not None and len(result) == 2:
-                logger.warning(f"Found coordinates using simplified address: {simplified}")
+                logger.warning("Found coordinates using simplified address: %s", simplified)
                 return result
 
             current_address = simplified
@@ -129,7 +127,6 @@ class Geocoder:
         Returns:
             str: Simplified address (one level up)
         """
-        import re
 
         if re.search(r"\d+號", address):
             return re.sub(r"\d+號.*", "", address).strip()
@@ -174,11 +171,11 @@ class Geocoder:
 
                     if x and y:
                         lat, lng = self._twd97_to_wgs84(float(x), float(y))
-                        logger.info(f"TGOS API succeeded: {address} -> ({lat}, {lng})")
+                        logger.info("TGOS API succeeded: %s -> ({lat}, {lng})", address)
                         return (lat, lng)
 
         except Exception as e:
-            logger.debug(f"TGOS API 查詢失敗: {e}")
+            logger.debug("TGOS API 查詢失敗: %s", e)
 
         return None
 
@@ -207,11 +204,11 @@ class Geocoder:
 
                 if x > 0 and y > 0:
                     lat, lng = self._twd97_to_wgs84(x, y)
-                    logger.info(f"NLSC API succeeded: {address} -> ({lat}, {lng})")
+                    logger.info("NLSC API succeeded: %s -> ({lat}, {lng})", address)
                     return (lat, lng)
 
         except Exception as e:
-            logger.debug(f"NLSC API 查詢失敗: {e}")
+            logger.debug("NLSC API 查詢失敗: %s", e)
 
         return None
 
@@ -239,11 +236,11 @@ class Geocoder:
             if data and len(data) > 0:
                 lat = float(data[0]["lat"])
                 lng = float(data[0]["lon"])
-                logger.info(f"Nominatim API succeeded: {address} -> ({lat}, {lng})")
+                logger.info("Nominatim API succeeded: %s -> ({lat}, {lng})", address)
                 return (lat, lng)
 
         except Exception as e:
-            logger.debug(f"Nominatim API 查詢失敗: {e}")
+            logger.debug("Nominatim API 查詢失敗: %s", e)
 
         return None
 

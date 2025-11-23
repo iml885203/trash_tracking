@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from .point import Point
+from ..models.point import Point
 
 
 @dataclass
