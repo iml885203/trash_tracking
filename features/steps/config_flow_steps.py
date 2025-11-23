@@ -216,3 +216,54 @@ def step_exit_point_in_route_points(context):
     exit_name = context.selected_recommendation.exit_point.point_name
     point_names = [p.point_name for p in context.selected_recommendation.truck.points]
     assert exit_name in point_names, f"離開點「{exit_name}」不在收集點清單中"
+
+
+@when("系統解析第一個推薦的收集點收集日期")
+def step_parse_collection_weekdays(context):
+    """解析收集點的收集日期（測試 get_weekdays 方法）"""
+    assert hasattr(context, "recommendations"), "沒有推薦清單"
+    assert len(context.recommendations) > 0, "推薦清單是空的"
+
+    # 取得第一個推薦的垃圾車路線
+    recommendation = context.recommendations[0]
+    assert hasattr(recommendation, "truck"), "推薦缺少垃圾車資訊"
+    assert hasattr(recommendation.truck, "points"), "垃圾車缺少收集點清單"
+    assert len(recommendation.truck.points) > 0, "收集點清單是空的"
+
+    # 取得第一個收集點（這是真正的 Point 物件，包含 get_weekdays 方法）
+    point = recommendation.truck.points[0]
+
+    # 驗證 get_weekdays 方法存在（這是關鍵測試！）
+    assert hasattr(point, "get_weekdays"), (
+        f"Point 物件缺少 get_weekdays() 方法。"
+        f"這表示 custom_components/trash_tracking/trash_tracking_core/ "
+        f"沒有從 packages/core/ 正確同步"
+    )
+
+    # 呼叫 get_weekdays() 並儲存結果
+    context.parsed_weekdays = point.get_weekdays()
+
+
+@then("系統應該能夠取得星期資訊")
+def step_should_get_weekday_info(context):
+    """驗證成功取得星期資訊"""
+    assert hasattr(context, "parsed_weekdays"), "沒有解析星期資訊"
+    assert context.parsed_weekdays is not None, "星期資訊不應該是 None"
+
+
+@then("星期資訊應該是有效的數字列表")
+def step_weekday_should_be_list(context):
+    """驗證星期資訊是列表格式"""
+    assert isinstance(context.parsed_weekdays, list), f"星期資訊應該是 list，但得到 {type(context.parsed_weekdays)}"
+    # 如果有資料，驗證每個元素都是整數
+    if context.parsed_weekdays:
+        for day in context.parsed_weekdays:
+            assert isinstance(day, int), f"星期應該是整數，但得到 {type(day)}"
+
+
+@then("星期資訊的數字應該在 0 到 6 之間")
+def step_weekday_numbers_in_range(context):
+    """驗證星期數字在有效範圍內（0=週日, 1-6=週一到週六）"""
+    if context.parsed_weekdays:
+        for day in context.parsed_weekdays:
+            assert 0 <= day <= 6, f"星期數字 {day} 不在有效範圍 0-6 之間"
