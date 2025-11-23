@@ -151,8 +151,9 @@ class Point:
         """
         Parse point_weekknd field to get list of weekdays
 
-        The API uses the following format:
-        - "1,3,5" means Monday, Wednesday, Friday
+        The API uses different formats:
+        - Numeric format: "1,3,5" means Monday, Wednesday, Friday
+        - Letter codes: "NRF", "NF" means Mon, Tue, Thu, Fri, Sat (no Wed, Sun)
         - "0" or "7" means Sunday
         - "1" = Monday, "2" = Tuesday, ..., "6" = Saturday
 
@@ -163,6 +164,16 @@ class Point:
         if not self.point_weekknd:
             return []
 
+        # Check for letter code formats first
+        weekknd = self.point_weekknd.strip().upper()
+
+        # NTPC uses letter codes for collection schedules
+        # Based on actual API testing:
+        # "NRF" and "NF" = Monday, Tuesday, Thursday, Friday, Saturday (no Wednesday, Sunday)
+        if weekknd in ("NRF", "NF"):
+            return [1, 2, 4, 5, 6]  # Mon, Tue, Thu, Fri, Sat
+
+        # Try numeric format
         try:
             weekdays = []
             parts = self.point_weekknd.split(",")
