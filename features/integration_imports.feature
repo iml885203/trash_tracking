@@ -1,4 +1,3 @@
-@requires_homeassistant
 Feature: Home Assistant Integration Imports
   As a developer
   I want to ensure all imports in the integration are correct

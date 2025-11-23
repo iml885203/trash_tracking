@@ -1,7 +1,8 @@
 """Behave environment configuration"""
 
 import os
-from unittest.mock import patch
+import sys
+from unittest.mock import MagicMock, patch
 
 from features.fixtures import MOCK_ADDRESSES, create_mock_truck_lines
 
@@ -9,6 +10,9 @@ from features.fixtures import MOCK_ADDRESSES, create_mock_truck_lines
 def before_all(context):
     """Setup before all scenarios"""
     context.use_mocks = os.getenv("USE_MOCK_API", "true").lower() == "true"
+
+    # Mock Home Assistant modules for integration tests
+    setup_homeassistant_mocks()
 
     if context.use_mocks:
         # Setup mock patches
@@ -38,6 +42,30 @@ def after_all(context):
     if hasattr(context, "mock_patches"):
         for mock_patch in context.mock_patches:
             mock_patch.stop()
+
+
+def setup_homeassistant_mocks():
+    """Mock Home Assistant modules for integration import tests"""
+    # Create mock homeassistant module structure
+    if "homeassistant" not in sys.modules:
+        homeassistant = MagicMock()
+        homeassistant.helpers = MagicMock()
+        homeassistant.helpers.update_coordinator = MagicMock()
+        homeassistant.helpers.entity = MagicMock()
+        homeassistant.config_entries = MagicMock()
+        homeassistant.core = MagicMock()
+        homeassistant.const = MagicMock()
+        homeassistant.data_entry_flow = MagicMock()
+
+        # Add to sys.modules so imports will find them
+        sys.modules["homeassistant"] = homeassistant
+        sys.modules["homeassistant.helpers"] = homeassistant.helpers
+        sys.modules["homeassistant.helpers.update_coordinator"] = homeassistant.helpers.update_coordinator
+        sys.modules["homeassistant.helpers.entity"] = homeassistant.helpers.entity
+        sys.modules["homeassistant.config_entries"] = homeassistant.config_entries
+        sys.modules["homeassistant.core"] = homeassistant.core
+        sys.modules["homeassistant.const"] = homeassistant.const
+        sys.modules["homeassistant.data_entry_flow"] = homeassistant.data_entry_flow
 
 
 def setup_mocks(context):
