@@ -21,12 +21,13 @@ trash_tracking/
 │       ├── core/                   # Business logic (Tracker, StateManager, PointMatcher)
 │       └── utils/                  # Utilities (Config, Geocoding, Logger)
 ├── apps/
-│   ├── addon/                      # Home Assistant Add-on (Flask API)
-│   │   ├── addon/api/              # Flask routes
-│   │   ├── addon/use_cases/        # Setup wizard logic
-│   │   └── app.py                  # Entry point
-│   └── cli/                        # CLI tool (cli.py)
-├── features/                       # BDD tests (Behave)
+│   └── cli/                        # CLI tool
+├── custom_components/              # Home Assistant Integration
+│   └── trash_tracking/             # Integration implementation
+│       ├── trash_tracking_core/    # Embedded core package
+│       ├── config_flow.py          # Setup wizard
+│       ├── coordinator.py          # Data coordinator
+│       └── sensor.py               # Sensor entities
 └── tests/                          # Unit tests (pytest)
 ```
 
@@ -45,9 +46,8 @@ source .venv/bin/activate  # Windows: .venv\Scripts\activate
 # 2. Install core package in editable mode
 pip install -e packages/core/
 
-# 3. Install addon and CLI packages
-pip install -e apps/addon/
-pip install -e apps/cli/  # if developing CLI
+# 3. Install CLI package (optional)
+pip install -e apps/cli/
 
 # 4. Install dev dependencies
 pip install -r requirements-dev.txt
@@ -72,23 +72,17 @@ pytest --cov=packages/core/trash_tracking_core --cov-report=html
 
 # Run specific test
 pytest tests/test_point_matcher.py -v
-
-# Run BDD tests (Behave) with mock API
-USE_MOCK_API=true python -m behave features/ -v
-
-# Run BDD tests without mock (requires Flask server running)
-python -m behave features/ -v
 ```
 
 ### Code Quality
 
 ```bash
 # Linting (all source directories)
-flake8 packages/core/trash_tracking_core apps/addon/addon apps/cli features --count --max-line-length=120
+flake8 packages/core/trash_tracking_core apps/cli custom_components/trash_tracking --count --max-line-length=120
 
 # Format code
-black packages/core/trash_tracking_core apps/addon/addon apps/cli features
-isort packages/core/trash_tracking_core apps/addon/addon apps/cli features
+black packages/core/trash_tracking_core apps/cli custom_components/trash_tracking
+isort packages/core/trash_tracking_core apps/cli custom_components/trash_tracking
 
 # Type checking
 mypy packages/core/trash_tracking_core --ignore-missing-imports --no-strict-optional
@@ -97,11 +91,6 @@ mypy packages/core/trash_tracking_core --ignore-missing-imports --no-strict-opti
 ### Running the Application
 
 ```bash
-# Run Flask API server (addon)
-cd apps/addon/
-cp config.example.yaml config.yaml  # First time only
-python app.py
-
 # Run CLI tool
 cd apps/cli/
 python cli.py --lat 25.018269 --lng 121.471703
@@ -123,16 +112,6 @@ State transitions are managed by `StateManager` in `packages/core/trash_tracking
 
 This logic is in `PointMatcher` (`packages/core/trash_tracking_core/core/point_matcher.py`).
 
-### Mock API for Testing
-BDD tests use a mock API system controlled by `USE_MOCK_API` environment variable:
-- `USE_MOCK_API=true`: Uses mock data from `features/fixtures/mock_api_data.py`
-- `USE_MOCK_API=false`: Uses real NTPC API (requires Flask server running)
-
-**Critical**: When mocking methods in tests, ensure the method names match exactly. For example:
-- `Geocoder.address_to_coordinates` (NOT `geocode`)
-- `NTPCApiClient.get_around_points` (NOT `get_trucks`)
-
-See `features/environment.py:75-80` for the correct mock setup.
 
 ## Key Concepts
 
@@ -158,12 +137,7 @@ Implementation: `packages/core/trash_tracking_core/utils/geocoding.py`
 ## Testing Strategy
 
 - **Unit tests** (`tests/`): Test individual modules with pytest, mock external APIs
-- **BDD tests** (`features/`): End-to-end scenarios with Behave (Gherkin syntax)
-  - API status queries
-  - CLI commands
-  - Setup wizard workflow
-
-BDD tests use mock API by default in CI to avoid external dependencies.
+- Coverage reports are uploaded to Codecov
 
 ## CI/CD
 
@@ -172,38 +146,16 @@ GitHub Actions workflow (`.github/workflows/ci.yml`):
    - Linting (flake8)
    - Code formatting check (black, isort)
    - Type checking (mypy)
-   - Starts Flask server in background
-   - Runs BDD tests with mock API
-2. **Build images**: Multi-architecture Docker builds (amd64, aarch64, armv7)
-3. **Update addon repo**: Triggers repository dispatch to homeassistant-addons repo
-
-**Important for CI debugging**: BDD tests fail if mocks are incorrectly configured. Always verify method names match the actual implementation.
-
-## Configuration
-
-Configuration is in YAML format (`apps/addon/config.yaml`):
-
-```yaml
-location:
-  lat: 25.018269
-  lng: 121.471703
-
-tracking:
-  target_lines: ["C08 Afternoon Route"]
-  enter_point: "Minsheng Rd. Sec. 2, No. 80"
-  exit_point: "Chenggong Rd. No. 23"
-  trigger_mode: "arriving"      # "arriving" or "arrived"
-  approaching_threshold: 2       # Stops ahead for notification
-```
+   - Unit tests with coverage
 
 ## Home Assistant Integration
 
-The addon provides a REST API that Home Assistant polls:
-- `GET /health`: Health check
-- `GET /api/trash/status`: Returns `{status: "idle"|"nearby", reason: "...", truck: {...}}`
-- `POST /api/reset`: Reset tracker state (testing only)
+The integration provides:
+- **Config flow**: Setup wizard for easy configuration
+- **Sensors**: Binary sensor (nearby/idle) and info sensor (truck details)
+- **Coordinator**: Manages data updates and state tracking
 
-Users configure RESTful sensors in HA to consume this API. See README.md for integration examples.
+Configuration is done through the Home Assistant UI. See README.md for installation and usage examples.
 
 ## Important Files
 
@@ -211,8 +163,9 @@ Users configure RESTful sensors in HA to consume this API. See README.md for int
 - `packages/core/trash_tracking_core/core/point_matcher.py`: Collection point matching (entry/exit detection)
 - `packages/core/trash_tracking_core/core/state_manager.py`: State machine
 - `packages/core/trash_tracking_core/clients/ntpc_api.py`: NTPC API client
-- `apps/addon/addon/api/routes.py`: Flask API endpoints
-- `features/environment.py`: BDD test setup (mocks configuration)
+- `custom_components/trash_tracking/config_flow.py`: Integration setup wizard
+- `custom_components/trash_tracking/coordinator.py`: Data coordinator
+- `custom_components/trash_tracking/sensor.py`: Sensor entities
 
 ## Git Configuration
 

@@ -41,171 +41,37 @@ jobs:
         python -m pip install --upgrade pip
         # Install core package in editable mode
         pip install -e packages/core/
-        # Install addon dependencies
-        pip install -e apps/addon/
+        # Install CLI dependencies
+        pip install -e apps/cli/
         # Install dev dependencies
         pip install -r requirements-dev.txt
 
     - name: Lint with flake8
       run: |
-        flake8 packages/core/trash_tracking_core apps/addon/addon apps/cli features --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 packages/core/trash_tracking_core apps/addon/addon apps/cli features --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
+        flake8 packages/core/trash_tracking_core apps/cli custom_components/trash_tracking --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 packages/core/trash_tracking_core apps/cli custom_components/trash_tracking --count --exit-zero --max-complexity=10 --max-line-length=120 --statistics
 
     - name: Check code formatting with black
       run: |
-        black --check --diff packages/core/trash_tracking_core apps/addon/addon apps/cli features
+        black --check --diff packages/core/trash_tracking_core apps/cli custom_components/trash_tracking
 
     - name: Sort imports check with isort
       run: |
-        isort --check-only --diff packages/core/trash_tracking_core apps/addon/addon apps/cli features
+        isort --check-only --diff packages/core/trash_tracking_core apps/cli custom_components/trash_tracking
 
     - name: Type check with mypy
       run: |
         mypy packages/core/trash_tracking_core --ignore-missing-imports --no-strict-optional
       continue-on-error: true
 
-    - name: Start Flask API server in background
+    - name: Run unit tests
       run: |
-        cd apps/addon
-        # Create test config from example
-        cp config.example.yaml config.yaml
-        python app.py &
-        echo $! > flask_server.pid
-        sleep 5
-        # Verify server is running
-        curl -f http://localhost:5000/health || exit 1
+        pytest tests/ -v --cov=packages/core/trash_tracking_core --cov-report=xml --cov-report=term
 
-    - name: Run BDD Feature Tests
-      run: |
-        # Use mock API for reliable testing (set USE_MOCK_API=false to use real API)
-        USE_MOCK_API=true python -m behave features/ -v --no-capture --junit --junit-directory reports/
-
-    - name: Stop Flask API server
+    - name: Upload coverage reports
       if: always()
-      run: |
-        if [ -f apps/addon/flask_server.pid ]; then
-          kill $(cat apps/addon/flask_server.pid) || true
-          rm apps/addon/flask_server.pid
-        fi
-
-    - name: Upload BDD test results
-      if: always()
-      uses: actions/upload-artifact@v4
+      uses: codecov/codecov-action@v3
       with:
-        name: bdd-test-results-${{ matrix.python-version }}
-        path: reports/
-
-  build-images:
-    name: Build ${{ matrix.arch }} Image
-    runs-on: ubuntu-latest
-    needs: [test]
-    # Only build on master branch or tags
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
-    permissions:
-      contents: write
-      packages: write
-
-    strategy:
-      matrix:
-        arch: [amd64, aarch64, armv7]
-        include:
-          - arch: amd64
-            platform: linux/amd64
-            base_image: ghcr.io/home-assistant/amd64-base-python:3.11-alpine3.19
-          - arch: aarch64
-            platform: linux/arm64
-            base_image: ghcr.io/home-assistant/aarch64-base-python:3.11-alpine3.19
-          - arch: armv7
-            platform: linux/arm/v7
-            base_image: ghcr.io/home-assistant/armv7-base-python:3.11-alpine3.19
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Get version
-        id: version
-        run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            # Use tag version (e.g., v2025.11.1 -> 2025.11.1)
-            VERSION=${GITHUB_REF#refs/tags/v}
-          elif [[ -f VERSION ]]; then
-            # Use VERSION file
-            VERSION=$(cat VERSION)
-          else
-            # Fallback to dev version
-            VERSION="dev-$(date +%Y.%m.%d)"
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Building version: ${VERSION}"
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push ${{ matrix.arch }} image
-        run: |
-          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker buildx build \
-            --platform ${{ matrix.platform }} \
-            --build-arg BUILD_FROM=${{ matrix.base_image }} \
-            --tag ghcr.io/${REPO_OWNER}/${{ matrix.arch }}-trash-tracking:${{ steps.version.outputs.version }} \
-            --tag ghcr.io/${REPO_OWNER}/${{ matrix.arch }}-trash-tracking:latest \
-            --file apps/addon/Dockerfile \
-            --push \
-            .
-          echo "✓ Built and pushed ${{ matrix.arch }}"
-
-  update-addon-repo:
-    name: Update Add-on Repository
-    runs-on: ubuntu-latest
-    needs: [build-images]
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/v'))
-    permissions:
-      contents: write
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Get version
-        id: version
-        run: |
-          if [[ $GITHUB_REF == refs/tags/* ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
-          elif [[ -f VERSION ]]; then
-            VERSION=$(cat VERSION)
-          else
-            VERSION="dev-$(date +%Y.%m.%d)"
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Version: ${VERSION}"
-
-      - name: Trigger addon repository update
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          repository: ${{ github.repository_owner }}/homeassistant-addons
-          event-type: version-update
-          client-payload: '{"version": "${{ steps.version.outputs.version }}", "addon": "trash-tracking"}'
-
-      - name: Build summary
-        run: |
-          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Images built:**" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${REPO_OWNER}/amd64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${REPO_OWNER}/aarch64-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "- ghcr.io/${REPO_OWNER}/armv7-trash-tracking:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
