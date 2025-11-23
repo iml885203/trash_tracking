@@ -4,8 +4,8 @@ import math
 from dataclasses import dataclass
 from typing import List, Optional
 
-from .models.truck import TruckLine
-from .utils.logger import logger
+from ..models.truck import TruckLine
+from .logger import logger
 
 
 @dataclass

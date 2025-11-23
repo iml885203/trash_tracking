@@ -6,9 +6,9 @@ from typing import Any, Dict, Optional
 
 import pytz
 
-from .models.point import Point
-from .models.truck import TruckLine
-from .utils.logger import logger
+from ..models.point import Point
+from ..models.truck import TruckLine
+from ..utils.logger import logger
 
 
 class TruckState(Enum):

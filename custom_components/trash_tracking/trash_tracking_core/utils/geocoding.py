@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import requests
 
-from .utils.logger import logger
+from .logger import logger
 
 
 class GeocodingError(Exception):

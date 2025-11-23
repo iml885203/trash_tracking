@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 
 import yaml
 
-from .utils.logger import logger
+from .logger import logger
 
 
 class ConfigError(Exception):

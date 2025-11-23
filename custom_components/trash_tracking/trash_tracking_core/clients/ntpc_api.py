@@ -5,8 +5,8 @@ from typing import List, Optional
 
 import requests
 
-from .models.truck import TruckLine
-from .utils.logger import logger
+from ..models.truck import TruckLine
+from ..utils.logger import logger
 
 
 class NTPCApiError(Exception):
