@@ -1,9 +1,9 @@
 """Utilities for trash tracking"""
 
-from .utils.config import ConfigError, ConfigManager
-from .utils.geocoding import Geocoder, GeocodingError
-from .utils.logger import logger
-from .utils.route_analyzer import CollectionPointRecommendation, RouteAnalyzer, RouteRecommendation
+from .config import ConfigError, ConfigManager
+from .geocoding import Geocoder, GeocodingError
+from .logger import logger
+from .route_analyzer import CollectionPointRecommendation, RouteAnalyzer, RouteRecommendation
 
 __all__ = [
     "ConfigManager",
