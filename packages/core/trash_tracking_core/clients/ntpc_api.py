@@ -1,7 +1,8 @@
 """New Taipei City Garbage Truck API Client"""
 
 import time
-from typing import List, Optional
+from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
 import requests
 import urllib3
@@ -19,12 +20,17 @@ class NTPCApiError(Exception):
 class NTPCApiClient:
     """New Taipei City Garbage Truck API Client"""
 
+    # Class-level cache shared across all instances
+    _cache: Dict[str, Tuple[List[TruckLine], datetime]] = {}
+    _cache_ttl: int = 60  # seconds
+
     def __init__(
         self,
         base_url: str = "https://crd-rubbish.epd.ntpc.gov.tw/WebAPI",
         timeout: int = 10,
         retry_count: int = 3,
         retry_delay: int = 2,
+        cache_enabled: bool = True,
     ):
         """
         Initialize API client
@@ -34,12 +40,77 @@ class NTPCApiClient:
             timeout: Request timeout in seconds
             retry_count: Number of retries
             retry_delay: Retry delay in seconds
+            cache_enabled: Enable response caching (default: True)
         """
         self.base_url = base_url
         self.timeout = timeout
         self.retry_count = retry_count
         self.retry_delay = retry_delay
+        self.cache_enabled = cache_enabled
         self.session = requests.Session()
+
+    @classmethod
+    def _get_cache_key(cls, lat: float, lng: float, time_filter: int, week: Optional[int]) -> str:
+        """
+        Generate cache key from query parameters
+
+        Args:
+            lat: Latitude (rounded to 4 decimal places ~11m precision)
+            lng: Longitude (rounded to 4 decimal places ~11m precision)
+            time_filter: Time filter value
+            week: Week day value
+
+        Returns:
+            str: Cache key
+        """
+        # Round coordinates to 4 decimal places to allow nearby requests to share cache
+        lat_rounded = round(lat, 4)
+        lng_rounded = round(lng, 4)
+        return f"{lat_rounded},{lng_rounded},{time_filter},{week}"
+
+    @classmethod
+    def _get_from_cache(cls, cache_key: str) -> Optional[List[TruckLine]]:
+        """
+        Get data from cache if not expired
+
+        Args:
+            cache_key: Cache key
+
+        Returns:
+            Optional[List[TruckLine]]: Cached data if valid, None if expired or not found
+        """
+        if cache_key not in cls._cache:
+            return None
+
+        data, cached_at = cls._cache[cache_key]
+        age = (datetime.now() - cached_at).total_seconds()
+
+        if age > cls._cache_ttl:
+            # Cache expired, remove it
+            logger.debug("Cache expired for key %s (age: %.1fs)", cache_key, age)
+            del cls._cache[cache_key]
+            return None
+
+        logger.debug("Cache hit for key %s (age: %.1fs)", cache_key, age)
+        return data
+
+    @classmethod
+    def _put_in_cache(cls, cache_key: str, data: List[TruckLine]) -> None:
+        """
+        Store data in cache
+
+        Args:
+            cache_key: Cache key
+            data: Data to cache
+        """
+        cls._cache[cache_key] = (data, datetime.now())
+        logger.debug("Cached data for key %s", cache_key)
+
+    @classmethod
+    def clear_cache(cls) -> None:
+        """Clear all cached data"""
+        cls._cache.clear()
+        logger.info("API cache cleared")
 
     def get_around_points(  # noqa: C901
         self, lat: float, lng: float, time_filter: int = 0, week: Optional[int] = None
@@ -65,6 +136,13 @@ class NTPCApiClient:
         Raises:
             NTPCApiError: When all retries fail
         """
+        # Check cache first if enabled
+        if self.cache_enabled:
+            cache_key = self._get_cache_key(lat, lng, time_filter, week)
+            cached_data = self._get_from_cache(cache_key)
+            if cached_data is not None:
+                return cached_data
+
         url = f"{self.base_url}/GetAroundPoints"
         payload = {"lat": lat, "lng": lng, "time": time_filter}
 
@@ -114,6 +192,11 @@ class NTPCApiClient:
                     len(lines),
                     data.get("TimeStamp"),
                 )
+
+                # Cache the result if cache is enabled
+                if self.cache_enabled:
+                    cache_key = self._get_cache_key(lat, lng, time_filter, week)
+                    self._put_in_cache(cache_key, lines)
 
                 return lines
 
