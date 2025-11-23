@@ -4,7 +4,8 @@ import re
 from typing import Any, Dict, Optional, Tuple
 
 import requests
-from trash_tracking_core.utils.logger import logger
+
+from .utils.logger import logger
 
 
 class GeocodingError(Exception):

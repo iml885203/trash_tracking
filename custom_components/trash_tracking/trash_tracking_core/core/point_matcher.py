@@ -2,9 +2,9 @@
 
 from typing import Optional
 
-from trash_tracking_core.models.point import Point
-from trash_tracking_core.models.truck import TruckLine
-from trash_tracking_core.utils.logger import logger
+from .models.point import Point
+from .models.truck import TruckLine
+from .utils.logger import logger
 
 
 class MatchResult:

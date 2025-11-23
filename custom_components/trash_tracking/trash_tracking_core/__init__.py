@@ -3,10 +3,10 @@
 __version__ = "0.1.0"
 
 # Import all public APIs
-from trash_tracking_core.clients import NTPCApiClient, NTPCApiError
-from trash_tracking_core.core import MatchResult, PointMatcher, StateManager, TruckState, TruckTracker
-from trash_tracking_core.models import Point, PointStatus, TruckLine
-from trash_tracking_core.utils import (
+from .clients import NTPCApiClient, NTPCApiError
+from .core import MatchResult, PointMatcher, StateManager, TruckState, TruckTracker
+from .models import Point, PointStatus, TruckLine
+from .utils import (
     CollectionPointRecommendation,
     ConfigError,
     ConfigManager,

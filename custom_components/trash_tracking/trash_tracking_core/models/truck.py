@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from trash_tracking_core.models.point import Point
+from .models.point import Point
 
 
 @dataclass

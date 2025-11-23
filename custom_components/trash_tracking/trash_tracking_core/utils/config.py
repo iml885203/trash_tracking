@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 import yaml
-from trash_tracking_core.utils.logger import logger
+
+from .utils.logger import logger
 
 
 class ConfigError(Exception):

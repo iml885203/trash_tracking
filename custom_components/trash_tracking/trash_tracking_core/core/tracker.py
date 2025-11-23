@@ -2,12 +2,12 @@
 
 from typing import Any, Dict, List
 
-from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
-from trash_tracking_core.core.point_matcher import PointMatcher
-from trash_tracking_core.core.state_manager import StateManager
-from trash_tracking_core.models.truck import TruckLine
-from trash_tracking_core.utils.config import ConfigManager
-from trash_tracking_core.utils.logger import logger
+from .clients.ntpc_api import NTPCApiClient, NTPCApiError
+from .core.point_matcher import PointMatcher
+from .core.state_manager import StateManager
+from .models.truck import TruckLine
+from .utils.config import ConfigManager
+from .utils.logger import logger
 
 
 class TruckTracker:

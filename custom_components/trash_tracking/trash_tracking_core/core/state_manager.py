@@ -5,9 +5,10 @@ from enum import Enum
 from typing import Any, Dict, Optional
 
 import pytz
-from trash_tracking_core.models.point import Point
-from trash_tracking_core.models.truck import TruckLine
-from trash_tracking_core.utils.logger import logger
+
+from .models.point import Point
+from .models.truck import TruckLine
+from .utils.logger import logger
 
 
 class TruckState(Enum):
