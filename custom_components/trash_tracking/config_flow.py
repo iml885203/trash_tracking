@@ -37,12 +37,20 @@ from .trash_tracking_core.utils.route_analyzer import RouteAnalyzer
 _LOGGER = logging.getLogger(__name__)
 
 
-def _extract_schedule_from_route(route_recommendation: Any) -> dict[str, Any]:
+def _extract_schedule_from_route(
+    route_recommendation: Any, api_client: Any, latitude: float, longitude: float
+) -> dict[str, Any]:
     """
     Extract schedule information from route recommendation.
 
+    Since PointWeekKnd only indicates waste types (N=Normal, R=Recyclable, F=Food),
+    we need to query the API with different week parameters to determine collection days.
+
     Args:
         route_recommendation: Route recommendation object
+        api_client: NTPCApiClient instance for querying API
+        latitude: User's latitude
+        longitude: User's longitude
 
     Returns:
         dict: Schedule information with keys:
@@ -51,18 +59,34 @@ def _extract_schedule_from_route(route_recommendation: Any) -> dict[str, Any]:
             - time_end: str - Latest collection time (HH:MM format)
     """
     points = route_recommendation.truck.points
+    route_name = route_recommendation.truck.line_name
 
-    # Collect all weekdays from all points
-    all_weekdays = set()
-    for point in points:
-        weekdays = point.get_weekdays()
-        all_weekdays.update(weekdays)
+    # Determine collection weekdays by querying API with each week value
+    # week: 0=Sunday, 1=Monday, ..., 6=Saturday
+    collection_weekdays = []
+
+    _LOGGER.debug("Determining collection days for route: %s", route_name)
+
+    for week in range(7):
+        try:
+            trucks = api_client.get_around_points(lat=latitude, lng=longitude, week=week)
+
+            # Check if this route appears in the results
+            route_found = any(truck.line_name == route_name for truck in trucks)
+
+            if route_found:
+                collection_weekdays.append(week)
+                _LOGGER.debug("Route %s collects on week=%d", route_name, week)
+
+        except Exception as e:
+            _LOGGER.warning("Failed to query API for week=%d: %s", week, e)
+            # Continue checking other days even if one fails
 
     # Find earliest and latest collection times
     times = [point.point_time for point in points if point.point_time]
 
     schedule = {
-        "weekdays": sorted(list(all_weekdays)) if all_weekdays else [],
+        "weekdays": collection_weekdays,
         "time_start": min(times) if times else None,
         "time_end": max(times) if times else None,
     }
@@ -186,7 +210,17 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle the collection points configuration step."""
         if user_input is not None:
             # Extract schedule information from selected route
-            schedule = _extract_schedule_from_route(self._selected_route)
+            # This requires querying API 7 times (once for each day of week)
+            from .trash_tracking_core.clients.ntpc_api import NTPCApiClient
+
+            api_client = NTPCApiClient()
+            schedule = await self.hass.async_add_executor_job(
+                _extract_schedule_from_route,
+                self._selected_route,
+                api_client,
+                self._latitude,
+                self._longitude,
+            )
 
             # Create entry
             title = f"{self._selected_route.truck.line_name}"
