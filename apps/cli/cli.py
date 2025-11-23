@@ -4,7 +4,6 @@
 import argparse
 import sys
 
-import _setup_path  # noqa: F401 - Sets up sys.path for trash_tracking_core imports
 from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from trash_tracking_core.models.point import Point, PointStatus
 from trash_tracking_core.models.truck import TruckLine
