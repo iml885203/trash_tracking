@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.9] - 2025-11-23
+
+### Changed
+- **API Optimization**: Intelligent schedule-based polling to reduce unnecessary API calls
+- **API Optimization**: Class-level caching in NTPC API client for improved performance
+- **Performance**: Significantly reduced API request frequency during non-collection hours
+
+### Added
+- **Testing**: Comprehensive unit test suite (111 tests) for core modules
+- **Testing**: Module-level tests for TruckTracker, Geocoding, and RouteAnalyzer
+- **Documentation**: Two-layer testing strategy (BDD + Unit tests)
+
+### Technical
+- Test coverage improved with unit tests for API client caching behavior
+- Restructured tests from feature-oriented to module-oriented organization
+- Added complexity analysis documentation
+
 ## [2025.11.8] - 2025-11-23
 
 ### Added
@@ -44,5 +61,6 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
+[2025.11.9]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.9
 [2025.11.8]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.8
 [2025.11.7]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.7
