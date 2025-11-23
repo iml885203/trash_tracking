@@ -15,7 +15,7 @@ from trash_tracking_core.utils.route_analyzer import RouteAnalyzer  # noqa: E402
 
 def test_config_flow():
     """Test the config flow steps"""
-    address = "新北市永和區保平路151巷6弄"
+    address = "新北市板橋區民生路二段80號"
 
     print(f"Testing config flow with address: {address}\n")
 
