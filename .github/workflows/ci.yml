@@ -64,6 +64,17 @@ jobs:
       run: |
         pytest tests/ -v --cov=packages/core/trash_tracking_core --cov-report=xml --cov-report=term
 
+    - name: Run BDD tests
+      run: |
+        USE_MOCK_API=true python -m behave features/ -v --no-capture --junit --junit-directory reports/
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.python-version }}
+        path: reports/
+
     - name: Upload coverage reports
       if: always()
       uses: codecov/codecov-action@v3
