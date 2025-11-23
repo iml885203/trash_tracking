@@ -4,9 +4,13 @@ import time
 from typing import List, Optional
 
 import requests
+import urllib3
 
 from ..models.truck import TruckLine
 from ..utils.logger import logger
+
+# Disable SSL warnings for NTPC API (their certificate has issues)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class NTPCApiError(Exception):
@@ -82,7 +86,7 @@ class NTPCApiClient:
                     f"lat={lat}, lng={lng}, time={time_filter}"
                 )
 
-                response = self.session.post(url, data=payload, headers=headers, timeout=self.timeout)
+                response = self.session.post(url, data=payload, headers=headers, timeout=self.timeout, verify=False)
 
                 response.raise_for_status()
 
