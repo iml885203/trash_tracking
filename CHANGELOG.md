@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.10] - 2025-11-23
+
+### Fixed
+- **Critical**: Fixed "No module named 'trash_tracking_core'" error when adding integration
+- Synced core package to custom_components with API optimizations
+
 ## [2025.11.9] - 2025-11-23
 
 ### Changed
@@ -61,6 +67,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
+[2025.11.10]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.10
 [2025.11.9]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.9
 [2025.11.8]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.8
 [2025.11.7]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.7
