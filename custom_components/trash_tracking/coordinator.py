@@ -98,7 +98,8 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
 
         if api_weekday not in self._schedule_weekdays:
             _LOGGER.debug(
-                "Today (%s, weekday=%d) not in schedule %s, skipping API call",
+                "[%s] Today (%s, weekday=%d) not in schedule %s, skipping API call",
+                self._target_line,
                 now.strftime("%A"),
                 api_weekday,
                 self._schedule_weekdays,
@@ -124,7 +125,8 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
                 # Check if current time is within range
                 if not (start_with_buffer <= current_time <= end_with_buffer):
                     _LOGGER.debug(
-                        "Current time %s not in schedule range %s-%s (with %d min buffer), skipping API call",
+                        "[%s] Current time %s not in schedule range %s-%s (with %d min buffer), skipping API call",
+                        self._target_line,
                         current_time.strftime("%H:%M"),
                         start_with_buffer.strftime("%H:%M"),
                         end_with_buffer.strftime("%H:%M"),
@@ -137,7 +139,7 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
                 return True
 
         # Within schedule, should update
-        _LOGGER.debug("Within schedule, proceeding with API call")
+        _LOGGER.debug("[%s] Within schedule, proceeding with API call", self._target_line)
         return True
 
     async def _async_update_data(self) -> dict[str, Any]:  # noqa: C901
