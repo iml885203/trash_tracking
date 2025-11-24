@@ -10,7 +10,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
-    CONF_APPROACHING_THRESHOLD,
     CONF_ENTER_POINT,
     CONF_EXIT_POINT,
     CONF_LATITUDE,
@@ -19,7 +18,6 @@ from .const import (
     CONF_SCHEDULE_TIME_END,
     CONF_SCHEDULE_TIME_START,
     CONF_SCHEDULE_WEEKDAYS,
-    CONF_TRIGGER_MODE,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
     SCHEDULE_BUFFER_MINUTES,
@@ -53,8 +51,6 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
         self._target_line = entry.data[CONF_ROUTE_SELECTION]
         self._enter_point_name = entry.data[CONF_ENTER_POINT]
         self._exit_point_name = entry.data[CONF_EXIT_POINT]
-        self._trigger_mode = entry.data[CONF_TRIGGER_MODE]
-        self._approaching_threshold = entry.data[CONF_APPROACHING_THRESHOLD]
 
         # Extract schedule information (may be None for old configs)
         self._schedule_weekdays = entry.data.get(CONF_SCHEDULE_WEEKDAYS, [])
@@ -65,8 +61,6 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
         self._point_matcher = PointMatcher(
             enter_point_name=self._enter_point_name,
             exit_point_name=self._exit_point_name,
-            trigger_mode=self._trigger_mode,
-            approaching_threshold=self._approaching_threshold,
         )
 
         _LOGGER.debug(
@@ -225,3 +219,28 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
     def truck_info(self) -> dict[str, Any] | None:
         """Return truck information if available."""
         return self.data.get("truck") if self.data else None
+
+    @property
+    def enter_point_name(self) -> str:
+        """Return the enter point name."""
+        return self._enter_point_name
+
+    @property
+    def exit_point_name(self) -> str:
+        """Return the exit point name."""
+        return self._exit_point_name
+
+    @property
+    def schedule_weekdays(self) -> list[int]:
+        """Return schedule weekdays."""
+        return self._schedule_weekdays
+
+    @property
+    def schedule_time_start(self) -> str | None:
+        """Return schedule start time."""
+        return self._schedule_time_start
+
+    @property
+    def schedule_time_end(self) -> str | None:
+        """Return schedule end time."""
+        return self._schedule_time_end

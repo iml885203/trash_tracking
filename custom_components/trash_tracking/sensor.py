@@ -36,6 +36,11 @@ SENSORS: tuple[TrashTrackingSensorEntityDescription, ...] = (
             "reason": coordinator.reason,
             "route_name": coordinator.route_name,
             "last_update": coordinator.data.get("timestamp") if coordinator.data else None,
+            "enter_point": coordinator.enter_point_name,
+            "exit_point": coordinator.exit_point_name,
+            "schedule_weekdays": coordinator.schedule_weekdays,
+            "schedule_time_start": coordinator.schedule_time_start,
+            "schedule_time_end": coordinator.schedule_time_end,
         },
     ),
     TrashTrackingSensorEntityDescription(

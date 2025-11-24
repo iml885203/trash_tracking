@@ -98,10 +98,6 @@ class ConfigManager:
         if tracking["enter_point"] == tracking["exit_point"]:
             raise ConfigError("Enter point and exit point cannot be the same")
 
-        trigger_mode = tracking.get("trigger_mode", "arriving")
-        if trigger_mode not in ["arriving", "arrived"]:
-            raise ConfigError(f"trigger_mode must be 'arriving' or 'arrived': {trigger_mode}")
-
         logger.info("Config validation passed")
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -149,16 +145,6 @@ class ConfigManager:
     def exit_point(self) -> str:
         """Get exit point name"""
         return str(self.config["tracking"]["exit_point"])
-
-    @property
-    def trigger_mode(self) -> str:
-        """Get trigger mode"""
-        return str(self.config["tracking"].get("trigger_mode", "arriving"))
-
-    @property
-    def approaching_threshold(self) -> int:
-        """Get number of stops ahead for early notification"""
-        return int(self.config["tracking"].get("approaching_threshold", 2))
 
     @property
     def log_level(self) -> str:

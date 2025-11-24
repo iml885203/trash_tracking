@@ -127,8 +127,24 @@ class RouteAnalyzer:
         if nearest_index is None:
             return (None, None)
 
-        # enter_point: use nearest point
-        enter_point = nearest_point
+        # enter_point: use the point before nearest (if available)
+        # This gives better notification timing
+        if nearest_index > 0:
+            enter_index = nearest_index - 1
+            enter_pt = truck.points[enter_index]
+            if enter_pt.lat and enter_pt.lon:
+                distance = self.calculate_distance(enter_pt.lat, enter_pt.lon)
+                enter_point = CollectionPointRecommendation(
+                    point_name=enter_pt.point_name,
+                    distance_meters=distance,
+                    rank=enter_pt.point_rank,
+                    scheduled_time=enter_pt.point_time,
+                )
+            else:
+                enter_point = nearest_point
+        else:
+            # If nearest is first point, keep using it
+            enter_point = nearest_point
 
         # exit_point: span stops after enter_point
         exit_index = min(nearest_index + span, len(truck.points) - 1)

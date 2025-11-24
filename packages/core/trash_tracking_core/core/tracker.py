@@ -34,8 +34,6 @@ class TruckTracker:
         self.point_matcher = PointMatcher(
             enter_point_name=config.enter_point,
             exit_point_name=config.exit_point,
-            trigger_mode=config.trigger_mode,
-            approaching_threshold=config.approaching_threshold,
         )
 
         logger.info("TruckTracker initialized: %s", config)

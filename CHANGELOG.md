@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.12b1] - 2025-11-24
+
+### BREAKING CHANGES
+- **Simplified trigger logic**: Removed "arriving" mode and "approaching_threshold" setting
+- All notifications now trigger when truck **actually arrives** at entry point (not N stops ahead)
+- If you previously used "arriving" mode, you may experience **later notifications** after this update
+- Config flow no longer shows trigger mode selection
+
+### Changed
+- **RouteAnalyzer**: Now recommends `enter_point = nearest_point - 1` for better timing
+- **Status Sensor**: Added configuration attributes (enter_point, exit_point, schedule info)
+- **Config Flow**: Simplified UI - removed trigger mode and approaching threshold selectors
+
+### Technical
+- Removed trigger_mode and approaching_threshold from all core modules
+- PointMatcher simplified to use only "arrived" logic
+- Old configurations remain functional (ignored parameters won't cause errors)
+
+### Notes
+This is a beta release for testing the simplified trigger logic.
+Existing users should re-add the integration if they want to use the new recommendation logic.
+
 ## [2025.11.11b2] - 2025-11-24
 
 ### Changed
@@ -97,6 +119,7 @@ Please test and report any issues before stable release.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
+[2025.11.12b1]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.12b1
 [2025.11.11b2]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11b2
 [2025.11.11b1]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11b1
 [2025.11.10]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.10

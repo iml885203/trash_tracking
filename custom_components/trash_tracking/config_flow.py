@@ -11,7 +11,6 @@ from homeassistant.helpers import selector
 
 from .const import (
     CONF_ADDRESS,
-    CONF_APPROACHING_THRESHOLD,
     CONF_ENTER_POINT,
     CONF_EXIT_POINT,
     CONF_LATITUDE,
@@ -20,15 +19,10 @@ from .const import (
     CONF_SCHEDULE_TIME_END,
     CONF_SCHEDULE_TIME_START,
     CONF_SCHEDULE_WEEKDAYS,
-    CONF_TRIGGER_MODE,
-    DEFAULT_APPROACHING_THRESHOLD,
-    DEFAULT_TRIGGER_MODE,
     DOMAIN,
     STEP_POINTS,
     STEP_ROUTE,
     STEP_USER,
-    TRIGGER_MODE_ARRIVED,
-    TRIGGER_MODE_ARRIVING,
 )
 from .trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from .trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
@@ -234,10 +228,6 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_ROUTE_SELECTION: self._selected_route.truck.line_name,
                     CONF_ENTER_POINT: user_input[CONF_ENTER_POINT],
                     CONF_EXIT_POINT: user_input[CONF_EXIT_POINT],
-                    CONF_TRIGGER_MODE: user_input.get(CONF_TRIGGER_MODE, DEFAULT_TRIGGER_MODE),
-                    CONF_APPROACHING_THRESHOLD: user_input.get(
-                        CONF_APPROACHING_THRESHOLD, DEFAULT_APPROACHING_THRESHOLD
-                    ),
                     CONF_SCHEDULE_WEEKDAYS: schedule["weekdays"],
                     CONF_SCHEDULE_TIME_START: schedule["time_start"],
                     CONF_SCHEDULE_TIME_END: schedule["time_end"],
@@ -266,26 +256,6 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     selector.SelectSelectorConfig(
                         options=[selector.SelectOptionDict(value=k, label=v) for k, v in point_options.items()],
                         mode=selector.SelectSelectorMode.DROPDOWN,
-                    )
-                ),
-                vol.Required(CONF_TRIGGER_MODE, default=DEFAULT_TRIGGER_MODE): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[
-                            selector.SelectOptionDict(
-                                value=TRIGGER_MODE_ARRIVING, label="Arriving (early notification)"
-                            ),
-                            selector.SelectOptionDict(value=TRIGGER_MODE_ARRIVED, label="Arrived (actual arrival)"),
-                        ],
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                    )
-                ),
-                vol.Required(
-                    CONF_APPROACHING_THRESHOLD, default=DEFAULT_APPROACHING_THRESHOLD
-                ): selector.NumberSelector(
-                    selector.NumberSelectorConfig(
-                        min=1,
-                        max=10,
-                        mode=selector.NumberSelectorMode.BOX,
                     )
                 ),
             }
