@@ -20,9 +20,7 @@
         "description": "Select entry and exit collection points",
         "data": {
           "enter_point": "Entry Point (light turns on)",
-          "exit_point": "Exit Point (light turns off)",
-          "trigger_mode": "Trigger Mode",
-          "approaching_threshold": "Approaching Threshold (stops ahead)"
+          "exit_point": "Exit Point (light turns off)"
         }
       }
     },
@@ -40,10 +38,7 @@
     "step": {
       "init": {
         "title": "Configure Trash Tracking",
-        "data": {
-          "trigger_mode": "Trigger Mode",
-          "approaching_threshold": "Approaching Threshold (stops ahead)"
-        }
+        "data": {}
       }
     }
   }

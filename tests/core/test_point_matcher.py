@@ -122,28 +122,8 @@ class TestPointMatcherInit:
 
         assert matcher.enter_point_name == "Point 2"
         assert matcher.exit_point_name == "Point 4"
-        assert matcher.trigger_mode == "arriving"
-        assert matcher.approaching_threshold == 2
 
-    def test_init_custom_mode(self):
-        """Test initialization with custom trigger mode"""
-        matcher = PointMatcher(
-            enter_point_name="Point 2",
-            exit_point_name="Point 4",
-            trigger_mode="arrived",
-        )
 
-        assert matcher.trigger_mode == "arrived"
-
-    def test_init_custom_threshold(self):
-        """Test initialization with custom approaching threshold"""
-        matcher = PointMatcher(
-            enter_point_name="Point 2",
-            exit_point_name="Point 4",
-            approaching_threshold=5,
-        )
-
-        assert matcher.approaching_threshold == 5
 
     def test_str_representation(self):
         """Test string representation"""
@@ -156,7 +136,6 @@ class TestPointMatcherInit:
         result = str(matcher)
         assert "Point 2" in result
         assert "Point 4" in result
-        assert "arriving" in result
 
 
 class TestCheckLineBasics:
@@ -209,76 +188,6 @@ class TestCheckLineBasics:
 
         assert result.should_trigger is False
 
-
-class TestArrivingMode:
-    """Test 'arriving' trigger mode"""
-
-    def test_arriving_mode_truck_far_away(self, sample_truck):
-        """Test arriving mode when truck is far from enter point"""
-        matcher = PointMatcher(
-            enter_point_name="Point 4",  # Rank 4
-            exit_point_name="Point 5",
-            trigger_mode="arriving",
-            approaching_threshold=2,
-        )
-
-        sample_truck.arrival_rank = 1  # Current at rank 1, distance = 3
-
-        result = matcher.check_line(sample_truck)
-
-        assert result.should_trigger is False
-
-    def test_arriving_mode_truck_within_threshold(self, sample_truck):
-        """Test arriving mode when truck is within approaching threshold"""
-        matcher = PointMatcher(
-            enter_point_name="Point 3",  # Rank 3
-            exit_point_name="Point 5",
-            trigger_mode="arriving",
-            approaching_threshold=2,
-        )
-
-        sample_truck.arrival_rank = 1  # Distance = 2 (within threshold)
-
-        result = matcher.check_line(sample_truck)
-
-        assert result.should_trigger is True
-        assert result.new_state == "nearby"
-        assert result.truck_line == sample_truck
-        assert result.enter_point.point_name == "Point 3"
-        assert result.exit_point.point_name == "Point 5"
-
-    def test_arriving_mode_truck_at_enter_point(self, sample_truck):
-        """Test arriving mode when truck is exactly at enter point"""
-        matcher = PointMatcher(
-            enter_point_name="Point 2",  # Rank 2
-            exit_point_name="Point 4",
-            trigger_mode="arriving",
-            approaching_threshold=2,
-        )
-
-        sample_truck.arrival_rank = 2  # Distance = 0
-
-        result = matcher.check_line(sample_truck)
-
-        assert result.should_trigger is True
-        assert result.new_state == "nearby"
-
-    def test_arriving_mode_truck_passed_enter_point(self, sample_truck, sample_points):
-        """Test arriving mode when truck has passed enter point"""
-        matcher = PointMatcher(
-            enter_point_name="Point 2",  # Rank 2
-            exit_point_name="Point 4",
-            trigger_mode="arriving",
-        )
-
-        sample_truck.arrival_rank = 3  # Past Point 2
-        # Mark Point 2 as passed
-        sample_points[1].arrival = "18:10"
-        sample_points[1].arrival_diff = 0
-
-        result = matcher.check_line(sample_truck)
-
-        assert result.should_trigger is False  # Already passed, shouldn't trigger again
 
 
 class TestArrivedMode:
@@ -389,59 +298,3 @@ class TestMatchResult:
 
 class TestEdgeCases:
     """Test edge cases and special scenarios"""
-
-    def test_threshold_zero(self, sample_truck):
-        """Test with threshold set to 0 (only trigger at exact point)"""
-        matcher = PointMatcher(
-            enter_point_name="Point 2",
-            exit_point_name="Point 4",
-            trigger_mode="arriving",
-            approaching_threshold=0,
-        )
-
-        # At point 1 (distance = 1), should not trigger
-        sample_truck.arrival_rank = 1
-        result = matcher.check_line(sample_truck)
-        assert result.should_trigger is False
-
-        # At point 2 (distance = 0), should trigger
-        sample_truck.arrival_rank = 2
-        result = matcher.check_line(sample_truck)
-        assert result.should_trigger is True
-
-    def test_large_threshold(self, sample_truck):
-        """Test with very large threshold"""
-        matcher = PointMatcher(
-            enter_point_name="Point 5",
-            exit_point_name="Point 5",  # Same point (will fail point order check)
-            trigger_mode="arriving",
-            approaching_threshold=100,
-        )
-
-        sample_truck.arrival_rank = 1
-        result = matcher.check_line(sample_truck)
-
-        # Should fail due to invalid point order (same enter/exit)
-        assert result.should_trigger is False
-
-    def test_enter_exit_priority(self, sample_truck, sample_points):
-        """Test that enter is checked before exit"""
-        matcher = PointMatcher(
-            enter_point_name="Point 2",
-            exit_point_name="Point 3",
-            trigger_mode="arriving",
-            approaching_threshold=2,
-        )
-
-        sample_truck.arrival_rank = 2
-        # Both points marked as passed
-        sample_points[1].arrival = "18:10"
-        sample_points[1].arrival_diff = 0
-        sample_points[2].arrival = "18:20"
-        sample_points[2].arrival_diff = 0
-
-        result = matcher.check_line(sample_truck)
-
-        # Should trigger exit since enter already passed
-        assert result.should_trigger is True
-        assert result.new_state == "idle"

@@ -186,7 +186,6 @@ class ConfigManager:
             f"  location: ({self.location['lat']:.4f}, {self.location['lng']:.4f})\n"
             f"  enter_point: {self.enter_point}\n"
             f"  exit_point: {self.exit_point}\n"
-            f"  trigger_mode: {self.trigger_mode}\n"
             f"  target_lines: {self.target_lines or 'all routes'}\n"
             f")"
         )

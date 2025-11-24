@@ -94,15 +94,9 @@ The integration provides an easy-to-use setup wizard:
    - Select the route that serves your area
 
 3. **Configure Collection Points**
-   - **Entry Point**: Truck status changes to "nearby" when approaching
-   - **Exit Point**: Truck status returns to "idle" when passing
-   - Points are automatically suggested based on your location
-
-4. **Advanced Settings**
-   - **Trigger Mode**:
-     - `arriving`: Trigger N stops before entry point (early notification)
-     - `arrived`: Trigger only when truck reaches entry point
-   - **Approaching Threshold**: How many stops ahead to trigger (default: 2)
+   - **Entry Point**: Truck status changes to "nearby" when arriving at this point
+   - **Exit Point**: Truck status returns to "idle" when passing this point
+   - Points are automatically suggested based on your location (entry point = nearest point - 1)
 
 ### Example Configuration
 

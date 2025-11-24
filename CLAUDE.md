@@ -185,11 +185,8 @@ The system uses a state machine to track truck status:
 
 State transitions are managed by `StateManager` in `packages/core/trash_tracking_core/core/state_manager.py`.
 
-### Trigger Modes
-- **arriving**: Trigger notification N stops before entry point (configurable via `approaching_threshold`)
-- **arrived**: Trigger only when truck actually arrives at entry point
-
-This logic is in `PointMatcher` (`packages/core/trash_tracking_core/core/point_matcher.py`).
+### Trigger Logic
+The system triggers when truck **actually arrives** at the entry point (not N stops ahead). This logic is implemented in `PointMatcher` (`packages/core/trash_tracking_core/core/point_matcher.py`).
 
 
 ## Key Concepts
