@@ -156,7 +156,22 @@ class PointMatcher:
         Returns:
             bool: True if should trigger
         """
-        return exit_point.has_passed()
+        # Check if exit point is marked as passed (based on arrival field)
+        if exit_point.has_passed():
+            logger.debug("Exit point %s marked as passed (arrival=%s)", exit_point.point_name, exit_point.arrival)
+            return True
+
+        # Check if truck's current position has passed exit point (rank-based)
+        # This handles cases where API data might not have arrival info
+        if truck_line.arrival_rank >= exit_point.point_rank:
+            logger.debug(
+                "Truck current rank (%d) >= exit point rank (%d), triggering exit",
+                truck_line.arrival_rank,
+                exit_point.point_rank,
+            )
+            return True
+
+        return False
 
     def __str__(self) -> str:
         """Return string representation of matcher"""

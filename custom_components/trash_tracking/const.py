@@ -24,7 +24,7 @@ CONF_SCHEDULE_TIME_END = "schedule_time_end"
 DEFAULT_TRIGGER_MODE = "arriving"
 DEFAULT_APPROACHING_THRESHOLD = 2
 DEFAULT_SCAN_INTERVAL = 30  # seconds
-SCHEDULE_BUFFER_MINUTES = 30  # Buffer time before/after scheduled time
+SCHEDULE_BUFFER_MINUTES = 10  # Buffer time before/after scheduled time
 
 # Trigger modes
 TRIGGER_MODE_ARRIVING = "arriving"
