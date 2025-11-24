@@ -21,8 +21,8 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          # Check if version contains pre-release indicators
-          if [[ "$VERSION" =~ (alpha|beta|rc) ]]; then
+          # Check if version contains pre-release indicators (b0, b1, a0, rc0, etc.)
+          if [[ "$VERSION" =~ (a[0-9]+|b[0-9]+|rc[0-9]+)$ ]]; then
             echo "IS_PRERELEASE=true" >> $GITHUB_OUTPUT
           else
             echo "IS_PRERELEASE=false" >> $GITHUB_OUTPUT

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
-## [2025.11.11-beta.2] - 2025-11-24
+## [2025.11.11b2] - 2025-11-24
 
 ### Changed
 - **Performance**: Reduced update interval from 90s to 30s for more responsive tracking
@@ -16,7 +16,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - Debug logs now show `[route_name]` prefix for easier troubleshooting
 - Estimated API calls: ~1,170/week (still 77% reduction from original 5,040/week)
 
-## [2025.11.11-beta.1] - 2025-11-24
+## [2025.11.11b1] - 2025-11-24
 
 ### Fixed
 - **Critical**: Schedule-based polling now correctly detects collection days
@@ -97,8 +97,8 @@ Please test and report any issues before stable release.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
-[2025.11.11-beta.2]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11-beta.2
-[2025.11.11-beta.1]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11-beta.1
+[2025.11.11b2]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11b2
+[2025.11.11b1]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11b1
 [2025.11.10]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.10
 [2025.11.9]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.9
 [2025.11.8]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.8
