@@ -403,7 +403,8 @@ class TestRecommendEnterExitPoints:
 
         assert enter is not None
         assert exit_point is not None
-        assert enter.point_name == "Point 5"
+        # New logic: enter = nearest - 1 (Point 4, since nearest is Point 5)
+        assert enter.point_name == "Point 4"
         assert exit_point.point_name == "Point 5"  # Should clamp to last point
         assert exit_point.rank == 5
 

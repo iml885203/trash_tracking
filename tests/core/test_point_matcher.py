@@ -130,7 +130,6 @@ class TestPointMatcherInit:
         matcher = PointMatcher(
             enter_point_name="Point 2",
             exit_point_name="Point 4",
-            trigger_mode="arriving",
         )
 
         result = str(matcher)
@@ -198,7 +197,6 @@ class TestArrivedMode:
         matcher = PointMatcher(
             enter_point_name="Point 3",  # Rank 3
             exit_point_name="Point 5",
-            trigger_mode="arrived",
         )
 
         sample_truck.arrival_rank = 2  # One stop before Point 3
@@ -212,7 +210,6 @@ class TestArrivedMode:
         matcher = PointMatcher(
             enter_point_name="Point 2",  # Rank 2
             exit_point_name="Point 4",
-            trigger_mode="arrived",
         )
 
         sample_truck.arrival_rank = 2

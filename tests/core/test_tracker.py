@@ -77,8 +77,6 @@ def mock_config():
     config.api_timeout = 10
     config.enter_point = "Enter Point"
     config.exit_point = "Exit Point"
-    config.trigger_mode = "arriving"
-    config.approaching_threshold = 2
     config.target_lines = []
     config.get = Mock(side_effect=lambda key, default: default)
     config.__str__ = Mock(return_value="MockConfig")
@@ -115,8 +113,6 @@ class TestTruckTrackerInit:
 
         assert tracker.point_matcher.enter_point_name == "Enter Point"
         assert tracker.point_matcher.exit_point_name == "Exit Point"
-        assert tracker.point_matcher.trigger_mode == "arriving"
-        assert tracker.point_matcher.approaching_threshold == 2
 
     def test_str_representation(self, mock_config):
         """Test string representation"""
