@@ -47,12 +47,13 @@ class PointMatcher:
 
         logger.info(f"PointMatcher initialized: " f"enter_point={enter_point_name}, " f"exit_point={exit_point_name}")
 
-    def check_line(self, truck_line: TruckLine) -> MatchResult:
+    def check_line(self, truck_line: TruckLine, current_state: str = "idle") -> MatchResult:
         """
         Check if route triggers state change
 
         Args:
             truck_line: Truck route data
+            current_state: Current tracking state (idle or nearby)
 
         Returns:
             MatchResult: Match result
@@ -76,6 +77,22 @@ class PointMatcher:
             )
             return MatchResult(should_trigger=False)
 
+        if current_state == "nearby":
+            if self._should_trigger_exit(truck_line, exit_point):
+                reason = f"Truck has passed exit point: {self.exit_point_name}"
+                logger.info(
+                    "✅ Trigger exit state: %s - exit point arrival=%s", truck_line.line_name, exit_point.arrival
+                )
+                return MatchResult(
+                    should_trigger=True,
+                    new_state="idle",
+                    reason=reason,
+                    truck_line=truck_line,
+                    enter_point=enter_point,
+                    exit_point=exit_point,
+                )
+            return MatchResult(should_trigger=False)
+
         if self._should_trigger_enter(truck_line, enter_point):
             reason = f"Truck approaching enter point: {self.enter_point_name}"
             logger.info(
@@ -86,18 +103,6 @@ class PointMatcher:
             return MatchResult(
                 should_trigger=True,
                 new_state="nearby",
-                reason=reason,
-                truck_line=truck_line,
-                enter_point=enter_point,
-                exit_point=exit_point,
-            )
-
-        if self._should_trigger_exit(truck_line, exit_point):
-            reason = f"Truck has passed exit point: {self.exit_point_name}"
-            logger.info("✅ Trigger exit state: %s - exit point arrival=%s", truck_line.line_name, exit_point.arrival)
-            return MatchResult(
-                should_trigger=True,
-                new_state="idle",
                 reason=reason,
                 truck_line=truck_line,
                 enter_point=enter_point,

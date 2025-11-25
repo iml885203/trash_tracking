@@ -169,9 +169,8 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
                     self._state_manager.update_state(new_state="idle", reason="Tracked route not nearby")
                 return self._state_manager.get_status_response()
 
-            # Check if route matches entry/exit points
             for line in target_lines:
-                match_result = self._point_matcher.check_line(line)
+                match_result = self._point_matcher.check_line(line, self._state_manager.current_state)
 
                 if match_result.should_trigger:
                     self._state_manager.update_state(

@@ -236,7 +236,7 @@ class TestExitTrigger:
 
         sample_truck.arrival_rank = 3  # Before exit point
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state="nearby")
 
         assert result.should_trigger is False
 
@@ -252,7 +252,7 @@ class TestExitTrigger:
         sample_points[3].arrival = "18:30"
         sample_points[3].arrival_diff = 0
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state="nearby")
 
         assert result.should_trigger is True
         assert result.new_state == "idle"
