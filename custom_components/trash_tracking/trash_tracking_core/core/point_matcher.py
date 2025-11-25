@@ -4,6 +4,7 @@ from typing import Optional
 
 from ..core.state_manager import TruckState
 from ..models.point import Point
+from ..models.tracking_window import TrackingWindow
 from ..models.truck import TruckLine
 from ..utils.logger import logger
 
@@ -33,20 +34,40 @@ class PointMatcher:
 
     def __init__(
         self,
-        enter_point_name: str,
-        exit_point_name: str,
+        tracking_window: Optional[TrackingWindow] = None,
+        enter_point_name: Optional[str] = None,
+        exit_point_name: Optional[str] = None,
     ):
         """
         Initialize collection point matcher
 
         Args:
-            enter_point_name: Enter point name
-            exit_point_name: Exit point name
+            tracking_window: Tracking window defining enter and exit points
+            enter_point_name: (Deprecated) Enter point name - use tracking_window instead
+            exit_point_name: (Deprecated) Exit point name - use tracking_window instead
         """
-        self.enter_point_name = enter_point_name
-        self.exit_point_name = exit_point_name
+        if tracking_window is not None:
+            self.tracking_window = tracking_window
+        elif enter_point_name is not None and exit_point_name is not None:
+            self.tracking_window = TrackingWindow(enter_point_name=enter_point_name, exit_point_name=exit_point_name)
+        else:
+            raise ValueError("Either tracking_window or both enter_point_name and exit_point_name must be provided")
 
-        logger.info(f"PointMatcher initialized: " f"enter_point={enter_point_name}, " f"exit_point={exit_point_name}")
+        logger.info(
+            f"PointMatcher initialized: "
+            f"enter_point={self.tracking_window.enter_point_name}, "
+            f"exit_point={self.tracking_window.exit_point_name}"
+        )
+
+    @property
+    def enter_point_name(self) -> str:
+        """Get enter point name (backward compatibility)"""
+        return self.tracking_window.enter_point_name
+
+    @property
+    def exit_point_name(self) -> str:
+        """Get exit point name (backward compatibility)"""
+        return self.tracking_window.exit_point_name
 
     def check_line(self, truck_line: TruckLine, *, current_state: TruckState) -> MatchResult:
         """
@@ -59,28 +80,26 @@ class PointMatcher:
         Returns:
             MatchResult: Match result
         """
-        enter_point = truck_line.find_point(self.enter_point_name)
-        exit_point = truck_line.find_point(self.exit_point_name)
-
-        if not enter_point:
-            logger.debug("Enter point not found in route %s: %s", truck_line.line_name, self.enter_point_name)
+        try:
+            points = self.tracking_window.find_points(truck_line)
+        except ValueError as e:
+            logger.warning("Invalid tracking window for route %s: %s", truck_line.line_name, e)
             return MatchResult(should_trigger=False)
 
-        if not exit_point:
-            logger.debug("Exit point not found in route %s: %s", truck_line.line_name, self.exit_point_name)
-            return MatchResult(should_trigger=False)
-
-        if exit_point.point_rank <= enter_point.point_rank:
-            logger.warning(
-                f"Invalid point order in route {truck_line.line_name}: "
-                f"exit point ({exit_point.point_name}, rank={exit_point.point_rank}) "
-                f"must come after enter point ({enter_point.point_name}, rank={enter_point.point_rank})"
+        if not points:
+            logger.debug(
+                "Tracking window points not found in route %s: enter=%s, exit=%s",
+                truck_line.line_name,
+                self.tracking_window.enter_point_name,
+                self.tracking_window.exit_point_name,
             )
             return MatchResult(should_trigger=False)
 
+        enter_point, exit_point = points
+
         if current_state == TruckState.NEARBY:
             if self._should_trigger_exit(truck_line, exit_point):
-                reason = f"Truck has passed exit point: {self.exit_point_name}"
+                reason = f"Truck has passed exit point: {self.tracking_window.exit_point_name}"
                 logger.info(
                     "✅ Trigger exit state: %s - exit point arrival=%s", truck_line.line_name, exit_point.arrival
                 )
@@ -95,7 +114,7 @@ class PointMatcher:
             return MatchResult(should_trigger=False)
 
         if self._should_trigger_enter(truck_line, enter_point):
-            reason = f"Truck approaching enter point: {self.enter_point_name}"
+            reason = f"Truck approaching enter point: {self.tracking_window.enter_point_name}"
             logger.info(
                 f"✅ Trigger enter state: {truck_line.line_name} - "
                 f"current rank={truck_line.arrival_rank}, "
@@ -158,4 +177,4 @@ class PointMatcher:
 
     def __str__(self) -> str:
         """Return string representation of matcher"""
-        return f"PointMatcher(" f"enter={self.enter_point_name}, " f"exit={self.exit_point_name})"
+        return f"PointMatcher({self.tracking_window})"

@@ -179,14 +179,11 @@ class TestCheckLineBasics:
 
     def test_check_line_same_point_order(self, sample_truck):
         """Test check_line when exit and enter are the same point"""
-        matcher = PointMatcher(
-            enter_point_name="Point 2",
-            exit_point_name="Point 2",
-        )
-
-        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
-
-        assert result.should_trigger is False
+        with pytest.raises(ValueError, match="Enter and exit points must be different"):
+            PointMatcher(
+                enter_point_name="Point 2",
+                exit_point_name="Point 2",
+            )
 
 
 
