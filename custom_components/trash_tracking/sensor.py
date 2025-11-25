@@ -47,9 +47,12 @@ SENSORS: tuple[TrashTrackingSensorEntityDescription, ...] = (
         key="truck_info",
         name="Truck Info",
         icon="mdi:information",
-        value_fn=lambda coordinator: coordinator.truck_info.get("line_name")
-        if coordinator.truck_info
-        else "No truck nearby",
+        value_fn=lambda coordinator: (
+            f"{coordinator.truck_info.get('current_location', 'Unknown')} "
+            f"({coordinator.truck_info.get('current_rank', 0)}/{coordinator.truck_info.get('total_points', 0)})"
+            if coordinator.truck_info
+            else "No truck nearby"
+        ),
         attr_fn=lambda coordinator: coordinator.truck_info if coordinator.truck_info else {},
     ),
 )
