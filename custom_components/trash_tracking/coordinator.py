@@ -170,7 +170,7 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
                 return self._state_manager.get_status_response()
 
             for line in target_lines:
-                match_result = self._point_matcher.check_line(line, self._state_manager.current_state)
+                match_result = self._point_matcher.check_line(line, current_state=self._state_manager.current_state)
 
                 if match_result.should_trigger:
                     self._state_manager.update_state(

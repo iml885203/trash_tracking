@@ -1,6 +1,7 @@
 """Tests for PointMatcher"""
 import pytest
 from trash_tracking_core.core.point_matcher import MatchResult, PointMatcher
+from trash_tracking_core.core.state_manager import TruckState
 from trash_tracking_core.models.point import Point
 from trash_tracking_core.models.truck import TruckLine
 
@@ -147,7 +148,7 @@ class TestCheckLineBasics:
             exit_point_name="Point 4",
         )
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
 
         assert result.should_trigger is False
         assert result.new_state is None
@@ -159,7 +160,7 @@ class TestCheckLineBasics:
             exit_point_name="Non-existent Point",
         )
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
 
         assert result.should_trigger is False
         assert result.new_state is None
@@ -171,7 +172,7 @@ class TestCheckLineBasics:
             exit_point_name="Point 2",  # Earlier point
         )
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
 
         assert result.should_trigger is False
         assert result.new_state is None
@@ -183,7 +184,7 @@ class TestCheckLineBasics:
             exit_point_name="Point 2",
         )
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
 
         assert result.should_trigger is False
 
@@ -201,7 +202,7 @@ class TestArrivedMode:
 
         sample_truck.arrival_rank = 2  # One stop before Point 3
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
 
         assert result.should_trigger is False
 
@@ -213,11 +214,10 @@ class TestArrivedMode:
         )
 
         sample_truck.arrival_rank = 2
-        # Mark Point 2 as arrived
         sample_points[1].arrival = "18:10"
         sample_points[1].arrival_diff = 0
 
-        result = matcher.check_line(sample_truck)
+        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
 
         assert result.should_trigger is True
         assert result.new_state == "nearby"
@@ -236,7 +236,7 @@ class TestExitTrigger:
 
         sample_truck.arrival_rank = 3  # Before exit point
 
-        result = matcher.check_line(sample_truck, current_state="nearby")
+        result = matcher.check_line(sample_truck, current_state=TruckState.NEARBY)
 
         assert result.should_trigger is False
 
@@ -252,7 +252,7 @@ class TestExitTrigger:
         sample_points[3].arrival = "18:30"
         sample_points[3].arrival_diff = 0
 
-        result = matcher.check_line(sample_truck, current_state="nearby")
+        result = matcher.check_line(sample_truck, current_state=TruckState.NEARBY)
 
         assert result.should_trigger is True
         assert result.new_state == "idle"
@@ -291,6 +291,51 @@ class TestMatchResult:
         assert result.truck_line == sample_truck
         assert result.enter_point == sample_points[1]
         assert result.exit_point == sample_points[3]
+
+
+class TestStateTypeValidation:
+    """Test that current_state parameter uses TruckState enum"""
+
+    def test_check_line_idle_state_checks_enter(self, sample_truck, sample_points):
+        """Test IDLE state checks enter condition"""
+        matcher = PointMatcher(
+            enter_point_name="Point 2",
+            exit_point_name="Point 4",
+        )
+
+        sample_points[1].arrival = "18:10"
+        sample_points[1].arrival_diff = 0
+
+        result = matcher.check_line(sample_truck, current_state=TruckState.IDLE)
+
+        assert result.should_trigger is True
+        assert result.new_state == "nearby"
+
+    def test_check_line_nearby_state_checks_exit(self, sample_truck, sample_points):
+        """Test NEARBY state checks exit condition"""
+        matcher = PointMatcher(
+            enter_point_name="Point 2",
+            exit_point_name="Point 4",
+        )
+
+        sample_truck.arrival_rank = 5
+        sample_points[3].arrival = "18:30"
+        sample_points[3].arrival_diff = 0
+
+        result = matcher.check_line(sample_truck, current_state=TruckState.NEARBY)
+
+        assert result.should_trigger is True
+        assert result.new_state == "idle"
+
+    def test_check_line_requires_current_state_keyword(self, sample_truck):
+        """Test current_state must be passed as keyword argument"""
+        matcher = PointMatcher(
+            enter_point_name="Point 2",
+            exit_point_name="Point 4",
+        )
+
+        with pytest.raises(TypeError, match="takes 2 positional arguments but 3 were given"):
+            matcher.check_line(sample_truck, TruckState.IDLE)
 
 
 class TestEdgeCases:

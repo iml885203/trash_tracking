@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from trash_tracking_core.core.state_manager import TruckState
 from trash_tracking_core.models.point import Point
 from trash_tracking_core.models.truck import TruckLine
 from trash_tracking_core.utils.logger import logger
@@ -47,13 +48,13 @@ class PointMatcher:
 
         logger.info(f"PointMatcher initialized: " f"enter_point={enter_point_name}, " f"exit_point={exit_point_name}")
 
-    def check_line(self, truck_line: TruckLine, current_state: str = "idle") -> MatchResult:
+    def check_line(self, truck_line: TruckLine, *, current_state: TruckState) -> MatchResult:
         """
         Check if route triggers state change
 
         Args:
             truck_line: Truck route data
-            current_state: Current tracking state (idle or nearby)
+            current_state: Current tracking state (required, keyword-only)
 
         Returns:
             MatchResult: Match result
@@ -77,7 +78,7 @@ class PointMatcher:
             )
             return MatchResult(should_trigger=False)
 
-        if current_state == "nearby":
+        if current_state == TruckState.NEARBY:
             if self._should_trigger_exit(truck_line, exit_point):
                 reason = f"Truck has passed exit point: {self.exit_point_name}"
                 logger.info(
