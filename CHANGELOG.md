@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.12b3] - 2025-11-25
+
+### Changed
+- **Truck Info Sensor**: Now displays current location and progress instead of just route name
+- Format: "Location name (current/total)" e.g., "民生路二段80號 (23/69)"
+- More informative - shows where truck is and how many stops remain
+- Full truck data still available in sensor attributes
+
+### Technical
+- Updated sensor.py value_fn to use current_location, current_rank, and total_points
+- Better UX for tracking truck progress along route
+
 ## [2025.11.12b2] - 2025-11-25
 
 ### Fixed
