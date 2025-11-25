@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.12b2] - 2025-11-25
+
+### Fixed
+- **Critical**: Fixed sensor stuck in "nearby" state until schedule ends
+- PointMatcher now state-aware - checks exit condition only when nearby
+- Previously: sensor stayed "nearby" from enter point until schedule end
+- Now: correctly transitions to "idle" when truck passes exit point
+
+### Refactored
+- **Architecture**: Major core refactoring following TDD principles
+- Created `TruckStateMachine` - explicit state transition logic
+- Created `StatusResponseBuilder` - separated presentation from state
+- Created `TrackingWindow` value object - eliminated data clump smell
+- Improved `PointMatcher` API - now uses TruckState enum with type safety
+- All refactoring backed by 31 new tests (253 total, 100% passing)
+
+### Technical
+- TruckStateMachine: Centralized transition evaluation
+- StateTransition: Immutable transition result object
+- TrackingWindow: Validates enter/exit point relationships
+- PointMatcher: check_line() now requires current_state parameter (keyword-only)
+- Better separation of concerns across all core modules
+
+### Notes
+This is a critical bug fix release. The state-aware logic ensures proper
+state transitions and prevents sensors from getting stuck.
+
 ## [2025.11.12b1] - 2025-11-24
 
 ### BREAKING CHANGES
