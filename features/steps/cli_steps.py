@@ -161,9 +161,7 @@ def step_should_see_truck_info(context):
     assert len(context.stdout) > 0, "沒有任何輸出"
     output = context.stdout.lower()
     # 檢查是否包含垃圾車相關資訊
-    has_truck_info = any(
-        keyword in output for keyword in ["found", "找到", "route", "路線", "truck", "垃圾車", "garbage"]
-    )
+    has_truck_info = any(keyword in output for keyword in ["found", "找到", "route", "路線", "truck", "垃圾車", "garbage"])
     assert has_truck_info, f"輸出中沒有看到垃圾車資訊：\n{context.stdout}"
 
 

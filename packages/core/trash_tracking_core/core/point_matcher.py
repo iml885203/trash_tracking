@@ -113,7 +113,7 @@ class PointMatcher:
                 )
             return MatchResult(should_trigger=False)
 
-        if self._should_trigger_enter(truck_line, enter_point):
+        if self._should_trigger_enter(truck_line, enter_point, exit_point):
             reason = f"Truck approaching enter point: {self.tracking_window.enter_point_name}"
             logger.info(
                 f"✅ Trigger enter state: {truck_line.line_name} - "
@@ -131,19 +131,40 @@ class PointMatcher:
 
         return MatchResult(should_trigger=False)
 
-    def _should_trigger_enter(self, truck_line: TruckLine, enter_point: Point) -> bool:
+    def _should_trigger_enter(self, truck_line: TruckLine, enter_point: Point, exit_point: Point) -> bool:
         """
         Determine if enter state should be triggered
 
-        Triggers when truck has actually arrived at enter point.
+        Triggers when truck has arrived at enter point AND has not yet passed exit point.
+        This prevents state flapping when truck has already completed the tracking window.
 
         Args:
             truck_line: Truck route
             enter_point: Enter point
+            exit_point: Exit point
 
         Returns:
             bool: True if should trigger
         """
+        # If exit point is already passed, do not trigger enter state
+        # This prevents state flapping after truck has completed the tracking window
+        if exit_point.has_passed():
+            logger.debug(
+                "Exit point %s already passed (arrival=%s), skipping enter trigger",
+                exit_point.point_name,
+                exit_point.arrival,
+            )
+            return False
+
+        # Also check rank-based exit condition
+        if truck_line.arrival_rank >= exit_point.point_rank:
+            logger.debug(
+                "Truck rank (%d) >= exit point rank (%d), skipping enter trigger",
+                truck_line.arrival_rank,
+                exit_point.point_rank,
+            )
+            return False
+
         # Trigger only when truck has actually arrived at enter point
         return enter_point.has_passed()
 

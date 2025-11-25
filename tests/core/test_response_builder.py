@@ -111,6 +111,40 @@ class TestResponseBuilderNearby:
         assert response["truck"] is None
 
 
+class TestTruckInfoAlwaysTracked:
+    """Test that truck info is always available regardless of state
+
+    Note: User-facing scenarios (truck info flapping, tracking from API start)
+    have been moved to features/truck_tracking.feature for BDD tests.
+    Only technical unit tests remain here.
+    """
+
+    def test_truck_info_available_when_idle_with_truck_data(self, sample_truck, sample_point):
+        """
+        Test that truck info is available even when state is idle.
+
+        This is a unit test for ResponseBuilder behavior:
+        truck should be included in response when truck_line is set,
+        regardless of state.
+        """
+        state_manager = StateManager()
+
+        state_manager.update_state(
+            new_state="idle",
+            reason="Tracking truck",
+            truck_line=sample_truck,
+            enter_point=sample_point,
+            exit_point=sample_point,
+        )
+
+        builder = StatusResponseBuilder()
+        response = builder.build(state_manager)
+
+        assert response["status"] == "idle"
+        assert response["truck"] is not None
+        assert response["truck"]["line_name"] == "Test Route"
+
+
 class TestResponseTimestamp:
     """Test timestamp formatting"""
 

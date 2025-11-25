@@ -336,4 +336,41 @@ class TestStateTypeValidation:
 
 
 class TestEdgeCases:
-    """Test edge cases and special scenarios"""
+    """Test edge cases and special scenarios
+
+    Note: User-facing scenarios (state flapping prevention, API skip scenarios)
+    have been moved to features/truck_tracking.feature for BDD tests.
+    Only technical edge cases remain here.
+    """
+
+    def test_api_skips_enter_and_exit_points_no_arrival(self, sample_points):
+        """
+        Test when API skips enter and exit points without arrival data.
+
+        This is a technical edge case: API jumps but doesn't provide arrival data.
+        We keep this in unit tests because it tests a specific code path.
+        """
+        matcher = PointMatcher(
+            enter_point_name="Point 2",  # Rank 2
+            exit_point_name="Point 4",  # Rank 4
+        )
+
+        # No arrival data for any points
+        truck = TruckLine(
+            line_id="L001",
+            line_name="Test Route",
+            area="Test Area",
+            arrival_rank=5,  # Jumped to rank 5
+            diff=0,
+            car_no="ABC-1234",
+            location="Current Location",
+            location_lat=25.0,
+            location_lon=121.5,
+            bar_code="12345",
+            points=sample_points,
+        )
+
+        result = matcher.check_line(truck, current_state=TruckState.IDLE)
+
+        # Should not trigger since enter point has no arrival data
+        assert result.should_trigger is False

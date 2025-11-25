@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2025.11.12b4] - 2025-11-28
+
+### Fixed
+- **Critical**: Fixed state flapping issue where status repeatedly jumped between "idle" and "nearby"
+- PointMatcher now checks if exit_point has already passed before triggering enter state
+- Prevents re-triggering "nearby" when truck has completed the tracking window
+- **Truck Info**: Fixed sensor flapping between showing location and "No truck nearby"
+- Truck Info now always displays location when available, regardless of state
+
+### Changed
+- **API Cache**: Reduced cache TTL from 60s to 5s
+- Previous: Cache could return stale data when scan interval (30s) < cache TTL (60s)
+- Now: Short TTL prevents stale data while still avoiding duplicate API calls from multiple sensors
+
+### Added
+- **BDD Tests**: New `truck_tracking.feature` with 6 scenarios for state management
+- Tests cover: trigger nearby, trigger idle, state flapping prevention, API skip scenarios, Truck Info tracking
+
+### Technical
+- PointMatcher._should_trigger_enter() now validates exit_point.has_passed() and rank comparison
+- StatusResponseBuilder.build() returns truck info regardless of state
+- Coordinator always passes truck_line to state_manager even when state doesn't change
+
 ## [2025.11.12b3] - 2025-11-25
 
 ### Changed

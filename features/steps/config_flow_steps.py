@@ -1,35 +1,27 @@
-"""Step implementations for config flow testing"""
+"""Step implementations for config flow testing
 
-import sys
+Note: sys.path is configured in features/environment.py before_all() hook
+to ensure we import from custom_components/trash_tracking/trash_tracking_core/
+(the embedded version) instead of packages/core/ (the pip-installed version).
+"""
+
 from pathlib import Path
 
-from behave import given, then, when
-
-# IMPORTANT: Force import from custom_components instead of packages/core
-# We need to remove any existing trash_tracking_core from sys.modules first
-# to ensure we test the embedded version (not the pip-installed one)
-import sys
-for key in list(sys.modules.keys()):
-    if key.startswith('trash_tracking_core'):
-        del sys.modules[key]
-
-# Add trash_tracking_core to path
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root / "custom_components" / "trash_tracking"))
-
-from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError  # noqa: E402
-from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError  # noqa: E402
-from trash_tracking_core.utils.route_analyzer import RouteAnalyzer  # noqa: E402
-
-# DEBUG: Verify we're using the embedded version
 import trash_tracking_core
-expected_path = str(project_root / "custom_components" / "trash_tracking" / "trash_tracking_core")
-actual_path = str(Path(trash_tracking_core.__file__).parent)
-assert actual_path == expected_path, (
+from behave import given, then, when
+from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
+from trash_tracking_core.utils.geocoding import Geocoder, GeocodingError
+from trash_tracking_core.utils.route_analyzer import RouteAnalyzer
+
+# Verify we're using the embedded version (set up by environment.py)
+_project_root = Path(__file__).parent.parent.parent
+_expected_path = str(_project_root / "custom_components" / "trash_tracking" / "trash_tracking_core")
+_actual_path = str(Path(trash_tracking_core.__file__).parent)
+assert _actual_path == _expected_path, (
     f"ERROR: Loading wrong trash_tracking_core!\n"
-    f"Expected: {expected_path}\n"
-    f"Actual: {actual_path}\n"
-    f"This test must use the embedded version in custom_components"
+    f"Expected: {_expected_path}\n"
+    f"Actual: {_actual_path}\n"
+    f"Check features/environment.py _setup_embedded_core_path()"
 )
 
 
@@ -47,6 +39,7 @@ def step_integration_installed(context):
 
 # 注意："我住在" 和 "我不小心輸入錯誤的地址" 步驟定義在 cli_steps.py 中
 # Behave 會自動共用這些步驟定義
+
 
 @given("我住在偏遠地區（座標 緯度 {lat:f} 經度 {lng:f}）")
 def step_live_at_remote_location(context, lat, lng):
@@ -254,9 +247,9 @@ def step_parse_collection_weekdays(context):
 
     # 驗證 get_weekdays 方法存在（這是關鍵測試！）
     assert hasattr(point, "get_weekdays"), (
-        f"Point 物件缺少 get_weekdays() 方法。"
-        f"這表示 custom_components/trash_tracking/trash_tracking_core/ "
-        f"沒有從 packages/core/ 正確同步"
+        "Point 物件缺少 get_weekdays() 方法。"
+        "這表示 custom_components/trash_tracking/trash_tracking_core/ "
+        "沒有從 packages/core/ 正確同步"
     )
 
     # 呼叫 get_weekdays() 並儲存結果

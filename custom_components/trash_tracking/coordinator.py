@@ -169,20 +169,34 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
                     self._state_manager.update_state(new_state="idle", reason="Tracked route not nearby")
                 return self._state_manager.get_status_response()
 
-            for line in target_lines:
-                match_result = self._point_matcher.check_line(line, current_state=self._state_manager.current_state)
+            # Use the first matching target line for tracking
+            target_line = target_lines[0]
 
-                if match_result.should_trigger:
-                    self._state_manager.update_state(
-                        new_state=match_result.new_state,
-                        reason=match_result.reason,
-                        truck_line=match_result.truck_line,
-                        enter_point=match_result.enter_point,
-                        exit_point=match_result.exit_point,
-                    )
-                    break
+            # Find enter/exit points for truck info display
+            points = self._point_matcher.tracking_window.find_points(target_line)
+            enter_point, exit_point = points if points else (None, None)
+
+            # Check if state should change
+            match_result = self._point_matcher.check_line(target_line, current_state=self._state_manager.current_state)
+
+            if match_result.should_trigger:
+                # State change triggered
+                self._state_manager.update_state(
+                    new_state=match_result.new_state,
+                    reason=match_result.reason,
+                    truck_line=match_result.truck_line,
+                    enter_point=match_result.enter_point,
+                    exit_point=match_result.exit_point,
+                )
             else:
-                _LOGGER.debug("No route triggered state change")
+                # No state change, but still update truck info for tracking
+                self._state_manager.update_state(
+                    new_state=self._state_manager.current_state.value,
+                    reason=self._state_manager.reason,
+                    truck_line=target_line,
+                    enter_point=enter_point,
+                    exit_point=exit_point,
+                )
 
             return self._state_manager.get_status_response()
 

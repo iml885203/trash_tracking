@@ -22,8 +22,10 @@ class NTPCApiClient:
     """New Taipei City Garbage Truck API Client"""
 
     # Class-level cache shared across all instances
+    # TTL is short (5s) to prevent duplicate API calls from multiple sensors
+    # while ensuring fresh data on each scan interval (30s)
     _cache: Dict[str, Tuple[List[TruckLine], datetime]] = {}
-    _cache_ttl: int = 60  # seconds
+    _cache_ttl: int = 5  # seconds
 
     def __init__(
         self,

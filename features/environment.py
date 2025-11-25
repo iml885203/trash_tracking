@@ -1,10 +1,43 @@
-"""Behave environment configuration"""
+"""Behave environment configuration
+
+Note: sys.path is configured at module level (below) to ensure embedded
+trash_tracking_core is loaded before step definition files are imported.
+"""
 
 import os
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from features.fixtures import MOCK_ADDRESSES, create_mock_truck_lines
+
+# =============================================================================
+# CRITICAL: Setup embedded core path at MODULE LEVEL
+# =============================================================================
+# This must run BEFORE step definition files are imported by behave.
+# Behave loads environment.py first, then loads step files from features/steps/.
+# By running this at module level, we ensure sys.path is configured before
+# any step file imports trash_tracking_core.
+#
+# This project has two copies of trash_tracking_core:
+# 1. packages/core/trash_tracking_core/ (source, pip install -e)
+# 2. custom_components/trash_tracking/trash_tracking_core/ (embedded for HA)
+#
+# BDD tests must use the embedded version to verify it works correctly.
+# =============================================================================
+
+# Clear any existing trash_tracking_core from sys.modules
+for _key in list(sys.modules.keys()):
+    if _key.startswith("trash_tracking_core"):
+        del sys.modules[_key]
+
+# Add embedded version to sys.path (highest priority)
+_project_root = Path(__file__).parent.parent
+_embedded_path = str(_project_root / "custom_components" / "trash_tracking")
+if _embedded_path not in sys.path:
+    sys.path.insert(0, _embedded_path)
+
+# Clean up temporary variables
+del _key, _project_root, _embedded_path
 
 
 def before_all(context):
@@ -70,6 +103,8 @@ def setup_homeassistant_mocks():
 
 def setup_mocks(context):
     """Setup mock API responses"""
+    # Import fixtures here (after sys.path is configured at module level)
+    from features.fixtures import MOCK_ADDRESSES, create_mock_truck_lines
 
     # Mock NTPCApiClient.get_around_points
     def mock_get_around_points(self, lat, lng, time_filter=0, week=1, dist=1000):
