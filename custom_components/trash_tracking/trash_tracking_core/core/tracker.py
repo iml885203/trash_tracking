@@ -66,7 +66,7 @@ class TruckTracker:
                 return self.state_manager.get_status_response()
 
             for line in target_lines:
-                match_result = self.point_matcher.check_line(line)
+                match_result = self.point_matcher.check_line(line, current_state=self.state_manager.current_state)
 
                 if match_result.should_trigger:
                     self.state_manager.update_state(

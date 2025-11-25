@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, Mock, patch
 import pytest
 from trash_tracking_core.clients.ntpc_api import NTPCApiClient, NTPCApiError
 from trash_tracking_core.core.point_matcher import MatchResult, PointMatcher
-from trash_tracking_core.core.state_manager import StateManager
+from trash_tracking_core.core.state_manager import StateManager, TruckState
 from trash_tracking_core.core.tracker import TruckTracker
 from trash_tracking_core.models.point import Point
 from trash_tracking_core.models.truck import TruckLine
@@ -160,7 +160,7 @@ class TestGetCurrentStatusNormalFlow:
         tracker.api_client.get_around_points.assert_called_once_with(lat=25.0, lng=121.5)
 
         # Verify point matcher was called
-        tracker.point_matcher.check_line.assert_called_once_with(sample_truck)
+        tracker.point_matcher.check_line.assert_called_once_with(sample_truck, current_state=TruckState.IDLE)
 
         # Verify state manager was updated
         tracker.state_manager.update_state.assert_called_once_with(
@@ -305,7 +305,7 @@ class TestGetCurrentStatusTargetLines:
         response = tracker.get_current_status()
 
         # Verify only the matching truck was checked
-        tracker.point_matcher.check_line.assert_called_once_with(sample_truck)
+        tracker.point_matcher.check_line.assert_called_once_with(sample_truck, current_state=TruckState.IDLE)
 
         assert response["status"] == "nearby"
 
@@ -687,7 +687,7 @@ class TestMultipleTrucksScenarios:
         response = tracker.get_current_status()
 
         # Verify only first truck was checked (loop breaks after first trigger)
-        tracker.point_matcher.check_line.assert_called_once_with(truck1)
+        tracker.point_matcher.check_line.assert_called_once_with(truck1, current_state=TruckState.IDLE)
 
         assert response["status"] == "nearby"
 
@@ -750,8 +750,8 @@ class TestMultipleTrucksScenarios:
 
         # Verify both trucks were checked
         assert tracker.point_matcher.check_line.call_count == 2
-        tracker.point_matcher.check_line.assert_any_call(truck1)
-        tracker.point_matcher.check_line.assert_any_call(truck2)
+        tracker.point_matcher.check_line.assert_any_call(truck1, current_state=TruckState.IDLE)
+        tracker.point_matcher.check_line.assert_any_call(truck2, current_state=TruckState.IDLE)
 
         assert response["status"] == "nearby"
 
