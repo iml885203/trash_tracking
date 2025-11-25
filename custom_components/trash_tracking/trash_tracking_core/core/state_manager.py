@@ -82,23 +82,14 @@ class StateManager:
 
     def get_status_response(self) -> Dict[str, Any]:
         """
-        Generate API response
+        Generate API response (deprecated, use StatusResponseBuilder instead)
 
         Returns:
             dict: Status response data
         """
+        from ..core.response_builder import StatusResponseBuilder
 
-        response: Dict[str, Any] = {
-            "status": self.current_state.value,
-            "reason": self.reason,
-            "truck": None,
-            "timestamp": self.last_update.isoformat() if self.last_update else None,
-        }
-
-        if self.current_truck and self.current_state == TruckState.NEARBY:
-            response["truck"] = self.current_truck.to_dict(enter_point=self.enter_point, exit_point=self.exit_point)
-
-        return response
+        return StatusResponseBuilder().build(self)
 
     def is_idle(self) -> bool:
         """Check if state is idle"""
