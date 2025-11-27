@@ -1,7 +1,6 @@
 {
   "name": "Trash Tracking",
   "content_in_root": false,
-  "filename": "trash_tracking",
   "render_readme": true,
   "country": ["TW"],
   "homeassistant": "2024.4.1"
