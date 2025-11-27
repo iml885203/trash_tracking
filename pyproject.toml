@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trash_tracking"
-version = "2025.11.12b4"
+version = "2025.11.12"
 description = "新北市垃圾車即時追蹤系統"
 readme = "README.md"
 requires-python = ">=3.11"

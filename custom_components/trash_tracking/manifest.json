@@ -9,5 +9,5 @@
   "issue_tracker": "https://github.com/iml885203/trash_tracking/issues",
   "loggers": ["trash_tracking_core"],
   "requirements": ["requests>=2.31.0"],
-  "version": "2025.11.12b4"
+  "version": "2025.11.12"
 }
