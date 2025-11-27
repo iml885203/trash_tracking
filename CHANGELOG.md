@@ -26,97 +26,6 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - StatusResponseBuilder returns truck info regardless of state
 - Major core refactoring with TruckStateMachine, StatusResponseBuilder, TrackingWindow
 
-## [2025.11.12b3] - 2025-11-25
-
-### Changed
-- **Truck Info Sensor**: Now displays current location and progress instead of just route name
-- Format: "Location name (current/total)" e.g., "民生路二段80號 (23/69)"
-- More informative - shows where truck is and how many stops remain
-- Full truck data still available in sensor attributes
-
-### Technical
-- Updated sensor.py value_fn to use current_location, current_rank, and total_points
-- Better UX for tracking truck progress along route
-
-## [2025.11.12b2] - 2025-11-25
-
-### Fixed
-- **Critical**: Fixed sensor stuck in "nearby" state until schedule ends
-- PointMatcher now state-aware - checks exit condition only when nearby
-- Previously: sensor stayed "nearby" from enter point until schedule end
-- Now: correctly transitions to "idle" when truck passes exit point
-
-### Refactored
-- **Architecture**: Major core refactoring following TDD principles
-- Created `TruckStateMachine` - explicit state transition logic
-- Created `StatusResponseBuilder` - separated presentation from state
-- Created `TrackingWindow` value object - eliminated data clump smell
-- Improved `PointMatcher` API - now uses TruckState enum with type safety
-- All refactoring backed by 31 new tests (253 total, 100% passing)
-
-### Technical
-- TruckStateMachine: Centralized transition evaluation
-- StateTransition: Immutable transition result object
-- TrackingWindow: Validates enter/exit point relationships
-- PointMatcher: check_line() now requires current_state parameter (keyword-only)
-- Better separation of concerns across all core modules
-
-### Notes
-This is a critical bug fix release. The state-aware logic ensures proper
-state transitions and prevents sensors from getting stuck.
-
-## [2025.11.12b1] - 2025-11-24
-
-### BREAKING CHANGES
-- **Simplified trigger logic**: Removed "arriving" mode and "approaching_threshold" setting
-- All notifications now trigger when truck **actually arrives** at entry point (not N stops ahead)
-- If you previously used "arriving" mode, you may experience **later notifications** after this update
-- Config flow no longer shows trigger mode selection
-
-### Changed
-- **RouteAnalyzer**: Now recommends `enter_point = nearest_point - 1` for better timing
-- **Status Sensor**: Added configuration attributes (enter_point, exit_point, schedule info)
-- **Config Flow**: Simplified UI - removed trigger mode and approaching threshold selectors
-
-### Technical
-- Removed trigger_mode and approaching_threshold from all core modules
-- PointMatcher simplified to use only "arrived" logic
-- Old configurations remain functional (ignored parameters won't cause errors)
-
-### Notes
-This is a beta release for testing the simplified trigger logic.
-Existing users should re-add the integration if they want to use the new recommendation logic.
-
-## [2025.11.11b2] - 2025-11-24
-
-### Changed
-- **Performance**: Reduced update interval from 90s to 30s for more responsive tracking
-- **Logging**: Added route name prefix to all schedule-related debug logs
-
-### Technical
-- Update interval now 30s (from 90s) - safe with schedule-based polling
-- Debug logs now show `[route_name]` prefix for easier troubleshooting
-- Estimated API calls: ~1,170/week (still 77% reduction from original 5,040/week)
-
-## [2025.11.11b1] - 2025-11-24
-
-### Fixed
-- **Critical**: Schedule-based polling now correctly detects collection days
-- Fixed PointWeekKnd interpretation (waste types, not weekdays)
-- Config flow now queries API 7 times to determine actual collection days
-
-### Changed
-- _extract_schedule_from_route() now actively determines collection days via API
-- Config flow shows correct weekdays in debug log after this fix
-
-### Known Issues
-- **Beta**: Requires re-adding integration to apply schedule detection
-- Existing integrations will continue to poll API every 2 minutes until re-added
-
-### Notes
-This is a beta release for testing the schedule detection fix.
-Please test and report any issues before stable release.
-
 ## [2025.11.10] - 2025-11-23
 
 ### Fixed
@@ -179,9 +88,7 @@ Please test and report any issues before stable release.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
-[2025.11.12b1]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.12b1
-[2025.11.11b2]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11b2
-[2025.11.11b1]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.11b1
+[2025.11.12]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.12
 [2025.11.10]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.10
 [2025.11.9]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.9
 [2025.11.8]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.8
