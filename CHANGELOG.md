@@ -10,13 +10,16 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 ### Fixed
 - **Critical**: Fixed state flapping issue where status repeatedly jumped between "idle" and "nearby"
 - **Critical**: Fixed sensor stuck in "nearby" state until schedule ends
+- **Critical**: Schedule-based polling now correctly detects collection days
 - **Truck Info**: Fixed sensor flapping between showing location and "No truck nearby"
 - Truck Info now always displays location when available, regardless of state
 
 ### Changed
 - **Truck Info Sensor**: Now displays current location and progress (e.g., "民生路二段80號 (23/69)")
 - **API Cache**: Reduced cache TTL from 60s to 5s to prevent stale data
+- **Performance**: Reduced update interval from 90s to 30s for more responsive tracking
 - **Simplified trigger logic**: Removed "arriving" mode - notifications now trigger when truck arrives at entry point
+- **Config Flow**: Simplified UI - removed trigger mode and approaching threshold selectors
 
 ### Added
 - **BDD Tests**: New `truck_tracking.feature` with 6 scenarios for state management
