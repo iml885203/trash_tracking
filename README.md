@@ -3,7 +3,7 @@
 [![GitHub release](https://img.shields.io/github/v/release/iml885203/trash_tracking)](https://github.com/iml885203/trash_tracking/releases)
 [![License](https://img.shields.io/github/license/iml885203/trash_tracking)](https://github.com/iml885203/trash_tracking/blob/master/LICENSE)
 [![CI](https://github.com/iml885203/trash_tracking/actions/workflows/ci.yml/badge.svg)](https://github.com/iml885203/trash_tracking/actions)
-[![HACS](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
+[![HACS](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 
 Real-time garbage truck tracking integration for New Taipei City, Taiwan. Automatically trigger Home Assistant automations when trucks approach or pass your collection points.
 
@@ -34,28 +34,41 @@ Truck passing exit point → Binary Sensor: OFF → HA automation → 🌑 Light
 
 ### Method 1: HACS (Recommended)
 
-1. **Add Custom Repository**
-   - Open HACS in Home Assistant
-   - Click on "Integrations"
-   - Click the 3-dot menu (top right) → "Custom repositories"
-   - Add repository URL: `https://github.com/iml885203/trash_tracking`
-   - Category: "Integration"
-   - Click "Add"
-
-2. **Install Integration**
-   - Search for "Trash Tracking" in HACS
-   - Click "Download"
+1. **Install Integration**
+   - Open **HACS** in Home Assistant
+   - Click on **Integrations**
+   - Click **+ Explore & Download Repositories** (bottom right)
+   - Search for "**Trash Tracking**"
+   - Click **Download**
    - Restart Home Assistant
 
-3. **Add Integration**
+2. **Add Integration**
    - Go to Settings → Devices & Services
    - Click "+ Add Integration"
    - Search for "Trash Tracking"
    - Follow the setup wizard
 
-### Method 2: Manual Installation
+### Method 2: HACS Custom Repository
+
+If you cannot find the integration in the default HACS list yet:
+
+1. **Add Custom Repository**
+   - Open **HACS** in Home Assistant
+   - Click on **Integrations**
+   - Click the 3-dot menu (top right) → **Custom repositories**
+   - Add repository URL: `https://github.com/iml885203/trash_tracking`
+   - Category: **Integration**
+   - Click **Add**
+
+2. **Install Integration**
+   - Search for "**Trash Tracking**" in HACS
+   - Click **Download**
+   - Restart Home Assistant
+
+### Method 3: Manual Installation
 
 1. **Download Integration**
+
    ```bash
    cd /config
    mkdir -p custom_components
@@ -64,6 +77,7 @@ Truck passing exit point → Binary Sensor: OFF → HA automation → 🌑 Light
    ```
 
 2. **Copy Files**
+
    ```bash
    cp -r trash_tracking/custom_components/trash_tracking ./
    ```
@@ -103,9 +117,11 @@ The integration provides an easy-to-use setup wizard:
 After setup, the integration creates:
 
 **Binary Sensor**:
+
 - `binary_sensor.trash_tracking_[route_name]_nearby`: ON when truck is near
 
 **Sensor**:
+
 - `sensor.trash_tracking_[route_name]_info`: Detailed truck information
 
 ---
@@ -120,7 +136,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: 'on'
+        to: "on"
     action:
       - service: light.turn_on
         target:
@@ -133,7 +149,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: 'off'
+        to: "off"
     action:
       - service: light.turn_off
         target:
@@ -148,7 +164,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: 'on'
+        to: "on"
     action:
       - service: notify.mobile_app_your_phone
         data:
@@ -167,7 +183,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: 'on'
+        to: "on"
     action:
       - service: tts.google_translate_say
         target:
@@ -184,7 +200,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: 'on'
+        to: "on"
     condition:
       - condition: time
         weekday:
@@ -209,7 +225,7 @@ The binary sensor provides rich attributes for advanced automations:
 
 ```yaml
 binary_sensor.trash_tracking_c08_afternoon_nearby:
-  state: 'on'  # or 'off'
+  state: "on" # or 'off'
   attributes:
     current_point: "Minsheng Rd. Sec. 2, No. 80"
     current_rank: 12
@@ -228,7 +244,7 @@ automation:
     trigger:
       - platform: state
         entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: 'on'
+        to: "on"
     action:
       - service: notify.mobile_app_your_phone
         data:
