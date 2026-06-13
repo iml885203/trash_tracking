@@ -292,4 +292,8 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id=STEP_POINTS,
             data_schema=data_schema,
+            description_placeholders={
+                "nearest_rank": str(self._selected_route.nearest_point.rank),
+                "nearest_name": self._selected_route.nearest_point.point_name,
+            },
         )

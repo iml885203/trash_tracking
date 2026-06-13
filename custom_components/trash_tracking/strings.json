@@ -17,7 +17,7 @@
       },
       "points": {
         "title": "Configure Collection Points",
-        "description": "Select entry and exit collection points",
+        "description": "Nearest point: **#{nearest_rank} {nearest_name}**\n\nSelect entry and exit collection points",
         "data": {
           "enter_point": "Entry Point (light turns on)",
           "exit_point": "Exit Point (light turns off)"
