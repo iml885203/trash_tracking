@@ -1,0 +1,69 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "設定垃圾車追蹤",
+        "description": "輸入你的地址以搜尋附近的垃圾車路線",
+        "data": {
+          "address": "地址"
+        }
+      },
+      "route": {
+        "title": "選擇路線",
+        "description": "選擇你要追蹤的垃圾車路線",
+        "data": {
+          "route_selection": "路線"
+        }
+      },
+      "points": {
+        "title": "設定收集點",
+        "description": "最近的站點：**#{nearest_rank} {nearest_name}**\n\n選擇進入和離開的收集點",
+        "data": {
+          "enter_point": "進入點（開燈）",
+          "exit_point": "離開點（關燈）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "無法連線到 API",
+      "invalid_address": "地址無效或無法定位",
+      "no_routes_found": "在此地址附近找不到垃圾車路線",
+      "unknown": "發生未預期的錯誤"
+    },
+    "abort": {
+      "already_configured": "此路線已經設定過了"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "設定垃圾車追蹤",
+        "data": {}
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "狀態",
+        "state": {
+          "idle": "閒置",
+          "nearby": "附近"
+        }
+      },
+      "truck_info": {
+        "name": "垃圾車資訊"
+      }
+    },
+    "binary_sensor": {
+      "nearby": {
+        "name": "附近"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "位置"
+      }
+    }
+  }
+}

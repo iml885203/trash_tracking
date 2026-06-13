@@ -32,6 +32,7 @@ class TrashTrackingBinarySensor(CoordinatorEntity[TrashTrackingCoordinator], Bin
 
     _attr_device_class = BinarySensorDeviceClass.PRESENCE
     _attr_has_entity_name = True
+    _attr_translation_key = "nearby"
 
     def __init__(
         self,
@@ -44,7 +45,6 @@ class TrashTrackingBinarySensor(CoordinatorEntity[TrashTrackingCoordinator], Bin
 
         # Generate unique ID
         self._attr_unique_id = f"{entry.entry_id}_nearby"
-        self._attr_name = "Nearby"
 
     @property
     def is_on(self) -> bool:
@@ -68,5 +68,5 @@ class TrashTrackingBinarySensor(CoordinatorEntity[TrashTrackingCoordinator], Bin
             "name": f"Trash Tracking {self.coordinator.route_name}",
             "manufacturer": "Logan",
             "model": "Garbage Truck Tracker",
-            "sw_version": "2025.11.6",
+            "sw_version": "2026.6.1b5",
         }

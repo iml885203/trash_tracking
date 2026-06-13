@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity, SensorEntityDescription
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -29,7 +29,9 @@ class TrashTrackingSensorEntityDescription(SensorEntityDescription):
 SENSORS: tuple[TrashTrackingSensorEntityDescription, ...] = (
     TrashTrackingSensorEntityDescription(
         key="status",
-        name="Status",
+        translation_key="status",
+        device_class=SensorDeviceClass.ENUM,
+        options=["idle", "nearby"],
         icon="mdi:truck",
         value_fn=lambda coordinator: coordinator.status,
         attr_fn=lambda coordinator: {
@@ -49,7 +51,7 @@ SENSORS: tuple[TrashTrackingSensorEntityDescription, ...] = (
     ),
     TrashTrackingSensorEntityDescription(
         key="truck_info",
-        name="Truck Info",
+        translation_key="truck_info",
         icon="mdi:information",
         value_fn=lambda coordinator: (
             f"{coordinator.truck_info.get('current_location', 'Unknown')} "
@@ -117,5 +119,5 @@ class TrashTrackingSensor(CoordinatorEntity[TrashTrackingCoordinator], SensorEnt
             "name": f"Trash Tracking {self.coordinator.route_name}",
             "manufacturer": "Logan",
             "model": "Garbage Truck Tracker",
-            "sw_version": "2026.6.1b4",
+            "sw_version": "2026.6.1b5",
         }

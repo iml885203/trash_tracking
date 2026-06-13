@@ -41,5 +41,29 @@
         "data": {}
       }
     }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "idle": "Idle",
+          "nearby": "Nearby"
+        }
+      },
+      "truck_info": {
+        "name": "Truck Info"
+      }
+    },
+    "binary_sensor": {
+      "nearby": {
+        "name": "Nearby"
+      }
+    },
+    "device_tracker": {
+      "location": {
+        "name": "Location"
+      }
+    }
   }
 }

@@ -39,6 +39,7 @@ class TrashTrackingDeviceTracker(CoordinatorEntity[TrashTrackingCoordinator], Tr
     """Representation of a tracked truck's live GPS position."""
 
     _attr_has_entity_name = True
+    _attr_translation_key = "location"
     _attr_icon = "mdi:truck"
 
     def __init__(
@@ -52,7 +53,6 @@ class TrashTrackingDeviceTracker(CoordinatorEntity[TrashTrackingCoordinator], Tr
 
         # Generate unique ID
         self._attr_unique_id = f"{entry.entry_id}_location"
-        self._attr_name = "Location"
 
     @property
     def _location(self) -> TruckLocation:
@@ -99,5 +99,5 @@ class TrashTrackingDeviceTracker(CoordinatorEntity[TrashTrackingCoordinator], Tr
             "name": f"Trash Tracking {self.coordinator.route_name}",
             "manufacturer": "Logan",
             "model": "Garbage Truck Tracker",
-            "sw_version": "2026.6.1b4",
+            "sw_version": "2026.6.1b5",
         }
