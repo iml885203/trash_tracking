@@ -1,6 +1,7 @@
 """Step definitions for truck tracking features"""
 
 from behave import given, then, when
+from trash_tracking_core.core.location import resolve_truck_location
 from trash_tracking_core.core.point_matcher import PointMatcher
 from trash_tracking_core.core.response_builder import StatusResponseBuilder
 from trash_tracking_core.core.state_manager import StateManager
@@ -336,3 +337,28 @@ def step_truck_info_keeps_showing(context):
 def step_should_not_be_no_truck(context):
     """驗證不會變成 No truck nearby"""
     assert context.response["truck"] is not None, 'Truck Info 不應該變成 "No truck nearby"'
+
+
+@given("附近沒有垃圾車")
+def step_no_truck_nearby(context):
+    """模擬附近沒有任何垃圾車"""
+    context.truck = None
+    context.state_manager.update_state(new_state="idle", reason="No trucks nearby")
+
+
+@then("地圖應該顯示垃圾車的位置")
+def step_map_shows_truck(context):
+    """驗證地圖能取得垃圾車的即時座標"""
+    location = resolve_truck_location(context.response)
+    assert location.available is True, "地圖應該顯示垃圾車位置，但 location 不可用"
+    assert location.latitude == context.response["truck"]["current_lat"]
+    assert location.longitude == context.response["truck"]["current_lon"]
+
+
+@then("地圖不應該顯示垃圾車的位置")
+def step_map_hides_truck(context):
+    """驗證沒有垃圾車時地圖不顯示位置（避免殘留舊點）"""
+    location = resolve_truck_location(context.response)
+    assert location.available is False, "沒有垃圾車時地圖不應顯示位置"
+    assert location.latitude is None
+    assert location.longitude is None

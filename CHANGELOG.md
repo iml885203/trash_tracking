@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [Unreleased]
+
+### Added
+- **Map support**: Each tracked route now exposes a GPS `device_tracker` entity so the garbage truck's live position appears on the Home Assistant map. The dot is shown only while the truck has a live position this update cycle, and disappears when idle / outside scheduled hours so no stale dots linger when multiple routes are configured.
+- **Tests**: `tests/core/test_location.py` unit tests for the map-location decision logic, plus 2 BDD scenarios in `truck_tracking.feature` covering map visibility.
+
 ## [2025.11.12] - 2025-11-28
 
 ### Fixed
