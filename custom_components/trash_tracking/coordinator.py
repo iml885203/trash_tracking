@@ -11,9 +11,13 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .const import (
     CONF_ENTER_POINT,
+    CONF_ENTER_POINT_RANK,
     CONF_EXIT_POINT,
+    CONF_EXIT_POINT_RANK,
     CONF_LATITUDE,
     CONF_LONGITUDE,
+    CONF_NEAREST_POINT,
+    CONF_NEAREST_POINT_RANK,
     CONF_ROUTE_SELECTION,
     CONF_SCHEDULE_TIME_END,
     CONF_SCHEDULE_TIME_START,
@@ -51,6 +55,10 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
         self._target_line = entry.data[CONF_ROUTE_SELECTION]
         self._enter_point_name = entry.data[CONF_ENTER_POINT]
         self._exit_point_name = entry.data[CONF_EXIT_POINT]
+        self._nearest_point_name = entry.data.get(CONF_NEAREST_POINT)
+        self._nearest_point_rank = entry.data.get(CONF_NEAREST_POINT_RANK)
+        self._enter_point_rank = entry.data.get(CONF_ENTER_POINT_RANK)
+        self._exit_point_rank = entry.data.get(CONF_EXIT_POINT_RANK)
 
         # Extract schedule information (may be None for old configs)
         self._schedule_weekdays = entry.data.get(CONF_SCHEDULE_WEEKDAYS, [])
@@ -242,6 +250,26 @@ class TrashTrackingCoordinator(DataUpdateCoordinator):
     def exit_point_name(self) -> str:
         """Return the exit point name."""
         return self._exit_point_name
+
+    @property
+    def nearest_point_name(self) -> str | None:
+        """Return the nearest point name."""
+        return self._nearest_point_name
+
+    @property
+    def nearest_point_rank(self) -> int | None:
+        """Return the nearest point rank."""
+        return self._nearest_point_rank
+
+    @property
+    def enter_point_rank(self) -> int | None:
+        """Return the enter point rank."""
+        return self._enter_point_rank
+
+    @property
+    def exit_point_rank(self) -> int | None:
+        """Return the exit point rank."""
+        return self._exit_point_rank
 
     @property
     def schedule_weekdays(self) -> list[int]:

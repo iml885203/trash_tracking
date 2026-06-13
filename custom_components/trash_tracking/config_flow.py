@@ -12,9 +12,13 @@ from homeassistant.helpers import selector
 from .const import (
     CONF_ADDRESS,
     CONF_ENTER_POINT,
+    CONF_ENTER_POINT_RANK,
     CONF_EXIT_POINT,
+    CONF_EXIT_POINT_RANK,
     CONF_LATITUDE,
     CONF_LONGITUDE,
+    CONF_NEAREST_POINT,
+    CONF_NEAREST_POINT_RANK,
     CONF_ROUTE_SELECTION,
     CONF_SCHEDULE_TIME_END,
     CONF_SCHEDULE_TIME_START,
@@ -98,7 +102,7 @@ def _extract_schedule_from_route(
 class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Trash Tracking."""
 
-    VERSION = 1
+    VERSION = 2
 
     def __init__(self) -> None:
         """Initialize the config flow."""
@@ -181,8 +185,12 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # Move to points configuration step
                 return await self.async_step_points()
 
-        # Build route options (route name as both key and label)
-        route_options = {route.truck.line_name: route.truck.line_name for route in self._route_recommendations}
+        # Build route options with distance and nearest point info
+        route_options = {}
+        for route in self._route_recommendations:
+            distance_m = round(route.nearest_point.distance_meters)
+            label = f"{route.truck.line_name} " f"(最近: {route.nearest_point.point_name}, 距離 {distance_m}m)"
+            route_options[route.truck.line_name] = label
 
         data_schema = vol.Schema(
             {
@@ -216,6 +224,18 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 self._longitude,
             )
 
+            # Look up ranks for selected points
+            enter_point_name = user_input[CONF_ENTER_POINT]
+            exit_point_name = user_input[CONF_EXIT_POINT]
+            enter_point_rank = next(
+                (p.point_rank for p in self._selected_route.truck.points if p.point_name == enter_point_name),
+                None,
+            )
+            exit_point_rank = next(
+                (p.point_rank for p in self._selected_route.truck.points if p.point_name == exit_point_name),
+                None,
+            )
+
             # Create entry
             title = f"{self._selected_route.truck.line_name}"
 
@@ -226,19 +246,27 @@ class TrashTrackingConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     CONF_LATITUDE: self._latitude,
                     CONF_LONGITUDE: self._longitude,
                     CONF_ROUTE_SELECTION: self._selected_route.truck.line_name,
-                    CONF_ENTER_POINT: user_input[CONF_ENTER_POINT],
-                    CONF_EXIT_POINT: user_input[CONF_EXIT_POINT],
+                    CONF_ENTER_POINT: enter_point_name,
+                    CONF_EXIT_POINT: exit_point_name,
+                    CONF_ENTER_POINT_RANK: enter_point_rank,
+                    CONF_EXIT_POINT_RANK: exit_point_rank,
+                    CONF_NEAREST_POINT: self._selected_route.nearest_point.point_name,
+                    CONF_NEAREST_POINT_RANK: self._selected_route.nearest_point.rank,
                     CONF_SCHEDULE_WEEKDAYS: schedule["weekdays"],
                     CONF_SCHEDULE_TIME_START: schedule["time_start"],
                     CONF_SCHEDULE_TIME_END: schedule["time_end"],
                 },
             )
 
-        # Build collection point options from selected route
-        point_options = {
-            point.point_name: f"{point.point_name} (#{point.point_rank}, {point.point_time})"
-            for point in self._selected_route.truck.points
-        }
+        # Build collection point options, marking the closest point
+        nearest_name = self._selected_route.nearest_point.point_name
+        point_options = {}
+        for point in self._selected_route.truck.points:
+            base_label = f"{point.point_name} (#{point.point_rank}, {point.point_time})"
+            if point.point_name == nearest_name:
+                point_options[point.point_name] = f"⭐ {base_label} — 最近"
+            else:
+                point_options[point.point_name] = base_label
 
         # Default values from recommendation
         default_enter = self._selected_route.enter_point.point_name

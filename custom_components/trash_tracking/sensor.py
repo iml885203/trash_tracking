@@ -37,7 +37,11 @@ SENSORS: tuple[TrashTrackingSensorEntityDescription, ...] = (
             "route_name": coordinator.route_name,
             "last_update": coordinator.data.get("timestamp") if coordinator.data else None,
             "enter_point": coordinator.enter_point_name,
+            "enter_point_rank": coordinator.enter_point_rank,
             "exit_point": coordinator.exit_point_name,
+            "exit_point_rank": coordinator.exit_point_rank,
+            "nearest_point": coordinator.nearest_point_name,
+            "nearest_point_rank": coordinator.nearest_point_rank,
             "schedule_weekdays": coordinator.schedule_weekdays,
             "schedule_time_start": coordinator.schedule_time_start,
             "schedule_time_end": coordinator.schedule_time_end,
@@ -113,5 +117,5 @@ class TrashTrackingSensor(CoordinatorEntity[TrashTrackingCoordinator], SensorEnt
             "name": f"Trash Tracking {self.coordinator.route_name}",
             "manufacturer": "Logan",
             "model": "Garbage Truck Tracker",
-            "sw_version": "2025.11.6",
+            "sw_version": "2026.6.1b2",
         }
