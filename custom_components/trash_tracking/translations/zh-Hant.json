@@ -19,8 +19,8 @@
         "title": "設定收集點",
         "description": "最近的站點：**#{nearest_rank} {nearest_name}**\n\n選擇進入和離開的收集點",
         "data": {
-          "enter_point": "進入點（開燈）",
-          "exit_point": "離開點（關燈）"
+          "enter_point": "進入點",
+          "exit_point": "離開點"
         }
       }
     },

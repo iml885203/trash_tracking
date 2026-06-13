@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Real-time garbage truck tracking system for New Taipei City, Taiwan. Tracks trucks using the NTPC Environmental Protection Bureau API and integrates with Home Assistant for automation (e.g., turn on lights when truck approaches).
+Real-time garbage truck tracking system for New Taipei City, Taiwan. Tracks trucks using the NTPC Environmental Protection Bureau API and integrates with Home Assistant for automation (e.g., send notification when truck approaches).
 
-**Key workflow**: Truck approaching entry point → API status: nearby → HA automation → 💡 Light ON
+**Key workflow**: Truck approaching entry point → API status: nearby → HA automation triggered
 
 ## Monorepo Structure
 
@@ -180,8 +180,8 @@ This project uses Calendar Versioning (CalVer: YYYY.MM.MICRO) and automated rele
 
 ### State Machine
 The system uses a state machine to track truck status:
-- **idle**: No trucks nearby (light off)
-- **nearby**: Truck approaching/at collection point (light on)
+- **idle**: No trucks nearby
+- **nearby**: Truck approaching/at collection point
 
 State transitions are managed by `StateManager` in `packages/core/trash_tracking_core/core/state_manager.py`.
 
@@ -198,8 +198,8 @@ Each garbage truck route has multiple collection points with:
 - **time**: Scheduled arrival time
 
 Users configure:
-- **enter_point**: Light turns on when truck approaches
-- **exit_point**: Light turns off when truck passes
+- **enter_point**: Automation triggers when truck approaches
+- **exit_point**: Automation resets when truck passes
 
 ### Geocoding
 Address → GPS coordinates conversion for Taiwan addresses:

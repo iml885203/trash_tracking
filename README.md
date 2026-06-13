@@ -24,8 +24,8 @@ Track garbage trucks in real-time using the New Taipei City Environmental Protec
 ### 🎬 Workflow
 
 ```
-Truck approaching entry point → Binary Sensor: ON → HA automation → 💡 Light ON
-Truck passing exit point → Binary Sensor: OFF → HA automation → 🌑 Light OFF
+Truck approaching entry point → Binary Sensor: ON → HA automation triggered
+Truck passing exit point → Binary Sensor: OFF → HA automation reset
 ```
 
 ---
@@ -128,34 +128,6 @@ After setup, the integration creates:
 
 ## 🤖 Automation Examples
 
-### Basic Light Automation
-
-```yaml
-automation:
-  - alias: "Garbage Truck Approaching - Turn On Light"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: "on"
-    action:
-      - service: light.turn_on
-        target:
-          entity_id: light.notification_bulb
-        data:
-          brightness: 255
-          rgb_color: [255, 0, 0]
-
-  - alias: "Garbage Truck Left - Turn Off Light"
-    trigger:
-      - platform: state
-        entity_id: binary_sensor.trash_tracking_c08_afternoon_nearby
-        to: "off"
-    action:
-      - service: light.turn_off
-        target:
-          entity_id: light.notification_bulb
-```
-
 ### Mobile Notification
 
 ```yaml
@@ -210,9 +182,10 @@ automation:
           - thu
           - fri
     action:
-      - service: light.turn_on
-        target:
-          entity_id: light.notification_bulb
+      - service: notify.mobile_app_your_phone
+        data:
+          title: "🚛 垃圾車來了！"
+          message: "垃圾車正在接近，請準備倒垃圾"
 ```
 
 ---
