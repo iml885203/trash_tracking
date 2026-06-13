@@ -3,8 +3,8 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional
+from zoneinfo import ZoneInfo
 
-import pytz
 from trash_tracking_core.models.point import Point
 from trash_tracking_core.models.truck import TruckLine
 from trash_tracking_core.utils.logger import logger
@@ -33,7 +33,7 @@ class StateManager:
         self.exit_point: Optional[Point] = None
         self.last_update: Optional[datetime] = None
         self.reason = "System initialized"
-        self.timezone = pytz.timezone(timezone)
+        self.timezone = ZoneInfo(timezone)
 
         logger.info("StateManager initialized: state=%s", self.current_state.value)
 

@@ -3,8 +3,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, Optional
-
-import pytz
+from zoneinfo import ZoneInfo
 
 from ..models.point import Point
 from ..models.truck import TruckLine
@@ -34,7 +33,7 @@ class StateManager:
         self.exit_point: Optional[Point] = None
         self.last_update: Optional[datetime] = None
         self.reason = "System initialized"
-        self.timezone = pytz.timezone(timezone)
+        self.timezone = ZoneInfo(timezone)
 
         logger.info("StateManager initialized: state=%s", self.current_state.value)
 

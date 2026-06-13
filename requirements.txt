@@ -3,6 +3,3 @@ requests==2.32.3
 
 # YAML Configuration
 PyYAML==6.0.2
-
-# Timezone Support
-pytz==2024.1

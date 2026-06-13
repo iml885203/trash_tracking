@@ -2,7 +2,7 @@
 from datetime import datetime
 
 import pytest
-import pytz
+from zoneinfo import ZoneInfo
 from trash_tracking_core.core.state_manager import StateManager, TruckState
 from trash_tracking_core.models.point import Point
 from trash_tracking_core.models.truck import TruckLine
@@ -78,13 +78,13 @@ class TestStateManagerInit:
         assert manager.exit_point is None
         assert manager.last_update is None
         assert manager.reason == "System initialized"
-        assert manager.timezone == pytz.timezone("Asia/Taipei")
+        assert manager.timezone == ZoneInfo("Asia/Taipei")
 
     def test_init_custom_timezone(self):
         """Test initialization with custom timezone"""
         manager = StateManager(timezone="UTC")
 
-        assert manager.timezone == pytz.timezone("UTC")
+        assert manager.timezone == ZoneInfo("UTC")
         assert manager.current_state == TruckState.IDLE
 
     def test_str_representation_idle(self):
@@ -194,7 +194,7 @@ class TestUpdateState:
         assert manager.last_update is not None
         assert manager.last_update.tzinfo is not None
         # Check that the timezone name matches, not the exact tzinfo object
-        assert manager.last_update.tzinfo.zone == "Asia/Taipei"
+        assert manager.last_update.tzinfo.key == "Asia/Taipei"
 
 
 class TestGetStatusResponse:
