@@ -99,5 +99,5 @@ class TrashTrackingDeviceTracker(CoordinatorEntity[TrashTrackingCoordinator], Tr
             "name": f"Trash Tracking {self.coordinator.route_name}",
             "manufacturer": "Logan",
             "model": "Garbage Truck Tracker",
-            "sw_version": "2026.6.1b6",
+            "sw_version": "2026.6.1",
         }

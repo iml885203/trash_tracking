@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.MICRO).
 
+## [2026.6.1] - 2026-06-15
+
+### Added
+- **Device Tracker**: New `device_tracker` entity for live truck GPS position on the HA map
+- **Config Flow Enhancements**: Show nearest point name, distance, and rank during setup
+- **Sensor Attributes**: Added enter/exit point ranks, nearest point name and rank
+- **Config Entry Migration**: Automatic v1→v2 migration for existing installations
+- **Traditional Chinese (zh-Hant)**: Full translation for config flow, errors, and entity names/states
+- **Entity Translation Keys**: Translatable entity names and sensor states via `translation_key`
+
+### Changed
+- **Replaced pytz with zoneinfo**: Eliminated blocking I/O warning in Home Assistant
+- **Removed light-specific references**: UI labels and docs no longer imply a specific automation action
+
+### Fixed
+- **Custom integration translations**: Added `translations/en.json` required for runtime localization
+
 ## [2025.11.12] - 2025-11-28
 
 ### Fixed
@@ -91,6 +108,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YYYY.MM.
 - Pre-commit hooks for code quality
 - CI/CD with GitHub Actions
 
+[2026.6.1]: https://github.com/iml885203/trash_tracking/releases/tag/v2026.6.1
 [2025.11.12]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.12
 [2025.11.10]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.10
 [2025.11.9]: https://github.com/iml885203/trash_tracking/releases/tag/v2025.11.9
